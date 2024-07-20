@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "growzone-mobile",
-    "slug": "growzone-mobile",
+    "name": "Growzone",
+    "slug": "growzone",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "growzone",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/splash.png",
