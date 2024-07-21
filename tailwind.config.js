@@ -53,6 +53,9 @@ module.exports = {
         regular: ["Inter-Regular", "sans-serif"],
         semibold: ["Inter-SemiBold", "sans-serif"],
       },
+      backgroundImage: {
+        'custom-gradient': 'linear-gradient(0deg, var(--black-90, #161616), var(--black-90, #161616)), linear-gradient(360deg, rgba(44, 196, 32, 0) 0%, rgba(44, 196, 32, 0.08) 100%)',
+      },
     },
   },
   plugins: [],
