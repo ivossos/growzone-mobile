@@ -1,13 +1,14 @@
 import { useState } from "react";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ScrollView, Dimensions, Alert, Image } from "react-native";
+import { View, Text, ScrollView, Dimensions, Alert, Image, TouchableOpacity } from "react-native";
 import images from "@/constants/images";
 
 import Button from "@/components/ui/button";
 import { ArrowRight, AtSign, Lock } from "lucide-react-native";
 import Divider from "@/components/ui/divider";
 import { FormField } from "@/components/ui/form-field";
+import { Checkbox } from "@/components/Checkbox";
 
 
 const SignIn = () => {
@@ -25,14 +26,14 @@ const SignIn = () => {
     setSubmitting(true);
 
     Alert.alert("Success", "User signed in successfully");
-      router.replace("/");
+      router.replace("/home");
   };
 
   return (
     <SafeAreaView className="bg-black-100 h-full">
       <ScrollView>
         <View
-          className="w-full flex items-center justify-center h-full px-6"
+          className="w-full flex items-center h-full px-6"
           style={{
             minHeight: Dimensions.get("window").height - 100,
           }}
@@ -69,6 +70,16 @@ const SignIn = () => {
               otherStyles="mt-6"
               leftIcon={Lock}
             />
+
+            <View className="flex flex-row justify-between mt-2 w-full">
+              <Checkbox label="Lembrar-me" labelClasses="text-lg font-medium text-black-30"/>
+
+              <TouchableOpacity 
+                className='flex flex-row items-center gap-2 mt-2'
+                onPress={() => router.push('/forgot-password')}>
+                <Text className="text-lg font-regular text-black-30">Esqueceu sua senha?</Text>
+              </TouchableOpacity>
+            </View>
 
             <Button
               handlePress={() => router.push("/community")}

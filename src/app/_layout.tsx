@@ -17,6 +17,7 @@ export default function RootLayout() {
     "Inter-Regular": require('@/assets/fonts/Inter-Regular.ttf'),
     "Inter-Medium": require('@/assets/fonts/Inter-Medium.ttf'),
     "Inter-SemiBold": require('@/assets/fonts/Inter-SemiBold.ttf'),
+    "Inter-Bold": require('@/assets/fonts/Inter-Bold.ttf'),
   });
 
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />

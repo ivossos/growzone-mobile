@@ -1,26 +1,71 @@
-import { Image, ScrollView, View } from 'react-native';
+import { Image, ScrollView, View, useWindowDimensions } from "react-native";
 
-import { SafeAreaView } from 'react-native-safe-area-context';
-import images from '@/constants/images';
-import { router } from 'expo-router';
-import Button from '@/components/ui/button';
+import Animated, {
+  SlideInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withTiming,
+  runOnJS,
+} from "react-native-reanimated";
 
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { useEffect } from "react";
+import { colors } from "@/styles/colors";
 
-export default function Welcome() {
+export default function Splash() {
+  const logoScale = useSharedValue(1);
+  const logoPositionY = useSharedValue(0);
+  const contentDisplay = useSharedValue(0);
+
+  const dimensions = useWindowDimensions();
+
+  const logoAnimatedStyles = useAnimatedStyle(() => ({
+    transform: [
+      { scale: logoScale.value },
+      { translateY: logoPositionY.value },
+    ],
+  }));
+
+  const contentAnimatedStyles = useAnimatedStyle(() => ({
+    display: contentDisplay.value === 1 ? "flex" : "none",
+  }));
+
+  function logoAnimation() {
+    logoScale.value = withSequence(
+      withTiming(0.7),
+      withTiming(1.3),
+      withTiming(1, undefined, (finished) => {
+        if (finished) {
+          logoPositionY.value = withSequence(
+            withTiming(50, undefined, () => (contentDisplay.value = 1)),
+            withTiming(-dimensions.height, { duration: 400 })
+          );
+
+          runOnJS(onEndSplash)();
+        }
+      })
+    );
+  }
+
+  function onEndSplash() {
+    setTimeout(() => {
+      router.replace("/home");
+    }, 1000);
+  }
+
+  useEffect(() => {
+    logoAnimation();
+  }, []);
   return (
-    <SafeAreaView className='bg-red-500 h-full'>
-      <ScrollView contentContainerStyle={{ height: '100%'}}>
-        <View className='w-full justify-center items-center h-full px-4'>
-          <Image source={images.logoGreen} className='w-[214px] h-[30px]'  resizeMode='contain'/>
-          <Button
-          handlePress={() => router.push("/sign-in")}
-          containerStyles="mt-7"
-          title='Opa'
-          textStyles='mt'
-          isLoading={false}
+    <View className="flex justify-center items-center bg-black-100 h-full">
+      <Animated.Image
+          className="w-[214px] h-[30px]"
+          resizeMode="contain"
+          source={require("@/assets/images/logo-green.png")}
+          style={[logoAnimatedStyles]}
         />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

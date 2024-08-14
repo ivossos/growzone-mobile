@@ -64,13 +64,9 @@ export interface StepProps {
 }
 
 const initialSteps = [
-  { 
-    progress: 20,
-    Component: UsernameStep,
-    fields: ["username"] as FieldKeys[]
-  },
+  
   {
-    progress: 30,
+    progress: 20,
     Component: ChannelStep,
     fields: [] as FieldKeys[]
   },
@@ -83,11 +79,6 @@ const initialSteps = [
     progress: 80,
     Component: PasswordStep,
     fields: ["password", "confirmPassword"] as FieldKeys[]
-  },
-  {
-    progress: 100,
-    Component: TermsStep,
-    fields: [] as FieldKeys[]
   },
 ];
 
@@ -103,7 +94,7 @@ const phoneStep = {
   fields: ["phone"] as FieldKeys[]
 };
 
-const SignUp = () => {
+const ForgotPassword = () => {
   const methods = useForm<SignUpSchema>({
     resolver: zodResolver(signUpSchema),
     mode: "all",
@@ -181,25 +172,29 @@ const SignUp = () => {
             <View className="flex gap-2">
               <Text className="text-4xl font-semibold text-white text-center">
                 {currentStep === 0
-                  ? "Crie um nome de usuário"
+                  ? "Esqueceu sua senha?"
                   : currentStep === 1
-                  ? "Escolha o canal para receber o código"
+                  ? "Esqueceu sua senha?"
                   : currentStep === 2
-                  ? "Digite o código de verificação"
+                  ? "Enviamos um código de verificação para seu email"
                   : currentStep === 3
-                  ? "Crie uma senha de acesso"
+                  ? "Crie uma nova senha"
+                  : currentStep === 4
+                  ? "Esqueceu sua senha?"
                   : "Política de privacidade"}
               </Text>
 
               <Text className="text-lg font-regular text-black-30 text-center ">
                 {currentStep === 0
-                  ? "Seu nome de usuário será único, permitindo que outros membros o encontrem facilmente."
-                  : currentStep === 1
                   ? "Escolha como você deseja receber seu código de verificação."
+                  : currentStep === 1
+                  ? "Preencha abaixo com seu email para receber as instruções necessárias para criar uma nova senha."
                   : currentStep === 2
-                  ? "Digite o código que você recebeu via email ou celular."
+                  ? "Informe o código de 6 dígitos enviado no email pedro*****@gmail.com para continuar."
                   : currentStep === 3
-                  ? "Escolha uma senha forte para proteger sua conta."
+                  ? "Digite uma nova senha e confirme para recuperar o acesso à sua conta."
+                  : currentStep === 4
+                  ? ""
                   : "Leia e aceite a nossa política de privacidade."}
               </Text>
             </View>
@@ -220,4 +215,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default ForgotPassword;

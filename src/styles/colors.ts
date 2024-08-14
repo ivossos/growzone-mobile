@@ -4,7 +4,8 @@ export const colors =  {
     green: '#2CC420',
     black: '#000000',
     grey: '#B6B6B6',
-    white: '#FFFFFF'
+    white: '#FFFFFF',
+    error: '#ef4444',
   },
   black: {
     '100': '#0D0D0D', 

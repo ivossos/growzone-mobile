@@ -27,7 +27,7 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
             source={icon}
             resizeMode="contain"
             tintColor={color}
-            className="w-6 h-6"
+            className="w-8 h-8"
           />
         </View>
       </LinearGradient>
@@ -37,7 +37,7 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
           source={icon}
           resizeMode="contain"
           tintColor={color}
-          className="w-6 h-6"
+          className="w-8 h-8"
         />
       </View>
     )
@@ -59,7 +59,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           headerShown: false,

@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, TextInputProps } from "react-native";
 import { EyeIcon, EyeOffIcon, LucideIcon } from "lucide-react-native";
-import { colorScheme } from "nativewind";
 import { colors } from "@/styles/colors";
 
 interface FormFieldProps extends TextInputProps {
   title: string;
   value: string;
   placeholder: string;
+  type?: string;
   handleChangeText: (text: string) => void;
   otherStyles?: string;
   leftIcon?: LucideIcon;
+  error?: string;  
 }
 
 export function FormField({
@@ -19,7 +20,9 @@ export function FormField({
   placeholder,
   handleChangeText,
   otherStyles,
+  type = '',
   leftIcon: LeftIcon,
+  error,
   ...props
 }: FormFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,29 +30,31 @@ export function FormField({
 
   return (
     <View className={`flex flex-col gap-2 ${otherStyles}`}>
-      <Text className="text-base font-medium text-white">{title}</Text>
+      <Text className={`text-base font-medium ${error ? 'text-red-500' : 'text-white'}`}>{title}</Text>
 
-      <View className={`w-full h-16 px-4 bg-black-90 rounded-lg flex flex-row items-center gap-2 ${isFocused ? 'border border-brand-green' : ''}`}>
+      <View className={`w-full h-16 px-4 bg-black-90 rounded-lg flex flex-row items-center gap-2 
+        ${isFocused && 'border border-brand-green'}
+        ${error && 'border border-red-500'}`}>
         {LeftIcon && (
           <LeftIcon 
             width={24}
             height={24}
-            color={isFocused ? colors.brand.green : colors.black[70]}
+            color={error ? colors.brand.error : isFocused ? colors.brand.green : colors.black[70]}
           />
         )}
         <TextInput
           className="flex-1 text-white font-medium text-base"
           value={value}
           placeholder={placeholder}
-          placeholderTextColor="#B6B6B6"
+          placeholderTextColor={error ? colors.brand.error : "#B6B6B6"}
           onChangeText={handleChangeText}
-          secureTextEntry={title === "Password" && !showPassword}
+          secureTextEntry={type === "password" && !showPassword}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           {...props}
         />
 
-        {title === "Password" && (
+        {type === "password" && (
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             {showPassword ? 
               <EyeIcon 
@@ -66,6 +71,8 @@ export function FormField({
           </TouchableOpacity>
         )}
       </View>
+
+      {error && <Text className="text-red-500 text-base font-medium">{error}</Text>}
     </View>
   );
 };

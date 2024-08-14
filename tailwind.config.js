@@ -13,6 +13,7 @@ module.exports = {
         regular: ["Inter-Regular", "sans-serif"],
         medium: ["Inter-Medium", "sans-serif"],
         semibold: ["Inter-SemiBold", "sans-serif"],
+        bold: ["Inter-Bold", "sans-serif"]
       }
     },
   },

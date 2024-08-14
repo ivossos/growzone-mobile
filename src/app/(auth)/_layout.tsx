@@ -9,6 +9,12 @@ export default function AuthLayout() {
     <>
     <Stack>
       <Stack.Screen
+        name="welcome"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
         name="sign-in"
         options={{
           headerShown: false,
@@ -20,9 +26,15 @@ export default function AuthLayout() {
           headerShown: false,
         }}
       />
+      <Stack.Screen
+        name="forgot-password"
+        options={{
+          headerShown: false,
+        }}
+      />
     </Stack>
 
-    <StatusBar backgroundColor="#161622" style="light" />
+    <StatusBar backgroundColor="#000000" style="light" />
   </>
   );
 }

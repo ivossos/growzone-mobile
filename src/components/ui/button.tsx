@@ -10,7 +10,7 @@ interface Props {
   containerStyles?: string;
   textStyles?: string;
   isLoading?: boolean;
-  variant?: 'default' | 'outline';
+  variant?: 'default' | 'secondary' | 'outline';
   leftIcon?: LucideIcon;
   rightIcon?: LucideIcon;
 }
@@ -27,11 +27,14 @@ const Button: React.FC<Props> = ({
 }) => {
   const buttonClassName = variant === 'outline'
     ? `border border-primary active:bg-primary rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center group-isolate ${containerStyles} ${isLoading ? "opacity-50" : ""}`
-    : `bg-primary rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center gap-2 ${containerStyles} ${isLoading ? "opacity-50" : ""}`;
+    : variant === 'default' ? `bg-primary rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center gap-2 ${containerStyles} ${isLoading ? "opacity-50" : ""}`
+    : `bg-black-80 rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center gap-2 ${containerStyles} ${isLoading ? "opacity-50" : ""}`;
+
 
   const textClassName = variant === 'outline'
     ? `text-primary group-isolate-active:text-brand-black font-medium text-lg ${textStyles}`
-    : `text-brand-black font-medium text-lg ${textStyles}`;
+    : variant === 'default' ? `text-brand-black font-medium text-lg ${textStyles}`
+    : `text-brand-grey font-medium text-lg ${textStyles}`;
 
   const iconColor = variant === 'outline' ? colors.primary : colors.brand.black
 

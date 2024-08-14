@@ -10,7 +10,7 @@ const Divider = ({ text }:DividerProps) => {
       <View className="flex-1 h-px bg-black-90" />
       {text ? (
         <>
-          <Text className="px-2 text-brand-grey text-sm font-medium">{text}</Text>
+          <Text className="px-2 text-brand-grey text-lg font-medium">{text}</Text>
           <View className="flex-1 h-px  bg-black-90" />
         </>
       ) : (
