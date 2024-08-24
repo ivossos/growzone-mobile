@@ -1,17 +1,21 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useRef } from 'react';
 import icons from '@/constants/icons';
 import { Image, ImageSourcePropType, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-
 import "@/styles/global.css"
+import BottomSheet from '@gorhom/bottom-sheet';
+import CreateBottomSheet from '@/components/ui/create-bottom-sheet';
+import { CommentProvider } from '@/context/comment-context';
+import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
 
 type TabIconProps = {
   icon: ImageSourcePropType;
   color: string;
   name: string;
   focused: boolean;
-}
+};
+
 const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
   return (
     focused ? (
@@ -45,97 +49,109 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
 };
 
 export default function TabLayout() {
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: "#2CC420",
-        tabBarInactiveTintColor: "#565656",
-        tabBarShowLabel: false,
-        
-        tabBarStyle: {
-          backgroundColor: "#161616",
-          borderTopColor: "#161616",
-        },
-      }}
-    >
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: 'Home',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon 
-              name={focused ? 'home' : 'home-outline'} 
-              color={color} 
-              focused={focused}
-              icon={icons.home}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="community"
-        options={{
-          title: 'Comunidades',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon 
-              name={focused ? 'home' : 'home-outline'} 
-              color={color} 
-              focused={focused}
-              icon={icons.commmunity}
-            />
-          ),
-        }}
-      />
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
-      <Tabs.Screen
-        name="create"
-        options={{
-          title: 'Create',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon 
-              name={focused ? 'home' : 'home-outline'} 
-              color={color} 
-              focused={focused}
-              icon={icons.create}
-            />
-          ),
+  const openBottomSheet = () => {
+    bottomSheetRef.current?.snapToIndex(1)
+  };
+
+  return (
+    <CommentProvider>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: "#2CC420",
+          tabBarInactiveTintColor: "#565656",
+          tabBarShowLabel: false,
+          tabBarStyle: {
+            backgroundColor: "#161616",
+            borderTopColor: "#161616",
+          },
         }}
-      />
-      
-      <Tabs.Screen
-        name="reels"
-        options={{
-          title: 'Reels',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon 
-              name={focused ? 'home' : 'home-outline'} 
-              color={color} 
-              focused={focused}
-              icon={icons.reels}
-            />
-          ),
-        }}
-      />
-      
-      <Tabs.Screen
-        name="store"
-        options={{
-          title: 'Store',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <TabIcon 
-              name={focused ? 'home' : 'home-outline'} 
-              color={color} 
-              focused={focused}
-              icon={icons.store}
-            />
-          ),
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="home"
+          options={{
+            title: 'Home',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon 
+                name={focused ? 'home' : 'home-outline'} 
+                color={color} 
+                focused={focused}
+                icon={icons.home}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="community"
+          options={{
+            title: 'Comunidades',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon 
+                name={focused ? 'community' : 'community-outline'} 
+                color={color} 
+                focused={focused}
+                icon={icons.community}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="create"
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              openBottomSheet();
+            },
+          }}
+          options={{
+            title: 'Create',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon 
+                name={focused ? 'create' : 'create-outline'} 
+                color={color} 
+                focused={focused}
+                icon={icons.create}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="reels"
+          options={{
+            title: 'Reels',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon 
+                name={focused ? 'reels' : 'reels-outline'} 
+                color={color} 
+                focused={focused}
+                icon={icons.reels}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="store"
+          options={{
+            title: 'Store',
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon 
+                name={focused ? 'store' : 'store-outline'} 
+                color={color} 
+                focused={focused}
+                icon={icons.store}
+              />
+            ),
+          }}
+        />
+      </Tabs>
+      <CreateBottomSheet ref={bottomSheetRef}/>
+      <CommentBottomSheet />
+    </CommentProvider>
   );
 }
