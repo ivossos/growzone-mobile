@@ -3,9 +3,14 @@ import Logo from '@/assets/icons/logo.svg';
 import Coin from '@/assets/icons/coin.svg';
 import Bell from '@/assets/icons/bell.svg';
 import MenuBurger from '@/assets/icons/menu-burger.svg';
+import { useNavigation } from "expo-router";
+import { DrawerActions } from "@react-navigation/native";
 
 
 export function Header() {
+  const navigation = useNavigation();
+  const toggleMenu = () => navigation.dispatch(DrawerActions.toggleDrawer());
+  
   return (
     <View className="flex flex-row justify-between items-center h-[72px] px-6 border-b-[1px] border-black-80">
       <Logo width={114} height={24} />
@@ -17,7 +22,7 @@ export function Header() {
         <TouchableOpacity activeOpacity={0.7}>
           <Bell width={24} height={24} />
         </TouchableOpacity>
-        <TouchableOpacity activeOpacity={0.7}>
+        <TouchableOpacity activeOpacity={0.7} onPress={toggleMenu}>
           <MenuBurger width={24} height={24} />
         </TouchableOpacity>
       </View>

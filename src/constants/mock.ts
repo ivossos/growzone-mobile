@@ -247,6 +247,7 @@ export const commentsMock = [{
   comment: "Se for para consumo da flor. Costumo colher com cerca de 80/90% dos pistilos já marrom e os tricomas com 20/25% deles âmbar.",
   "created_at": "2024-08-16T19:15:10.688448-03:00",
 }]
+
 export const postsMock = [
   {
       "id": 1077,
@@ -770,3 +771,84 @@ export const postsMock = [
       "content": "<p>Iniciando um novo ciclo. O Último do ano.</p><p></p>",
   }
 ]
+
+export const terms = [{
+    title: 'Informações Coletadas', 
+    terms: [
+    {
+      title: "Informações de Registro",
+      description: "Ao se registrar no Growzone, você fornece um nome de usuário único e um endereço de e-mail."
+    },
+    {
+      title: "Informações de Perfil",
+      description: "Você pode optar por fornecer informações adicionais ao completar seu perfil, como foto de perfil, idade, interesses e localização."
+    },
+    {
+      title: "Conteúdo Gerado pelo Usuário",
+      description: "O Growzone pode coletar informações que você publica no aplicativo, incluindo posts, comentários, fotos e vídeos."
+    },
+    {
+      title: "Informações de Uso",
+      description: "O aplicativo pode coletar informações sobre como você utiliza as funcionalidades, como interações com posts, eventos participados e produtos visualizados no marketplace."
+    }
+  ]},
+  {
+    title: 'Uso das Informações',
+    terms: [
+    {
+      title: "Fornecimento e Personalização dos Serviços",
+      description: "Utilizamos suas informações para fornecer e personalizar os serviços oferecidos pelo Growzone, incluindo recomendações de conteúdo e produtos."
+    },
+    {
+      title: "Comunicação",
+      description: "Podemos usar seu endereço de e-mail para enviar comunicações relacionadas ao serviço, como atualizações, notificações e newsletters."
+    },
+    {
+      title: "Melhoria do Serviço",
+      description: "As informações coletadas ajudam a melhorar continuamente o Growzone, incluindo o desenvolvimento de novas funcionalidades e a otimização da experiência do usuário."
+    }
+  ]},
+  {
+    title: 'Compartilhamento de Informações',
+    terms: [
+      {
+        title: "Compartilhamento com Terceiros",
+        description: "Podemos compartilhar suas informações com parceiros de negócios que prestam serviços em nosso nome, como processamento de pagamentos e análise de dados. Esses parceiros são obrigados a proteger suas informações de acordo com esta política."
+      },
+      {
+        title: "Cumprimento Legal",
+        description: "Podemos divulgar suas informações se necessário para cumprir com obrigações legais, responder a processos judiciais ou proteger nossos direitos legais."
+      }
+    ]
+  },
+  {
+    title: 'Segurança das Informações',
+    terms: [
+      {
+        description: "O Growzone implementa medidas de segurança adequadas para proteger suas informações contra acesso não autorizado, uso indevido ou alteração. No entanto, nenhum método de transmissão pela internet ou armazenamento eletrônico é completamente seguro, e não podemos garantir a segurança absoluta dos dados."
+      }
+    ]
+  },
+  {
+    title: 'Seus Direitos e Escolhas',
+    terms: [
+      {
+        description: "Você pode acessar, corrigir ou excluir suas informações pessoais a qualquer momento através das configurações de perfil no Growzone. Você também pode optar por não receber comunicações de marketing ao ajustar suas preferências de notificação."
+      }
+    ]
+  },
+  {
+    title: 'Alterações nesta Política de Privacidade',
+    terms: [
+    {
+      description: "Esta Política de Privacidade pode ser atualizada periodicamente para refletir mudanças nas práticas de informações. Recomendamos revisar esta política regularmente para estar ciente de como suas informações são protegidas e utilizadas."
+    }
+  ]},
+  {
+    title: 'Contato',
+    terms: [
+    {
+      description: "Se você tiver dúvidas ou preocupações sobre esta Política de Privacidade, entre em contato conosco através do e-mail contato@growzone.co. Última atualização: 11 de julho de 2024."
+    }
+  ]},
+];

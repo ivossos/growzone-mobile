@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/ui/header';
 import { Stories } from '@/components/ui/stories';
-import { CardPost } from '@/components/ui/card-post';
+import { PostCard } from '@/components/ui/post-card';
 import { postsMock } from '@/constants/mock';
 import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
 import BottomSheet from '@gorhom/bottom-sheet';
@@ -15,7 +15,7 @@ export default function HomeScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [selectedPost, setSelectedPost] = useState(null);
 
-  const openBottomSheet = (post) => {
+  const openBottomSheet = (post: any) => {
     setSelectedPost(post);
     bottomSheetRef.current?.snapToIndex(1); // ou o índice que desejar
   };
@@ -37,10 +37,11 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className='bg-black-100'>
        <FlatList
-       className='h-100'
+        className='h-100'
         data={postsMock}
+        showsVerticalScrollIndicator={false}
         keyExtractor={(item) => `key-${item.id}`}
-        renderItem={({ item }) => <CardPost post={item} openBottomSheet={() => openBottomSheet(item)}  />}
+        renderItem={({ item }) => <PostCard post={item} openBottomSheet={() => openBottomSheet(item)}  />}
         ListHeaderComponent={() => (
           <>
             <Header />

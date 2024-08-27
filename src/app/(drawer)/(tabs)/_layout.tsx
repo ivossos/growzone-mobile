@@ -1,4 +1,4 @@
-import { Tabs } from 'expo-router';
+import { Stack, Tabs } from 'expo-router';
 import React, { useRef } from 'react';
 import icons from '@/constants/icons';
 import { Image, ImageSourcePropType, View } from 'react-native';
@@ -6,8 +6,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import "@/styles/global.css"
 import BottomSheet from '@gorhom/bottom-sheet';
 import CreateBottomSheet from '@/components/ui/create-bottom-sheet';
-import { CommentProvider } from '@/context/comment-context';
 import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
+import { BottomSheetProvider } from '@/context/bottom-sheet-context';
+import ReportBottomSheet from '@/components/ui/report-bottom-sheet';
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -50,13 +51,19 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
 
 export default function TabLayout() {
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const reportSheetRef = useRef<BottomSheet>(null);
+  const commentSheetRef = useRef<BottomSheet>(null);
 
   const openBottomSheet = () => {
     bottomSheetRef.current?.snapToIndex(1)
   };
 
+  const closeReportBottomSheet = () => {
+    reportSheetRef.current?.close()
+  };
+
   return (
-    <CommentProvider>
+    <BottomSheetProvider>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: "#2CC420",
@@ -150,8 +157,9 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-      <CreateBottomSheet ref={bottomSheetRef}/>
-      <CommentBottomSheet />
-    </CommentProvider>
+      <CreateBottomSheet ref={bottomSheetRef} />
+      <CommentBottomSheet ref={commentSheetRef} />
+      <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+    </BottomSheetProvider>
   );
 }

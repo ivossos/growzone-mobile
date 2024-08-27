@@ -5,14 +5,14 @@ import { colors } from '@/styles/colors';
 import { commentsMock } from '@/constants/mock';
 import { Avatar, AvatarImage } from '../Avatar';
 import { DotIcon, EllipsisIcon } from 'lucide-react-native';
-import { useCommentContext } from '@/context/comment-context';
 import LikeIcon from "@/assets/icons/like.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
+import { useBottomSheetContext } from '@/context/bottom-sheet-context';
 
-const CommentBottomSheet = () => {
-  const { postId, isVisible, closeBottomSheet } = useCommentContext();
+const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
+  const { postId, isVisible, currentType, closeBottomSheet } = useBottomSheetContext();
 
-  if (!isVisible) return null;
+  if (!isVisible || currentType !== 'comment') return null;
   const snapPoints = useMemo(() => ['30%', '60%', '90%'], []);
 
   
@@ -80,6 +80,7 @@ const CommentBottomSheet = () => {
 
   return (
     <BottomSheet
+    ref={ref}
       index={1}
       snapPoints={snapPoints}
       enablePanDownToClose
@@ -96,6 +97,6 @@ const CommentBottomSheet = () => {
         />
     </BottomSheet>
   );
-}
+})
 
 export default CommentBottomSheet;

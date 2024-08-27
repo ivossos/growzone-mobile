@@ -51,7 +51,7 @@ const VideoPlayer = ({ source }) => {
       ) : (
         <TouchableOpacity
           activeOpacity={0.7}
-          onPress={() => setIsPlaying(true)} // Start playing on press
+          onPress={() => setIsPlaying(true)}
           className="w-full h-60 rounded-xl mt-3 relative flex justify-center items-center"
         >
           <Image

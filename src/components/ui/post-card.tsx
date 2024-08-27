@@ -12,7 +12,8 @@ import LikeIcon from "@/assets/icons/like.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
 import { useRef, useState } from "react";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { useCommentContext } from "@/context/comment-context";
+import { router } from "expo-router";
+import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 
 interface Post {
   id: number;
@@ -52,12 +53,16 @@ interface Props {
   post: Post;
 }
 
-export function CardPost({ post }: Props) {
+export function PostCard({ post }: Props) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const { openBottomSheet } = useCommentContext();
+  const { openBottomSheet } = useBottomSheetContext();
 
-  const handleOpenBottomSheet = () => {
-    openBottomSheet(post.id); // Abre o BottomSheet
+  const handleOpenCommentBottomSheet = () => {
+    openBottomSheet('comment', post.id);
+  };
+
+  const handleOpenReportBottomSheet = () => {
+    openBottomSheet('report', post.id);
   };
 
   
@@ -79,7 +84,9 @@ export function CardPost({ post }: Props) {
 
           <View className="flex flex-row items-center gap-2">
             <Text className="text-brand-grey text-sm">10h</Text>
-            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+            <TouchableOpacity onPress={handleOpenReportBottomSheet}>
+              <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -92,12 +99,12 @@ export function CardPost({ post }: Props) {
               <Text className="text-white font-medium">75</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex flex-row items-center gap-1" onPress={handleOpenBottomSheet}>
+            <TouchableOpacity className="flex flex-row items-center gap-1" onPress={handleOpenCommentBottomSheet}>
               <CommentIcon width={24} height={24} />
               <Text className="text-white font-medium">75</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity className="flex flex-row gap-1">
+          <TouchableOpacity className="flex flex-row gap-1" onPress={() => router.push("/likes")}>
             <Text className="text-sm text-brand-grey font-medium">
               Curtido por
             </Text>
@@ -119,7 +126,7 @@ export function CardPost({ post }: Props) {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity className="flex flex-row items-end gap-1 mt-2" onPress={handleOpenBottomSheet}>
+          <TouchableOpacity className="flex flex-row items-end gap-1 mt-2" onPress={handleOpenCommentBottomSheet}>
             <Text className="text-base text-brand-grey font-semibold">
               Ver todos os 40 comentários
             </Text>
