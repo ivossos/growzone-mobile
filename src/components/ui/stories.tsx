@@ -6,17 +6,17 @@ import { stories } from '@/constants/mock';
 export function Stories() {
   
   return (
-    <View className="flex flex-col gap-6 m-6">
+    <View className="flex flex-col gap-6 mx-6 mt-6">
       <View className="flex flex-row items-center gap-2 w-[70px]">
         <StoriesIcon width={24} height={24} />
-        <Text className="text-white text-lg font-semibold">Stories</Text>
+        <Text className="text-white text-lg font-semibold">Takes</Text>
       </View>
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false} 
         contentContainerStyle={{ gap: 12 }}>
         <View className="flex flex-col items-center gap-2 ">
-          <Avatar className="w-16 h-16 border border-black-90 p-1">
+          <Avatar className="min-w-16 w-16 h-16 border border-black-90 p-1">
             <AvatarImage
               className="rounded-full"
               source={require('@/assets/images/add-storie.png')}
@@ -32,8 +32,8 @@ export function Stories() {
         </View>
 
         {stories.map((story) => (
-          <View key={story.id} className="flex flex-col items-center gap-2 w-16">
-            <Avatar className="w-18 h-16 border border-primary p-1">
+          <View key={story.id} className="flex flex-col items-center gap-2 min-w-16 w-16">
+            <Avatar className="min-w-18 w-18 h-16 border border-primary p-1">
               <AvatarImage
                 className="rounded-full"
                 source={typeof story.uri === 'string' ? { uri: story.uri } : story.uri}

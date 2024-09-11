@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
 import { colors } from '@/styles/colors';
-import PostIcon from "@/assets/icons/post.svg";
+import PostIcon from "@/assets/icons/post-green.svg";
 import ReelsIcon from "@/assets/icons/reels-green.svg";
 import QuestionIcon from "@/assets/icons/question.svg";
 import PollIcon from "@/assets/icons/poll.svg";

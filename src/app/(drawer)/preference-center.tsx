@@ -7,7 +7,6 @@ import { useNavigation } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InfoCard from "@/components/ui/info-card";
 import { Switch } from "@/components/Switch";
 import { useState } from "react";
 

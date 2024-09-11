@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, TextInputProps } from "react-native";
-import { EyeIcon, EyeOffIcon, LucideIcon } from "lucide-react-native";
+import { EyeIcon, EyeOffIcon, LucideIcon, X } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 
 interface FormFieldProps extends TextInputProps {
-  title: string;
+  title?: string;
   value: string;
   placeholder: string;
   type?: string;
   handleChangeText: (text: string) => void;
   otherStyles?: string;
   leftIcon?: LucideIcon;
+  rightIcon?: LucideIcon;
   error?: string;  
 }
 
@@ -22,6 +23,7 @@ export function FormField({
   otherStyles,
   type = '',
   leftIcon: LeftIcon,
+  rightIcon: RightIcon,
   error,
   ...props
 }: FormFieldProps) {
@@ -30,7 +32,7 @@ export function FormField({
 
   return (
     <View className={`flex flex-col gap-2 ${otherStyles}`}>
-      <Text className={`text-base font-medium ${error ? 'text-red-500' : 'text-white'}`}>{title}</Text>
+      {title && <Text className={`text-base font-medium ${error ? 'text-red-500' : 'text-white'}`}>{title}</Text>}
 
       <View className={`w-full h-16 px-4 bg-black-90 rounded-lg flex flex-row items-center gap-2 
         ${isFocused && 'border border-brand-green'}
@@ -54,6 +56,14 @@ export function FormField({
           {...props}
         />
 
+        {(type !== "password" && RightIcon) && (
+          <RightIcon 
+            width={24}
+            height={24}
+            color={error ? colors.brand.error : isFocused ? colors.brand.green : colors.black[70]}
+          />
+        )}
+
         {type === "password" && (
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
             {showPassword ? 
@@ -68,6 +78,17 @@ export function FormField({
                 color={colors.black[70]} 
               />
             }
+          </TouchableOpacity>
+        )}
+
+        {(type === "clear" && value.length > 0) && (
+          <TouchableOpacity onPress={() => handleChangeText('')}>
+              <X 
+                width={24}
+                height={24}
+                color={colors.brand.white}
+              />
+            
           </TouchableOpacity>
         )}
       </View>

@@ -15,10 +15,10 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 
-interface Post {
+export interface Post {
   id: number;
   postInfo: PostInfo;
-  userInfo: UserInfo;
+  user_info: UserInfo;
   media: Media[];
   createdAt: string;
   updatedAt: string;
@@ -70,7 +70,7 @@ export function PostCard({ post }: Props) {
   return (
       <View className="flex gap-6 m-6">
         <View className="flex flex-row items-center justify-between gap-2 w-full">
-          <View className="flex flex-row items-center gap-2 ">
+          <TouchableOpacity className="flex flex-row items-center gap-2" onPress={() => router.push('/profile/1')}>
             <Avatar className="w-14 h-14 border border-black-90 p-1">
               <AvatarImage
                 className="rounded-full"
@@ -80,7 +80,7 @@ export function PostCard({ post }: Props) {
             <Text className="text-white text-sm text-center font-semibold">
               Pedro Oliveira
             </Text>
-          </View>
+          </TouchableOpacity>
 
           <View className="flex flex-row items-center gap-2">
             <Text className="text-brand-grey text-sm">10h</Text>
@@ -104,7 +104,7 @@ export function PostCard({ post }: Props) {
               <Text className="text-white font-medium">75</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity className="flex flex-row gap-1" onPress={() => router.push("/likes")}>
+          <TouchableOpacity className="flex flex-row gap-1" onPress={() => router.push(`/post/${100}/likes`)}>
             <Text className="text-sm text-brand-grey font-medium">
               Curtido por
             </Text>
@@ -120,7 +120,7 @@ export function PostCard({ post }: Props) {
             Burnout???
           </Text>
 
-          <TouchableOpacity onPress={() => {}}>
+          <TouchableOpacity className="flex" onPress={() => {}}>
             <Text className="text-base text-primary font-semibold">
               {isExpanded ? "ver menos..." : "continuar lendo..."}
             </Text>

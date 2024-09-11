@@ -7,7 +7,8 @@ import { DrawerActions } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useState } from "react";
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditProfile() {
   const navigation = useNavigation();

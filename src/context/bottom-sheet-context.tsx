@@ -1,13 +1,13 @@
 import React, { createContext, useState, useContext, ReactNode, useRef } from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
 
-type BottomSheetType = 'comment' | 'report'; 
+type BottomSheetType = 'comment' | 'report' | 'search'; 
 
 type BottomSheetContextType = {
   postId: number | null;
   setPostId: (id: number | null) => void;
   isVisible: boolean;
-  openBottomSheet: (type: BottomSheetType, id: number) => void;
+  openBottomSheet: (type: BottomSheetType, id?: number) => void;
   closeBottomSheet: () => void;
   currentType: BottomSheetType | null;
 };
@@ -27,8 +27,8 @@ export const BottomSheetProvider = ({ children }: { children: ReactNode }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentType, setCurrentType] = useState<BottomSheetType | null>(null);
 
-  const openBottomSheet = (type: BottomSheetType, id: number) => {
-    setPostId(id);
+  const openBottomSheet = (type: BottomSheetType, id?: number) => {
+    if(id) setPostId(id);
     setCurrentType(type);
     setIsVisible(true);
   };

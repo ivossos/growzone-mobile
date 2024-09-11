@@ -2,7 +2,7 @@ import { View, StyleSheet, Dimensions, Text, Image } from 'react-native';
 import React from 'react';
 import Carousel from 'pinar';
 
-import { Media } from './card-post';
+import { Media } from './post-card';
 import { colors } from '@/styles/colors';
 import VideoPlayer from './video-player';
 
@@ -34,7 +34,7 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) =>
         />
       );
     } else if (items[0].type === 'video') {
-      return <VideoPlayer source={items[0].hls_url}/>
+      return <VideoPlayer source={items[0].hls_url!}/>
     }
     return null;
   }
@@ -50,8 +50,8 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) =>
         />
       );
     } else if (item.type === 'video') {
-      console.log('entrou', item)
-      return <VideoPlayer source={item.hls_url}/>
+      console.log('items', item)
+      return <VideoPlayer source={item.hls_url!}/>
     }
     return null;
   };

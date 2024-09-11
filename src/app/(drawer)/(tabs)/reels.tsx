@@ -1,102 +1,85 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Image, Platform } from 'react-native';
+import { useEffect, useRef, useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { FlatList, TouchableOpacity, View, ViewabilityConfigCallbackPair } from "react-native";
+import { Stack, useNavigation } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { colors } from "@/styles/colors";
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import ReelsPost from "@/components/ui/reels-post";
+import { reelsMock } from "@/constants/mock";
+import { Camera, ChevronLeft } from "lucide-react-native";
+import LogoIcon from "@/assets/icons/logo-small-white.svg";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 
-export default function TabTwoScreen() {
+export default function Reels() {
+  const [activePostId, setActivePostId] = useState(reelsMock[0].id);
+  const [posts, setPosts] = useState<typeof reelsMock>([]);
+  const { openBottomSheet } = useBottomSheetContext();
+
+
+  const handleBottomSheet = (post: any) => {
+    openBottomSheet('comment', post)
+  };
+  
+  
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    const fetchPosts = async () => setPosts(reelsMock);
+    
+    fetchPosts();
+  }, []);
+
+  const viewabilityConfigCallbackPairs = useRef<ViewabilityConfigCallbackPair[]>([
+    {
+      viewabilityConfig: { itemVisiblePercentThreshold: 80 },
+      onViewableItemsChanged: ({ changed, viewableItems }) => {
+        if (viewableItems?.length > 0 && viewableItems[0].isViewable) {
+          console.log("video => ", viewableItems);
+          setActivePostId(viewableItems[0].item.id);
+        }
+      },
+    },
+  ]);
+
+  const onEndReached = () => {
+    setPosts((currentPosts) => [...currentPosts, ...reelsMock]);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText >
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText> library
-          to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={{  backgroundColor: colors.black[100] }}>
+      <Stack.Screen options={{ headerShown: false }} />
+      <StatusBar backgroundColor={colors.black[100]} style="light" />
+
+      <SafeAreaView
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+        <View className="flex flex-row items-center justify-between h-[72px] px-6">
+          <View className="flex flex-row items-center gap-2">
+            <TouchableOpacity className="p-2 rounded-lg border border-brand-white" style={{borderColor: 'rgba(255, 255, 255, 0.16)'}} 
+              onPress={() => navigation.goBack()}>
+              <ChevronLeft className="w-8 h-8" color={colors.brand.white} />
+            </TouchableOpacity>
+            <LogoIcon width={107} heigth={11} />
+          </View>
+          <TouchableOpacity>
+            <Camera className="w-8 h-8" color={colors.brand.white} />
+          </TouchableOpacity>
+        </View>
+        
+      </SafeAreaView>
+      <FlatList
+        data={posts}
+        renderItem={({ item }) => (
+          <ReelsPost post={item} activePostId={activePostId} openComment={handleBottomSheet}/>
+        )}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        pagingEnabled
+        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+        showsVerticalScrollIndicator={false}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={3}
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});

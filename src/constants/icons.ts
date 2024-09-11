@@ -3,6 +3,7 @@ import store from "@/assets/icons/store.png";
 import reels from "@/assets/icons/reels.png";
 import create from "@/assets/icons/create.png";
 import community from "@/assets/icons/community.png";
+import post from "@/assets/icons/post.png";
 
 export default {
   home,
@@ -10,4 +11,5 @@ export default {
   reels,
   create,
   community,
+  post,
 }

@@ -8,6 +8,8 @@ import { PostCard } from '@/components/ui/post-card';
 import { postsMock } from '@/constants/mock';
 import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
 import BottomSheet from '@gorhom/bottom-sheet';
+import { StatusBar } from 'expo-status-bar';
+import { colors } from '@/styles/colors';
 
 
 export default function HomeScreen() {
@@ -35,13 +37,15 @@ export default function HomeScreen() {
   };
 
   return (
-    <SafeAreaView className='bg-black-100'>
+    <>
+     <SafeAreaView style={{ flex: 1}} className='bg-black-100'  edges={['top']}>
        <FlatList
-        className='h-100'
+        className='bg-black-100'
         data={postsMock}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => `key-${item.id}`}
         renderItem={({ item }) => <PostCard post={item} openBottomSheet={() => openBottomSheet(item)}  />}
+        
         ListHeaderComponent={() => (
           <>
             <Header />
@@ -53,19 +57,14 @@ export default function HomeScreen() {
           //   title="No Videos Found"
           //   subtitle="No videos created yet"
           // />
-          <></>
+          <View className='bg-black-100 h-full'></View>
         )}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
-      {/* <ScrollView showsHorizontalScrollIndicator={false} className='flex flex-rowflex-1'>
-        <Header />
-        <Stories />
-        {postsMock.map(post => (
-          <CardPost key={post.id} post={post} />
-        ))}
-      </ScrollView> */}
-    </SafeAreaView>
+    </SafeAreaView> 
+      <StatusBar backgroundColor={colors.black[100]} style="light" />
+    </>
   );
 }

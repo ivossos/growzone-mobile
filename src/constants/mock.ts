@@ -192,7 +192,7 @@ export const commentsMock = [{
       "id": 452,
       "name": "Ocaradococo",
       "username": "Ocaradococo",
-      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=5X6lUGFX4muf28Dcgnl901imdjw%3D&Expires=1724118267",
+      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
       "bio": "Vem com a gente, vem pro coco ! \r\n\r\nCultivo 100% coco + sal ! \r\n\r\nEstamos aqui para impulsionar a indústria e educar o mercado.\r\n\r\nBem vindos!"
   },
   comment: "Se for para consumo da flor. Costumo colher com cerca de 80/90% dos pistilos já marrom e os tricomas com 20/25% deles âmbar.",
@@ -208,7 +208,7 @@ export const commentsMock = [{
       "id": 452,
       "name": "Ocaradococo",
       "username": "Ocaradococo",
-      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=5X6lUGFX4muf28Dcgnl901imdjw%3D&Expires=1724118267",
+      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
       "bio": "Vem com a gente, vem pro coco ! \r\n\r\nCultivo 100% coco + sal ! \r\n\r\nEstamos aqui para impulsionar a indústria e educar o mercado.\r\n\r\nBem vindos!"
   },
   comment: "Se for para consumo da flor. Costumo colher com cerca de 80/90% dos pistilos já marrom e os tricomas com 20/25% deles âmbar.",
@@ -225,7 +225,7 @@ export const commentsMock = [{
       "id": 452,
       "name": "Ocaradococo",
       "username": "Ocaradococo",
-      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=5X6lUGFX4muf28Dcgnl901imdjw%3D&Expires=1724118267",
+      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
       "bio": "Vem com a gente, vem pro coco ! \r\n\r\nCultivo 100% coco + sal ! \r\n\r\nEstamos aqui para impulsionar a indústria e educar o mercado.\r\n\r\nBem vindos!"
   },
   comment: "Se for para consumo da flor. Costumo colher com cerca de 80/90% dos pistilos já marrom e os tricomas com 20/25% deles âmbar.",
@@ -241,7 +241,7 @@ export const commentsMock = [{
       "id": 452,
       "name": "Ocaradococo",
       "username": "Ocaradococo",
-      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=5X6lUGFX4muf28Dcgnl901imdjw%3D&Expires=1724118267",
+      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
       "bio": "Vem com a gente, vem pro coco ! \r\n\r\nCultivo 100% coco + sal ! \r\n\r\nEstamos aqui para impulsionar a indústria e educar o mercado.\r\n\r\nBem vindos!"
   },
   comment: "Se for para consumo da flor. Costumo colher com cerca de 80/90% dos pistilos já marrom e os tricomas com 20/25% deles âmbar.",
@@ -260,7 +260,7 @@ export const postsMock = [
           "id": 452,
           "name": "Ocaradococo",
           "username": "Ocaradococo",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=5X6lUGFX4muf28Dcgnl901imdjw%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
           "bio": "Vem com a gente, vem pro coco ! \r\n\r\nCultivo 100% coco + sal ! \r\n\r\nEstamos aqui para impulsionar a indústria e educar o mercado.\r\n\r\nBem vindos!"
       },
       "media": [
@@ -269,34 +269,34 @@ export const postsMock = [
               "created_at": "2024-08-16T19:15:14.496698-03:00",
               "updated_at": "2024-08-16T19:15:14.496740-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=8rKz2k%2FsBi5eAPdlIy1vFZxlnl4%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
           },
           {
             "id": 660,
             "created_at": "2024-08-16T19:15:14.496698-03:00",
             "updated_at": "2024-08-16T19:15:14.496740-03:00",
             "type": "image",
-            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=8rKz2k%2FsBi5eAPdlIy1vFZxlnl4%3D&Expires=1724118267",
+            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
           },
           {
             "id": 661,
             "created_at": "2024-08-16T19:15:14.496698-03:00",
             "updated_at": "2024-08-16T19:15:14.496740-03:00",
             "type": "image",
-            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=8rKz2k%2FsBi5eAPdlIy1vFZxlnl4%3D&Expires=1724118267",
+            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
           },
           {
             "id": 662,
             "created_at": "2024-08-16T19:15:14.496698-03:00",
             "updated_at": "2024-08-16T19:15:14.496740-03:00",
             "type": "image",
-            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=8rKz2k%2FsBi5eAPdlIy1vFZxlnl4%3D&Expires=1724118267",
+            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
           },
       ],
       "created_at": "2024-08-16T19:15:10.688448-03:00",
       "updated_at": "2024-08-16T19:15:10.688486-03:00",
       "subject": "45u mixed batch",
-      "content": "<p>Tá muito delícia esse aqui</p>",
+      "content": "Tá muito delícia esse aqui",
       "processed": true,
       "parent_post": null,
       "topic": 33,
@@ -313,7 +313,7 @@ export const postsMock = [
         "id": 452,
         "name": "Ocaradococo",
         "username": "Ocaradococo",
-        "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=5X6lUGFX4muf28Dcgnl901imdjw%3D&Expires=1724118267",
+        "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
         "bio": "Vem com a gente, vem pro coco ! \r\n\r\nCultivo 100% coco + sal ! \r\n\r\nEstamos aqui para impulsionar a indústria e educar o mercado.\r\n\r\nBem vindos!"
     },
     "media": [
@@ -322,13 +322,13 @@ export const postsMock = [
             "created_at": "2024-08-16T19:15:14.496698-03:00",
             "updated_at": "2024-08-16T19:15:14.496740-03:00",
             "type": "image",
-            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=8rKz2k%2FsBi5eAPdlIy1vFZxlnl4%3D&Expires=1724118267",
+            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
         }
     ],
     "created_at": "2024-08-16T19:15:10.688448-03:00",
     "updated_at": "2024-08-16T19:15:10.688486-03:00",
     "subject": "45u mixed batch",
-    "content": "<p>Tá muito delícia esse aqui</p>",
+    "content": "Tá muito delícia esse aqui",
     "processed": true,
     "parent_post": null,
     "topic": 33,
@@ -345,7 +345,7 @@ export const postsMock = [
       "id": 452,
       "name": "Ocaradococo",
       "username": "Ocaradococo",
-      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=5X6lUGFX4muf28Dcgnl901imdjw%3D&Expires=1724118267",
+      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
       "bio": "Vem com a gente, vem pro coco ! \r\n\r\nCultivo 100% coco + sal ! \r\n\r\nEstamos aqui para impulsionar a indústria e educar o mercado.\r\n\r\nBem vindos!"
   },
   "media": [
@@ -354,13 +354,13 @@ export const postsMock = [
           "created_at": "2024-08-16T19:15:14.496698-03:00",
           "updated_at": "2024-08-16T19:15:14.496740-03:00",
           "type": "image",
-          "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=8rKz2k%2FsBi5eAPdlIy1vFZxlnl4%3D&Expires=1724118267",
+          "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
       }
   ],
   "created_at": "2024-08-16T19:15:10.688448-03:00",
   "updated_at": "2024-08-16T19:15:10.688486-03:00",
   "subject": "45u mixed batch",
-  "content": "<p>Tá muito delícia esse aqui</p>",
+  "content": "Tá muito delícia esse aqui",
   "processed": true,
   "parent_post": null,
   "topic": 33,
@@ -377,7 +377,7 @@ export const postsMock = [
       "id": 452,
       "name": "Ocaradococo",
       "username": "Ocaradococo",
-      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=5X6lUGFX4muf28Dcgnl901imdjw%3D&Expires=1724118267",
+      "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
       "bio": "Vem com a gente, vem pro coco ! \r\n\r\nCultivo 100% coco + sal ! \r\n\r\nEstamos aqui para impulsionar a indústria e educar o mercado.\r\n\r\nBem vindos!"
   },
   "media": [
@@ -386,13 +386,13 @@ export const postsMock = [
           "created_at": "2024-08-16T19:15:14.496698-03:00",
           "updated_at": "2024-08-16T19:15:14.496740-03:00",
           "type": "image",
-          "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=8rKz2k%2FsBi5eAPdlIy1vFZxlnl4%3D&Expires=1724118267",
+          "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
       }
   ],
   "created_at": "2024-08-16T19:15:10.688448-03:00",
   "updated_at": "2024-08-16T19:15:10.688486-03:00",
   "subject": "45u mixed batch",
-  "content": "<p>Tá muito delícia esse aqui</p>",
+  "content": "Tá muito delícia esse aqui",
   "processed": true,
   "parent_post": null,
   "topic": 33,
@@ -409,7 +409,7 @@ export const postsMock = [
           "id": 423,
           "name": "João Paulo",
           "username": "Jabuti cultiva",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/09/14ad3656-5560-486f-83fd-2b454a7cac3e.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=aEEo1JTvjO2FCyvA8rlPdh%2F15Pc%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/09/14ad3656-5560-486f-83fd-2b454a7cac3e.webp",
           "bio": "Aqui fazemos por amor\r\nCultivando resina"
       },
       "media": [
@@ -419,7 +419,7 @@ export const postsMock = [
               "updated_at": "2024-08-16T09:47:56.184581-03:00",
               "type": "video",
               "file": null,
-              "hls_url": "https://prd.img.growzone.co/posts/videos/b61fa8b8-c897-4ed2-8172-dcc1489e6d2b/output.m3u8",
+              "hls_url": "https://prd.img.growzone.co/posts/videos/9d229263-cbd5-4c52-8938-4080a2f413e6/output.m3u8",
               "processed": true,
               "post": 1074,
               "created_by": 423
@@ -430,16 +430,23 @@ export const postsMock = [
               "updated_at": "2024-08-16T09:48:43.945126-03:00",
               "type": "video",
               "file": null,
-              "hls_url": "https://prd.img.growzone.co/posts/videos/5f94ee0a-0763-4220-b4bd-87862f1cbaeb/output.m3u8",
+              "hls_url": "https://prd.img.growzone.co/posts/videos/9d229263-cbd5-4c52-8938-4080a2f413e6/output.m3u8",
               "processed": true,
               "post": 1074,
               "created_by": 423
-          }
+          },
+          {
+            "id": 65039,
+            "created_at": "2024-08-16T19:15:14.496698-03:00",
+            "updated_at": "2024-08-16T19:15:14.496740-03:00",
+            "type": "image",
+            "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
+        }
       ],
       "created_at": "2024-08-16T09:46:38.400576-03:00",
       "updated_at": "2024-08-16T09:46:38.400619-03:00",
       "subject": "Resultado",
-      "content": "<p>Hoje 3 mostro o sexo, as duas menores são fêmeas e a maior macho</p>",
+      "content": "Hoje 3 mostro o sexo, as duas menores são fêmeas e a maior macho",
   },
   {
       "id": 1073,
@@ -452,7 +459,7 @@ export const postsMock = [
           "id": 681,
           "name": "SolGrower",
           "username": "SolGrower",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/18/32251695-a62a-49c8-970d-9915e5e778f8.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=RTH68bPr7a0oCZ8dmS9TCE%2BU7Ds%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/18/32251695-a62a-49c8-970d-9915e5e778f8.webp",
           "bio": "Pai do Sol. Caminhando a alguns anos, provando, cruzando, produzindo. Planta LIVRE!!!"
       },
       "media": [
@@ -461,7 +468,7 @@ export const postsMock = [
               "created_at": "2024-08-15T16:57:21.104017-03:00",
               "updated_at": "2024-08-15T16:57:21.104048-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/15/b2551550-cff8-4872-87d5-8eb97fdf6aab.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=Hfu2xZjgwQxBg3hbkGuDl3c9JeE%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/15/b2551550-cff8-4872-87d5-8eb97fdf6aab.webp",
               "hls_url": null,
               "processed": true,
               "post": 1073,
@@ -471,7 +478,7 @@ export const postsMock = [
       "created_at": "2024-08-15T16:57:17.400558-03:00",
       "updated_at": "2024-08-15T16:58:04.265410-03:00",
       "subject": "Testes",
-      "content": "<p>Testes, testes e mais testes... ;)</p><p>\"...vida trata-se de movimento...\"</p>",
+      "content": "Testes, testes e mais testes... ;)\"...vida trata-se de movimento...\"",
   },
   {
       "id": 1069,
@@ -484,7 +491,7 @@ export const postsMock = [
           "id": 336,
           "name": "enfercanabica",
           "username": "enfercanabica",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/15/07a69ce8-20a3-4914-9aa2-af1848b83946.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=wolmo4gacmSxnM022A05kxMlQdk%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/15/07a69ce8-20a3-4914-9aa2-af1848b83946.webp",
           "bio": "Enfermeira emergencista e assistencial Clínica. \r\nPós Graduada em Fitoterapia \r\nGraduada em Cannabis Medicinal - Cannabis College Amsterdam \r\nEducadora Canábica \r\nInfluencer Canábica - Canais: Youtube, Instagram, Tiktok, Twitter \r\nProprietária - Assessoria Canábica Acolhimento e Acompanhamento \r\nEducação  continuada para pacientes e profissionais de Saúde 👩‍⚕️"
       },
       "media": [
@@ -493,13 +500,13 @@ export const postsMock = [
               "created_at": "2024-08-15T15:11:55.303420-03:00",
               "updated_at": "2024-08-15T15:11:55.303452-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/15/8e36f092-c774-4781-9524-eb1ef4d5e69d.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=zhrS1oUT6sQUHj7LEqQXM4fWBRk%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/15/8e36f092-c774-4781-9524-eb1ef4d5e69d.webp",
           }
       ],
       "created_at": "2024-08-15T15:11:50.765014-03:00",
       "updated_at": "2024-08-15T15:11:50.765045-03:00",
       "subject": "Enfercanabica",
-      "content": "<p>A vida que a Maconha me deu 😍</p>",
+      "content": "A vida que a Maconha me deu 😍",
       "topic": 33,
       "created_by": 336
   },
@@ -514,7 +521,7 @@ export const postsMock = [
           "id": 896,
           "name": "Bloom_Grower",
           "username": "Bloom_Grower",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/06/0fde8f18-f556-4dbc-a9cf-8bd59fe78eb7.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=dicOYjsK%2BiaaYbOl1qQNuJY4Bls%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/06/0fde8f18-f556-4dbc-a9cf-8bd59fe78eb7.webp",
           "bio": "Evoluindo seu Cultivo!"
       },
       "media": [
@@ -523,7 +530,7 @@ export const postsMock = [
               "created_at": "2024-08-15T11:35:22.431366-03:00",
               "updated_at": "2024-08-15T11:35:22.431433-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/15/9f031672-f2f5-407d-b750-ca35571d19b7.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=4ltE6OTwb7XJLCZVUs8mVHGGKMY%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/15/9f031672-f2f5-407d-b750-ca35571d19b7.webp",
               "hls_url": null,
               "processed": true,
               "post": 1057,
@@ -534,7 +541,7 @@ export const postsMock = [
               "created_at": "2024-08-15T11:35:24.206877-03:00",
               "updated_at": "2024-08-15T11:35:24.206910-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/15/d9c9aa68-4dc0-45fd-96bc-66467245bc30.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=TZTUDTETw2DTova%2BlEIfuYuIfUw%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/15/d9c9aa68-4dc0-45fd-96bc-66467245bc30.webp",
               "hls_url": null,
               "processed": true,
               "post": 1057,
@@ -544,7 +551,7 @@ export const postsMock = [
       "created_at": "2024-08-15T11:35:20.452516-03:00",
       "updated_at": "2024-08-15T11:35:20.452571-03:00",
       "subject": "2º Ciclo 2024",
-      "content": "<p>2 espaços de Cultivo.</p><p>1º GrowBig da HGcultivo.</p><p>Espaço 60x90 com 125 de altura.</p><p>Ciclo OrganoMineral:</p><p>Solo: Coco, humus, Bokashi, Biochar, Calcário e Perlita.</p><p>Fertilizando com Grow Revolution</p><p></p><p>2º Tenda 100x100 com 200 de altura.</p><p>Ciclo Orgânico:</p><p>Solo: Coco, Húmus, Perlita e Kit Bloom.</p><p>Kit Bloom é um kit que eu vendo para você montar seu Solo Orgânico! Vem toda matéria orgânica para seu cultivo (bokashi, pó de Rocha, farinha de osso, biochar, torta, Gesso agrícola, Match 5, etc...)</p><p>Nutrição completa, já vem tudo nas medidas certas! Basta misturar tudo, colocar nos vasos e descansar por 20~30 dias e começar!</p><p></p><p>Todas as plantas estão recebendo os microorganismos do cultivo orgânico, inclusive das do Mineral.</p>",
+      "content": "2 espaços de Cultivo.1º GrowBig da HGcultivo.Espaço 60x90 com 125 de altura.Ciclo OrganoMineral:Solo: Coco, humus, Bokashi, Biochar, Calcário e Perlita.Fertilizando com Grow Revolution2º Tenda 100x100 com 200 de altura.Ciclo Orgânico:Solo: Coco, Húmus, Perlita e Kit Bloom.Kit Bloom é um kit que eu vendo para você montar seu Solo Orgânico! Vem toda matéria orgânica para seu cultivo (bokashi, pó de Rocha, farinha de osso, biochar, torta, Gesso agrícola, Match 5, etc...)Nutrição completa, já vem tudo nas medidas certas! Basta misturar tudo, colocar nos vasos e descansar por 20~30 dias e começar!Todas as plantas estão recebendo os microorganismos do cultivo orgânico, inclusive das do Mineral.",
   },
   {
       "id": 1054,
@@ -560,11 +567,19 @@ export const postsMock = [
           "avatar": null,
           "bio": null
       },
-      "media": [],
+      "media": [
+        {
+          "id": 65095,
+          "created_at": "2024-08-16T19:15:14.496698-03:00",
+          "updated_at": "2024-08-16T19:15:14.496740-03:00",
+          "type": "image",
+          "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
+      }
+      ],
       "created_at": "2024-08-15T02:29:31.457523-03:00",
       "updated_at": "2024-08-15T02:29:31.457553-03:00",
       "subject": "GROW CASEIRO DE CANO PVC ??",
-      "content": "<p>Tem iniciantes por aqui? to pensando em iniciar um canal no youtube e o primeiro vídeo ensinar fazer um grow caseiro passo a passo, custo beneficio e com o mesmo potencial de outros grow’s</p>",
+      "content": "Tem iniciantes por aqui? to pensando em iniciar um canal no youtube e o primeiro vídeo ensinar fazer um grow caseiro passo a passo, custo beneficio e com o mesmo potencial de outros grow’s",
   },
   {
       "id": 1053,
@@ -577,7 +592,7 @@ export const postsMock = [
           "id": 592,
           "name": "Ras-Breeder",
           "username": "Ras-Breeder",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/14/0561a054-e33f-4b9f-b81f-3080034b6c03.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=Ku8vPUCCgngWfl5P%2Fyl3QZnXQq0%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/14/0561a054-e33f-4b9f-b81f-3080034b6c03.webp",
           "bio": "Geneticista trabalhando..."
       },
       "media": [
@@ -586,7 +601,7 @@ export const postsMock = [
               "created_at": "2024-08-14T19:19:39.837977-03:00",
               "updated_at": "2024-08-14T19:19:39.838008-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/aee43737-85b8-42a1-bfdd-4ae2af871b03.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=3wcfaQnAt2gZl23zlUIJkK9fHxs%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/aee43737-85b8-42a1-bfdd-4ae2af871b03.webp",
               "hls_url": null,
               "processed": true,
               "post": 1053,
@@ -597,7 +612,7 @@ export const postsMock = [
               "created_at": "2024-08-14T19:19:45.762250-03:00",
               "updated_at": "2024-08-14T19:19:45.762281-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/328f4817-3cdc-4a82-8857-7b1e1ce54ab1.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=E%2FuxgprsK44ibTJWupxiQQaH%2Bow%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/328f4817-3cdc-4a82-8857-7b1e1ce54ab1.webp",
               "hls_url": null,
               "processed": true,
               "post": 1053,
@@ -608,7 +623,7 @@ export const postsMock = [
               "created_at": "2024-08-14T19:19:54.788484-03:00",
               "updated_at": "2024-08-14T19:19:54.788519-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/650f82e7-3250-4cf2-bc9e-f4962d4b6cc1.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=ONt5Y3URFXNwPhLHH0Aye4J%2BfBE%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/650f82e7-3250-4cf2-bc9e-f4962d4b6cc1.webp",
               "hls_url": null,
               "processed": true,
               "post": 1053,
@@ -619,7 +634,7 @@ export const postsMock = [
               "created_at": "2024-08-14T19:20:04.771027-03:00",
               "updated_at": "2024-08-14T19:20:04.771076-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/26bd7c31-97d5-47c6-a217-252c52312991.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=%2FBUCTUzdeXGyjRTGRNbcBGGS8%2B4%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/26bd7c31-97d5-47c6-a217-252c52312991.webp",
               "hls_url": null,
               "processed": true,
               "post": 1053,
@@ -630,7 +645,7 @@ export const postsMock = [
               "created_at": "2024-08-14T19:20:22.843453-03:00",
               "updated_at": "2024-08-14T19:20:22.843512-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/881d56ae-ab84-4871-8f9a-03db4f473731.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=pQni97voD9uwlZMMcaMEPHy%2Bfl4%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/881d56ae-ab84-4871-8f9a-03db4f473731.webp",
               "hls_url": null,
               "processed": true,
               "post": 1053,
@@ -640,7 +655,7 @@ export const postsMock = [
       "created_at": "2024-08-14T19:19:26.209473-03:00",
       "updated_at": "2024-08-14T19:19:26.209501-03:00",
       "subject": "Quando a casca gruda na muda",
-      "content": "<p>Tenho observado a luta de algumas mudas para se livrar da casca e da película que as protege da casca. As mudas ao tentar se livrar delas fazem todo tipo de esforço torcendo, retorcendo, e quando não conseguem o jeito é colocar o primeiro par de folhas pra fora do jeito que dá, e é ai que começa a mudança Fenotípa nelas, cada uma de um jeito diferente e ate mesmo engraçado de se observar tamanho esforço!<br>Atrasa o processo de inicio delas mas trás grossura ao caule, firmeza no crescimento e creio eu ate mesmo uma rapidez maior ao passar desse sofrimento.</p>",
+      "content": "Tenho observado a luta de algumas mudas para se livrar da casca e da película que as protege da casca. As mudas ao tentar se livrar delas fazem todo tipo de esforço torcendo, retorcendo, e quando não conseguem o jeito é colocar o primeiro par de folhas pra fora do jeito que dá, e é ai que começa a mudança Fenotípa nelas, cada uma de um jeito diferente e ate mesmo engraçado de se observar tamanho esforço!<br>Atrasa o processo de inicio delas mas trás grossura ao caule, firmeza no crescimento e creio eu ate mesmo uma rapidez maior ao passar desse sofrimento.",
   },
   {
       "id": 1052,
@@ -653,7 +668,7 @@ export const postsMock = [
           "id": 996,
           "name": "Mateus",
           "username": "Mateus",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=GssrnyeXHSX9LdHlVahyO3bk5%2FI%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp",
           "bio": ""
       },
       "media": [
@@ -662,7 +677,7 @@ export const postsMock = [
               "created_at": "2024-08-14T09:50:05.415798-03:00",
               "updated_at": "2024-08-14T09:50:05.415838-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/0425311b-023f-42d9-b185-941054a1ffe8.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=aqeIvPSthPH07FzSCLLhFg4TOMg%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/0425311b-023f-42d9-b185-941054a1ffe8.webp",
               "hls_url": null,
               "processed": true,
               "post": 1052,
@@ -673,7 +688,7 @@ export const postsMock = [
               "created_at": "2024-08-14T09:50:08.658761-03:00",
               "updated_at": "2024-08-14T09:50:08.658806-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/43b815e1-e8a4-47a0-a3af-4d64456c3f7d.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=4%2BFXYUnvBMwW9Xxza5Xk5iS8GB4%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/14/43b815e1-e8a4-47a0-a3af-4d64456c3f7d.webp",
               "hls_url": null,
               "processed": true,
               "post": 1052,
@@ -683,7 +698,7 @@ export const postsMock = [
       "created_at": "2024-08-14T09:50:01.449876-03:00",
       "updated_at": "2024-08-14T09:50:01.449922-03:00",
       "subject": "Agora outdoor até a chegada do led novo 🤡😅🥺",
-      "content": "<p>Depois que o led queimou vi que uma delas não tava muito bem com a luz que tava sendo absorvida</p>",
+      "content": "Depois que o led queimou vi que uma delas não tava muito bem com a luz que tava sendo absorvida",
   },
   {
       "id": 1051,
@@ -696,14 +711,20 @@ export const postsMock = [
           "id": 449,
           "name": "Nerdolonha",
           "username": "Nerdolonha",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/04/ca7990d8-dd4f-4bea-b4f1-90aaaf6633e5.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=Yvu2BOctRj6QJflWT6V%2F5OWQbIA%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/04/ca7990d8-dd4f-4bea-b4f1-90aaaf6633e5.webp",
           "bio": ""
       },
-      "media": [],
+      "media": [{
+        "id": 650,
+        "created_at": "2024-08-16T19:15:14.496698-03:00",
+        "updated_at": "2024-08-16T19:15:14.496740-03:00",
+        "type": "image",
+        "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/16/0406368e-45e2-4ccc-a0c1-8c242e92bd83.webp"
+    }],
       "created_at": "2024-08-13T23:59:44.483507-03:00",
       "updated_at": "2024-08-13T23:59:44.483552-03:00",
       "subject": "alguem ja levou geneticas da Ripper Seeds?",
-      "content": "<p>oba galera queria saber quem ja levou as geneticas da ripper seeds, queria muito saber pegar a Zombie Kush ou Sour Ripper</p>",
+      "content": "oba galera queria saber quem ja levou as geneticas da ripper seeds, queria muito saber pegar a Zombie Kush ou Sour Ripper",
   },
   {
       "id": 1050,      
@@ -716,7 +737,7 @@ export const postsMock = [
           "id": 197,
           "name": "André Dantas",
           "username": "MargemNow",
-          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/06/12/IMG_2663.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=EpONEJ1Vwq%2BMoUMbE6up07tpegU%3D&Expires=1724118267",
+          "avatar": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
           "bio": "Iniciando no indoor cheio de dúvidas!"
       },
       "media": [
@@ -725,7 +746,7 @@ export const postsMock = [
               "created_at": "2024-08-13T21:57:30.055538-03:00",
               "updated_at": "2024-08-13T21:57:30.055590-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/13/d67ac07a-7f0c-4a7c-87ef-43c7246251b9.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=6f3fcuGPSqr6yQK%2FJzF9e89BB7A%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/13/d67ac07a-7f0c-4a7c-87ef-43c7246251b9.webp",
               "hls_url": null,
               "processed": true,
               "post": 1050,
@@ -736,7 +757,7 @@ export const postsMock = [
               "created_at": "2024-08-13T21:58:12.037057-03:00",
               "updated_at": "2024-08-13T21:58:12.037089-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/13/55983fa7-a76c-41b8-8798-defcb305b91c.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=Ba4gjGBs%2F6ya12gqX9zKXIzpcbk%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/13/55983fa7-a76c-41b8-8798-defcb305b91c.webp",
               "hls_url": null,
               "processed": true,
               "post": 1050,
@@ -747,7 +768,7 @@ export const postsMock = [
               "created_at": "2024-08-13T21:58:59.831260-03:00",
               "updated_at": "2024-08-13T21:58:59.831303-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/13/3a0aa4a9-f346-4265-9198-0bb61985b9ea.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=aXeHnDGctgp7UPHQryJliNsWAEM%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/13/3a0aa4a9-f346-4265-9198-0bb61985b9ea.webp",
               "hls_url": null,
               "processed": true,
               "post": 1050,
@@ -758,7 +779,7 @@ export const postsMock = [
               "created_at": "2024-08-13T21:59:32.779444-03:00",
               "updated_at": "2024-08-13T21:59:32.779482-03:00",
               "type": "image",
-              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/13/c07b8c85-8408-4775-9f42-9f93d1b4e759.webp?AWSAccessKeyId=DO00NEBCX4F8RRPDJXLP&Signature=O7H6fEbNcNWyJwwUUJgrMm80VGw%3D&Expires=1724118267",
+              "file": "https://sfo3.digitaloceanspaces.com/growzone-storage/media/files/2024/08/13/c07b8c85-8408-4775-9f42-9f93d1b4e759.webp",
               "hls_url": null,
               "processed": true,
               "post": 1050,
@@ -768,7 +789,7 @@ export const postsMock = [
       "created_at": "2024-08-13T21:56:58.626515-03:00",
       "updated_at": "2024-08-13T21:56:58.626556-03:00",
       "subject": "Último ciclo de 2024",
-      "content": "<p>Iniciando um novo ciclo. O Último do ano.</p><p></p>",
+      "content": "Iniciando um novo ciclo. O Último do ano.",
   }
 ]
 
@@ -851,4 +872,370 @@ export const terms = [{
       description: "Se você tiver dúvidas ou preocupações sobre esta Política de Privacidade, entre em contato conosco através do e-mail contato@growzone.co. Última atualização: 11 de julho de 2024."
     }
   ]},
+];
+
+
+export const users = [
+  {
+    id: 1,
+    name: "Pedro Oliveira",
+    username: "@pedro.zao",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },
+  {
+    id: 2,
+    name: "Mariana Costa",
+    username: "@mariana.costa",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: false,
+  },
+  {
+    id: 3,
+    name: "Lucas Souza",
+    username: "@lucas.souza",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },
+  {
+    id: 4,
+    name: "Ana Paula",
+    username: "@ana.paula",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: false,
+  },
+  {
+    id: 5,
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },
+  {
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },{
+    id: Math.random(),
+    name: "Gabriel Santos",
+    username: "@gabriel.santos",
+    avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+    isFollowing: true,
+  },
+];
+
+export const reelsMock = [
+  {
+    id: "2",
+    video:
+      "https://prd.img.growzone.co/posts/videos/9d229263-cbd5-4c52-8938-4080a2f413e6/output.m3u8",
+    caption:
+      "🤔 Você conhecia os benefícios da Cannabis para o tratamento de Burnout??? A Síndrome de Burnout, também chamada de Síndrome de Esgotamento Profissional, é uma condição que vem acometendo os indivíduos no ambiente de trabalho. As consequências desse problema afetam negativamente tanto o indivíduo como a organização onde ele desempenha sua atividade, uma vez que pode gerar baixo rendimento ou produtividade, aumento das faltas e até mesmo o abandono do emprego... continuar lendo ",
+    userInfo: {
+      id: 452,
+      name: "Maconhia",
+      avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+      isFollowing: false,
+    },
+  },
+  {
+    id: "1",
+    video: 
+    "https://prd.img.growzone.co/posts/videos/350bcda1-3d1e-4397-b287-c80fd4f52505/output.m3u8",
+    caption: "Hey there",
+    userInfo: {
+      id: 452,
+      name: "Pedro",
+      avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
+      isFollowing: false,
+    },
+  },
+  {
+    id: "3",
+    video: "https://prd.img.growzone.co/posts/videos/da344cc4-51d4-4b8f-ab8e-5f70ee77a1de/output.m3u8",
+    caption: "Hola",
+    userInfo: {
+      id: 452,
+      name: "Comedia",
+      avatar:
+        "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
+      isFollowing: false,
+    },
+  },
+  {
+    id: "4",
+    video:
+      "https://prd.img.growzone.co/posts/videos/b61fa8b8-c897-4ed2-8172-dcc1489e6d2b/output.m3u8",
+    caption: "Piano practice",
+    userInfo: {
+      id: 452,
+      name: "Pedro",
+      avatar:
+        "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+      isFollowing: false,
+    },
+  },
+  {
+    id: "5",
+    video:
+       "https://prd.img.growzone.co/posts/videos/6853c1ef-0106-4315-80bf-38f158ae1289/output.m3u8",
+    caption: "Hello World!",
+    userInfo: {
+      id: 452,
+      name: "Zé da manga",
+      avatar:
+        "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+      isFollowing: false,
+    },
+  },
+];
+
+export const notificationsMock = [
+  {
+    id: Math.random(),
+    type: 'COMMENT',
+    user_info: {
+      id: 996,
+      name: 'Mateus',
+      username: 'Mateus',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    id: Math.random(),
+    type: 'LIKE',
+    user_info: {
+      id: 997,
+      name: 'Ana',
+      username: 'Ana123',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    id: Math.random(),
+    type: 'MENTION',
+    user_info: {
+      id: 998,
+      name: 'Carlos',
+      username: 'Carlos99',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    id: Math.random(),
+    type: 'FOLLOWING',
+    user_info: {
+      id: 999,
+      name: 'Maria',
+      username: 'MariaM',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    id: Math.random(),
+    type: 'COMMENT',
+    user_info: {
+      id: 1000,
+      name: 'João',
+      username: 'JoaoJ',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    id: Math.random(),
+    type: 'LIKE',
+    user_info: {
+      id: 1001,
+      name: 'Laura',
+      username: 'LauraL',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    type: 'MENTION',
+    user_info: {
+      id: 1002,
+      name: 'Pedro',
+      username: 'PedroP',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    id: Math.random(),
+    type: 'FOLLOWING',
+    user_info: {
+      id: 1003,
+      name: 'Mariana',
+      username: 'MarianaM',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    id: Math.random(),
+    type: 'COMMENT',
+    user_info: {
+      id: 1004,
+      name: 'Lucas',
+      username: 'LucasL',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+  {
+    id: Math.random(),
+    type: 'LIKE',
+    user_info: {
+      id: 1005,
+      name: 'Beatriz',
+      username: 'BeatrizB',
+      avatar: 'https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/08/12/4675c690-3781-493f-9ba3-14725f0b858e.webp',
+    },
+  },
+];
+
+export const rolesMock = [
+  { id: 1, title: "Grower" },
+  { id: 2, title: "Hempreendedor" },
+  { id: 3, title: "Médico" },
+  { id: 4, title: "Advogado" },
+  { id: 5, title: "Ativista" },
+  { id: 6, title: "Associação" },
+  { id: 7, title: "Artista" },
+  { id: 8, title: "Influenciador" },
+  { id: 9, title: "Consultor" },
+  { id: 10, title: "Engenheiro Agrônomo" },
+  { id: 11, title: "Enfermeira Canábica" },
+  { id: 12, title: "Entusiasta" },
+  { id: 13, title: "Marketing" },
+  { id: 14, title: "Biologo" },
+  { id: 15, title: "Quimico" },
+  { id: 16, title: "Desenvolvedor" },
+  { id: 17, title: "Outro" }
 ];

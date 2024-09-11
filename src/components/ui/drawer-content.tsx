@@ -10,7 +10,7 @@ import GearIcon from "@/assets/icons/gear.svg";
 import VerifiedIcon from "@/assets/icons/verified.svg";
 import { DrawerButton } from "./drawer-button";
 import { CustomOptions } from "@/@types/navigation";
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { DrawerActions } from "@react-navigation/native";
 
 export function DrawerContent( props: DrawerContentComponentProps) {
@@ -35,7 +35,7 @@ export function DrawerContent( props: DrawerContentComponentProps) {
               Configurações
             </Text>
           </View>
-          <View className="flex flex-row items-center gap-2 p-4 rounded-lg bg-black-90">
+          <TouchableOpacity onPress={() => router.push('/profile/1')} className="flex flex-row items-center gap-2 p-4 rounded-lg bg-black-90">
             <Avatar className="w-12 h-12">
               <AvatarImage
                 className="rounded-full"
@@ -48,7 +48,7 @@ export function DrawerContent( props: DrawerContentComponentProps) {
               </Text>
               <VerifiedIcon width={18} heigth={18} />
             </View>
-          </View>
+          </TouchableOpacity>
         </View>
         <ScrollView 
           showsVerticalScrollIndicator={false} 

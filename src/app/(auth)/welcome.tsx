@@ -16,7 +16,7 @@ const Auth = () => {
   return (
     <SafeAreaView className="bg-black-100 h-full">
         <View
-          className="w-full flex items-center justify-center h-full px-6"
+          className="bg-black-100 w-full flex items-center justify-center h-full px-6"
           // style={{
           //   minHeight: Dimensions.get("window").height - 100,
           // }}

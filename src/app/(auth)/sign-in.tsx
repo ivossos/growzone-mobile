@@ -82,7 +82,7 @@ const SignIn = () => {
             </View>
 
             <Button
-              handlePress={() => router.push("/community")}
+              handlePress={() => router.push("/search")}
               containerStyles="w-full mt-6"
               title='Conectar-se'
               isLoading={isSubmitting}
