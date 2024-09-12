@@ -3,32 +3,33 @@ import { StatusBar } from 'expo-status-bar';
 
 import "@/styles/global.css"
 import { colors } from '@/styles/colors';
+import { BottomSheetProvider } from '@/context/bottom-sheet-context';
+import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
+import ReportBottomSheet from '@/components/ui/report-bottom-sheet';
+import { useRef } from 'react';
+import BottomSheet from '@gorhom/bottom-sheet';
 
 export default function PostLayout() {
- 
+  const reportSheetRef = useRef<BottomSheet>(null);
+  const commentSheetRef = useRef<BottomSheet>(null);
+
+  const closeReportBottomSheet = () => {
+    reportSheetRef.current?.close()
+  };
+
   return (
     <>
-    <Stack screenOptions={{
-      headerShown: false,
-      // animation: 'slide_from_right', // Animação ao abrir a tela
-      // animationDuration: 500, // Duração da transição em milissegundos
-      // cardStyleInterpolator: ({ current, layouts }) => {
-      //   return {
-      //     cardStyle: {
-      //       opacity: current.progress,
-      //       transform: [
-      //         {
-      //           translateX: current.progress.interpolate({
-      //             inputRange: [0, 1],
-      //             outputRange: [layouts.screen.width, 0],
-      //           }),
-      //         },
-      //       ],
-      //     },
-      //   };
-      // },
-      }} 
-    /> 
+    <BottomSheetProvider>
+      <Stack screenOptions={{
+        headerShown: false,
+        animation: 'slide_from_right',
+        animationDuration: 500, 
+        }} 
+      />
+
+        <CommentBottomSheet ref={commentSheetRef} />
+        <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+    </BottomSheetProvider>
 
     <StatusBar backgroundColor={colors.black[100]} style="light" />
   </>

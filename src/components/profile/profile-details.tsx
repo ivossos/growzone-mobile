@@ -20,8 +20,6 @@ import { ChevronLeft } from "lucide-react-native";
 import LogoIcon from "@/assets/icons/logo-small.svg";
 import { router } from "expo-router";
 
-const { Navigator, Screen } = createMaterialTopTabNavigator();
-
 export default function ProfileDetails() {
   const user = users[0];
   const onPressItem = () => {
@@ -134,77 +132,6 @@ export default function ProfileDetails() {
 
       <View className="mt-8 h-full ">
         <TabProfile onPress={onPressItem} />
-        {/* <Navigator
-          screenOptions={{
-            tabBarShowLabel: false,
-            tabBarActiveTintColor: "#2CC420",
-            tabBarInactiveTintColor: "#565656",
-            tabBarStyle: {
-              height: 64,
-              justifyContent: "center",
-            },
-            tabBarIndicatorContainerStyle: {
-              backgroundColor: colors.black[100],
-              height: "100%",
-            },
-            tabBarItemStyle: {
-              paddingHorizontal: 16,
-              justifyContent: "center",
-            },
-            tabBarIndicatorStyle: {
-              backgroundColor: colors.primary,
-            },
-            tabBarIconStyle: {
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-            },
-            tabBarPressOpacity: 0.7,
-          }}
-        >
-          <Screen
-            name="post-grid"
-            component={PostGrid}
-            options={{
-              tabBarIcon: ({ focused }) =>
-                focused ? (
-                  <PostGreenIcon width={32} heigth={32} />
-                ) : (
-                  <PostIcon width={32} heigth={32} />
-                ),
-            }}
-          />
-          <Screen
-            name="reels-grid"
-            component={ReelsGrid}
-            options={{
-              tabBarIcon: ({ focused }) => (
-                <View className="flex items-center justify-center w-full h-full">
-                  {focused ? (
-                    <ReelsGreenIcon width={32} heigth={32} />
-                  ) : (
-                    <ReelsIcon width={32} heigth={32} />
-                  )}
-                </View>
-              ),
-            }}
-          />
-          <Screen
-            name="diario"
-            component={PostGrid}
-            options={{
-              tabBarIcon: ({ focused }) => (
-                <View className="flex items-center justify-center w-full h-full">
-                  {focused ? (
-                    <DailyGreenIcon width={32} heigth={32} />
-                  ) : (
-                    <DailyIcon width={32} heigth={32} />
-                  )}
-                </View>
-              ),
-            }}
-          />
-        </Navigator> */}
       </View>
     </ScrollView>
   );

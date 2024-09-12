@@ -1,7 +1,8 @@
 import { postsMock } from "@/constants/mock";
 import { removeQueryString } from "@/lib/utils";
-import { FlatList, Image, StyleSheet, View, Dimensions } from "react-native";
+import { FlatList, Image, StyleSheet, View, Dimensions, TouchableOpacity } from "react-native";
 import { Post } from "./post-card";
+import { router } from "expo-router";
 
 
 const numColumns = 3;
@@ -16,9 +17,9 @@ export default function PostGrid() {
     if(!image) return;
 
     return (
-      <View  className="mb-1" >
+      <TouchableOpacity onPress={() => router.push('/post/1')} className="mb-1" >
         <Image src={image.file!} style={styles.image} resizeMode="cover" />
-      </View>
+      </TouchableOpacity>
     )
 };
 

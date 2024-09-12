@@ -8,9 +8,7 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import CreateBottomSheet from '@/components/ui/create-bottom-sheet';
 import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
 import { BottomSheetProvider } from '@/context/bottom-sheet-context';
-import ReportBottomSheet from '@/components/ui/report-bottom-sheet';
-import { StatusBar } from 'expo-status-bar';
-import { colors } from '@/styles/colors';
+import ReportBottomSheet from '@/components/ui/report-bottom-sheet';;
 import GlobalSearchBottomSheet from '@/components/ui/global-search-bottom-sheet';
 
 type TabIconProps = {
@@ -54,8 +52,8 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
 
 export default function TabLayout() {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const reportSheetRef = useRef<BottomSheet>(null);
   const searchSheetRef = useRef<BottomSheet>(null);
+  const reportSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
 
   const openBottomSheet = () => {

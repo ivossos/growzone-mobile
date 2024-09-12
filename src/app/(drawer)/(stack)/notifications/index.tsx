@@ -14,7 +14,7 @@ const notificationMessages = {
   FOLLOWING: " seguiu seu perfil",
 };
 
-export default function Notifications() {
+export default function NotificationsScreen() {
 
   useFocusEffect(() => console.log('entrou'))
 

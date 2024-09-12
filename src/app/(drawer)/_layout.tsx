@@ -21,7 +21,8 @@ export default function DrawerLayout() {
           drawerPosition: 'right',
           drawerStyle: {
             width: '100%'
-          }
+          },
+          swipeEnabled: false,
         }}
         drawerContent={(props) => <DrawerContent {...props} />}
       >

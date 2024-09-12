@@ -9,17 +9,24 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Switch } from "@/components/Switch";
 import { useState } from "react";
+import { DrawerActions } from "@react-navigation/native";
 
 export default function PreferenceCenter() {
   const [isActive, setIsActive] = useState(true);
   const toggle = () => setIsActive(prev => !prev)
   const navigation = useNavigation();
   const { title, description, Icon } = screens['preference-center'];
+
+  const toggleMenu = () => {
+    navigation.goBack()
+    navigation.dispatch(DrawerActions.openDrawer())
+  };
+
   return (
     <View className="flex-1 bg-black-100 overflow-hidden">
       <SafeAreaView>
         <View className="flex flex-row items-center gap-4 px-6 h-[72px] border-b-[1px] border-black-80">
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={toggleMenu}>
             <ArrowLeft className="w-6 h-6" color={colors.brand.white} />
           </TouchableOpacity>
           <Text className="text-white text-base font-semibold">{title}</Text>

@@ -3,13 +3,15 @@ import Logo from '@/assets/icons/logo.svg';
 import Coin from '@/assets/icons/coin.svg';
 import Bell from '@/assets/icons/bell.svg';
 import MenuBurger from '@/assets/icons/menu-burger.svg';
-import { router, useNavigation } from "expo-router";
+import { router, useNavigation, useRouter } from "expo-router";
 import { DrawerActions } from "@react-navigation/native";
 
 
 export function Header() {
   const navigation = useNavigation();
+  const router = useRouter();
   const toggleMenu = () => navigation.dispatch(DrawerActions.toggleDrawer());
+  const goToNotifications = () => router.push('/notifications');
   
   return (
     <View className="flex flex-row justify-between items-center h-[72px] px-6 border-b-[1px] border-black-80">
@@ -19,7 +21,7 @@ export function Header() {
           <Coin width={24} height={24} />
           <Text className="text-white font-bold text-lg">582</Text>
         </TouchableOpacity> */}
-        <TouchableOpacity activeOpacity={0.7} onPress={() => router.navigate('/notifications')}>
+        <TouchableOpacity activeOpacity={0.7} onPress={(goToNotifications)}>
           <Bell width={24} height={24} />
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={0.7} onPress={toggleMenu}>
