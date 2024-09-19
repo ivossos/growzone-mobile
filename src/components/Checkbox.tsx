@@ -2,24 +2,26 @@ import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 
 import { cn } from '../lib/utils';
+import { Check } from 'lucide-react-native';
+import { colors } from '@/styles/colors';
 
 interface CheckboxProps extends React.ComponentPropsWithoutRef<typeof View> {
   label?: string;
   labelClasses?: string;
   checkboxClasses?: string;
+  isChecked: boolean;
+  toggleCheckbox: () => void;
 }
 function Checkbox({
   label,
   labelClasses,
   checkboxClasses,
   className,
+  isChecked,
+  toggleCheckbox,
   ...props
 }: CheckboxProps) {
-  const [isChecked, setChecked] = useState(false);
 
-  const toggleCheckbox = () => {
-    setChecked(prev => !prev);
-  };
 
   return (
     <View
@@ -29,14 +31,14 @@ function Checkbox({
       <TouchableOpacity onPress={toggleCheckbox}>
         <View
           className={cn(
-            'w-4 h-4 border border-black-80 rounded bg-background flex justify-center items-center',
+            'w-6 h-6 border border-black-80 bg-black-70 rounded bg-background flex justify-center items-center',
             {
-              'bg-foreground': isChecked,
+              'bg-primary': isChecked,
             },
             checkboxClasses
           )}
         >
-          {isChecked && <Text className="text-background text-xs">✓</Text>}
+          {isChecked && <Check size={18} color={colors.brand.white}/>}
         </View>
       </TouchableOpacity>
       {label && (

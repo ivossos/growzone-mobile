@@ -10,8 +10,31 @@ import SecurityIcon from "@/assets/icons/security.svg";
 import CloseIcon from "@/assets/icons/close.svg";
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '@/styles/colors';
+import { useAuth } from '@/hooks/use-auth';
+import { Redirect, router, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 export default function DrawerLayout() {
+  const { user, signOut, isLoadingUserStorage } = useAuth();
+  const router = useRouter();
+ 
+  useEffect(() => {
+    if (user?.id && !isLoadingUserStorage) {
+      if (!user.is_verified) {
+        router.replace('/verify-user');
+      }
+    }
+  }, [user, isLoadingUserStorage, router]);
+
+  const logout = async () => {
+    await signOut();
+    router.replace("/sign-in");
+  };
+
+  if (!user?.id && !isLoadingUserStorage) {
+    return <Redirect href="/sign-in" />;
+  }
+
   return (
     <>
       <Drawer
@@ -99,7 +122,7 @@ export default function DrawerLayout() {
           listeners={{
             drawerItemPress: (e) => {
               e.preventDefault();
-              console.log('logout')
+              logout();
             },
           }}
           name="logout"

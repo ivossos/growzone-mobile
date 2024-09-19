@@ -51,7 +51,7 @@ export default function Splash() {
 
   function onEndSplash() {
     setTimeout(() => {
-      router.replace("/home");
+      router.replace("/age-decision");
     }, 1000);
   }
 

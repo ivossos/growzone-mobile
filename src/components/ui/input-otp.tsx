@@ -134,8 +134,8 @@ export default function OtpInput({
           {
             position: 'absolute',
             left: 0,
-            opacity: 0, // Sempre escondido
-            zIndex: -1, // Sempre atrás
+            opacity: 0,
+            zIndex: -1,
             color: 'transparent',
             textAlign: 'center',
           },

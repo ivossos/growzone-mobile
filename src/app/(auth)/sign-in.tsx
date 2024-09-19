@@ -1,37 +1,107 @@
-import { useState } from "react";
+import { z } from "zod";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ScrollView, Dimensions, Alert, Image, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity } from "react-native";
 import images from "@/constants/images";
+import Toast from 'react-native-toast-message';
 
 import Button from "@/components/ui/button";
 import { ArrowRight, AtSign, Lock } from "lucide-react-native";
 import Divider from "@/components/ui/divider";
 import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/Checkbox";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useAuth } from "@/hooks/use-auth";
+import { useEffect, useState } from "react";
+import { storageGetLogin, storageRemoveLogin, storageSaveLogin } from "@/storage/storage-login";
+import { StatusBar } from "expo-status-bar";
+
+export const SigninValidation = z.object({
+  username: z.string(),
+  password: z.string()
+  .min(6, "Senha fraca demais")
+  .max(30, "Máximo é 30 caracteres"),
+})
 
 
 const SignIn = () => {
-  const [isSubmitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
+  const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  
+  const { signIn } = useAuth();
+
+  const form = useForm({
+    resolver: zodResolver(SigninValidation),
+    defaultValues: {
+      username: '',
+      password: '',
+    }
   });
 
-  const submit = async () => {
-    if (form.email === "" || form.password === "") {
-      Alert.alert("Error", "Please fill in all fields");
+  async function submit(values: z.infer<typeof SigninValidation>) {
+    try {
+      setIsLoading(true);
+      handleRememberMe(
+        values.username, 
+        values.password
+      );
+      await signIn(
+        values.username, 
+        values.password
+      );
+      
+    } catch(err) {
+      console.log('error login', err)
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Seu usuario ou senha estão incorretos 👋'
+      });
+      return;
+    } finally {
+      setIsLoading(false);
     }
 
-    setSubmitting(true);
-
-    Alert.alert("Success", "User signed in successfully");
-      router.replace("/home");
+    router.replace("/home");
   };
 
+  async function handleRememberMe(username: string, password: string) {
+    try {
+      if (rememberMe) {
+        await storageSaveLogin({ username, password, remember: true});
+        
+      } else {
+        await storageRemoveLogin()
+      }
+    } catch (e) {
+      console.error('Erro ao salvar os dados no AsyncStorage', e);
+    }
+  };
+
+  useEffect(() => {
+    const loadStoredData = async () => {
+      try {
+        const loginData = await storageGetLogin();
+        if (loginData) {
+          const { username, password, remember } = loginData;
+          form.setValue('username', username);
+          form.setValue('password', password);
+          setRememberMe(remember);
+        }
+      } catch (e) {
+        console.error('Erro ao carregar os dados do AsyncStorage', e);
+      }
+    };
+
+    loadStoredData();
+  }, []);
+
+
   return (
+    <>
     <SafeAreaView className="bg-black-100 h-full">
-      <ScrollView>
+      <ScrollView className="bg-black-100 pb-10">
         <View
           className="w-full flex items-center h-full px-6"
           style={{
@@ -51,28 +121,48 @@ const SignIn = () => {
               </Text>
             </View>
            </View>
-
-            <FormField
-              title="Email"
-              placeholder="Digite seu email"
-              value={form.email}
-              handleChangeText={(e) => setForm({ ...form, email: e })}
-              otherStyles="mt-6"
-              keyboardType="email-address"
-              leftIcon={AtSign}
+           <Controller
+            control={form.control}
+            name="username"
+            render={({  fieldState, field: { onChange, onBlur, value } }) => (
+                <FormField
+                  title="Nome de usuário"
+                  placeholder="Digite seu nome de usuário"
+                  otherStyles="mt-6"
+                  leftIcon={AtSign}
+                  onBlur={onBlur}
+                  value={value}
+                  handleChangeText={onChange}
+                  error={fieldState.error?.message}
+                />
+              )}
             />
 
-            <FormField
-              title="Password"
-              placeholder="•••••••••"
-              value={form.password}
-              handleChangeText={(e) => setForm({ ...form, password: e })}
-              otherStyles="mt-6"
-              leftIcon={Lock}
+          <Controller
+            control={form.control}
+            name="password"
+            render={({  fieldState, field: { onChange, onBlur, value } }) => (
+                <FormField
+                  title="Password"
+                  type="password"
+                  placeholder="•••••••••"
+                  otherStyles="mt-6"
+                  leftIcon={Lock}
+                  onBlur={onBlur}
+                  value={value}
+                  handleChangeText={onChange}
+                  error={fieldState.error?.message}
+                />
+              )}
             />
 
             <View className="flex flex-row justify-between mt-2 w-full">
-              <Checkbox label="Lembrar-me" labelClasses="text-lg font-medium text-black-30"/>
+              <Checkbox 
+                label="Lembrar-me" 
+                labelClasses="text-lg font-medium text-black-30" 
+                isChecked={rememberMe}
+                toggleCheckbox={() => setRememberMe((prevState) => !prevState)}
+              />
 
               <TouchableOpacity 
                 className='flex flex-row items-center gap-2 mt-2'
@@ -82,10 +172,10 @@ const SignIn = () => {
             </View>
 
             <Button
-              handlePress={() => router.push("/search")}
+              handlePress={form.handleSubmit(submit)}
               containerStyles="w-full mt-6"
               title='Conectar-se'
-              isLoading={isSubmitting}
+              isLoading={isLoading}
             />
 
             <Divider text="Ou" />
@@ -105,6 +195,8 @@ const SignIn = () => {
         </View>
       </ScrollView>
     </SafeAreaView>
+    <StatusBar backgroundColor="#000000" style="light" />
+    </>
   );
 };
 

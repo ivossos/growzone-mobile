@@ -1,48 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { FormField } from "@/components/ui/form-field";
 import Button from "@/components/ui/button";
-import { StepProps } from "@/app/(auth)/sign-up";
+import { StepProps } from "@/app/(auth)/forgot-password";
 import OtpInput from "@/components/ui/input-otp";
 import { Text, TouchableOpacity, View } from "react-native";
 import { RefreshCw } from "lucide-react-native";
 import { colors } from "@/styles/colors";
-import { verifyCode } from "@/api/user";
-import axios from "axios";
+import { verifyCode } from "@/api/auth/verify-code";
 import Toast from "react-native-toast-message";
 import { resendEmailCode } from "@/api/user/resend-email-code";
+import { recoverPassword } from "@/api/auth/recover-password";
 
 export default function CodeStep({ control, onNext = () => {} }: StepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [timer, setTimer] = useState<number>(60);
-  const { trigger, getValues, setError } = useFormContext();
+  const { trigger, getValues, setValue } = useFormContext();
 
   async function handleNextStep() {
     const isValid = await trigger("code");
     if (!isValid) return;
 
+    const { email, code } = getValues();
+
     try {
       setIsLoading(true);
-      const { code, email } = getValues();
-      await verifyCode({ email, code: code });
+      const { reset_token } = await verifyCode(email, code);
+      setValue("resetToken", reset_token);
       onNext();
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setError("code", {
-          type: "manual",
-          message:
-            "O código de verificação está incorreto. Por favor, tente novamente.",
-        });
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Opss",
-          text2:
-            "Ocorreu um erro ao validar seu código, tente novamente mais tarde.",
-        });
+      console.log("erro on validate código");
+      setValue("resetToken", "");
 
-      }
+      Toast.show({
+        type: "error",
+        text1: "Opss",
+        text2:
+          "Ocorreu um erro ao validar seu código, tente novamente mais tarde.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -50,16 +46,13 @@ export default function CodeStep({ control, onNext = () => {} }: StepProps) {
 
   async function resendCodeEmail() {
     if (isResendDisabled) return;
-    
-    const { email } = getValues();
-
-    console.log('values', email)
 
     try {
-      await resendEmailCode({email});
+      const { email } = getValues();
+      await recoverPassword(email);
       Toast.show({
         type: "success",
-        text1: "Código reenviado com sucesso",
+        text1: "Código enviado com sucesso",
         text2: "Verifique sua caixa de entrada ou seu spam.",
       });
 

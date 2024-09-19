@@ -2,44 +2,39 @@ import React, { useState } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 import { FormField } from '@/components/ui/form-field';
 import Button from '@/components/ui/button';
-import { StepProps } from '@/app/(auth)/sign-up';
+import { StepProps } from '@/app/(auth)/forgot-password';
 import Toast from 'react-native-toast-message';
-import { findEmail } from '@/api/user/find-email';
+import { recoverPassword } from '@/api/auth/recover-password';
 
 export default function EmailStep({ control, onNext = () => {} }: StepProps) {
+  const { trigger, getValues } = useFormContext()
   const [isLoading, setIsLoading] = useState(false);
-  const { trigger, getValues, setError} = useFormContext()
+  const [isResendDisabled, setIsResendDisabled] = useState(false);
+  const [timer, setTimer] = useState<number>(60);
 
   async function handleNextStep() {
-    const isValid = await trigger(['email']);
+    const isValid = await trigger('email');
     if (!isValid) return;
 
     const { email } = getValues();
 
     try {
       setIsLoading(true);
-      const res = await findEmail(email);
-      if(res.status) {
-        setError("email", {
-          type: "manual",
-          message: "Esse e-mail já está cadastrado",
-        });
-        return
-      }
+      await recoverPassword(email);
       onNext();
     } catch (error) {
-      console.log('error on search email', error)
+      console.log('erro send email')
 
       Toast.show({
         type: 'error',
         text1: 'Opss',
-        text2: 'Erro cadastrar", "Tente novamente mais tarde.'
+        text2: 'Ocorreu um erro ao enviar código, tente novamente mais tarde.'
       });
-      return;
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
+
   return (
     <>
       <Controller
@@ -52,7 +47,7 @@ export default function EmailStep({ control, onNext = () => {} }: StepProps) {
             otherStyles="mt-6"
             keyboardType="email-address"
             onBlur={onBlur}
-            value={value}
+            value={value || ''}
             handleChangeText={onChange}
             error={fieldState.error?.message}
           />

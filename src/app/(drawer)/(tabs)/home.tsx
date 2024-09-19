@@ -10,6 +10,7 @@ import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '@/styles/colors';
+import { getCurrentUser } from '@/api/auth/get-current-user';
 
 
 export default function HomeScreen() {
@@ -19,12 +20,14 @@ export default function HomeScreen() {
 
   const openBottomSheet = (post: any) => {
     setSelectedPost(post);
-    bottomSheetRef.current?.snapToIndex(1); // ou o índice que desejar
+    bottomSheetRef.current?.snapToIndex(1);
   };
 
-  function fetchData() {
+  async function fetchData() {
+    const user = await getCurrentUser();
     return new Promise((resolve, reject) => {
       setTimeout(() => {
+        console.log('user', user)
         resolve("")
       }, 2000);
     });

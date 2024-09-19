@@ -3,41 +3,41 @@ import { Controller, useFormContext } from "react-hook-form";
 import { FormField } from "@/components/ui/form-field";
 import Button from "@/components/ui/button";
 import { Lock } from "lucide-react-native";
-import { StepProps } from "@/app/(auth)/sign-up";
+import { StepProps } from "@/app/(auth)/forgot-password";
+import { resetPassword } from "@/api/auth/reset-password";
 import Toast from "react-native-toast-message";
-import { createUser } from "@/api/user";
 
 export default function PasswordStep({
   control,
-  onNext
+  onSubmit
 }: StepProps) {
-  
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
+
   const { trigger, getValues } = useFormContext()
 
   async function handleNextStep() {
     const isValid = await trigger(['password', 'confirmPassword']);
     if (!isValid) return;
 
-    const { username, email, password } = getValues();
+    const { password, resetToken } = getValues();
 
     try {
       setIsLoading(true);
-      await createUser({ username, email, password });
-      onNext();
+      await resetPassword(resetToken, password);
+      onSubmit();
     } catch (error) {
-      console.log('error on create user', error)
+      console.log('erro send email')
 
       Toast.show({
         type: 'error',
         text1: 'Opss',
-        text2: 'Erro cadastrar", "Tente novamente mais tarde.'
+        text2: 'Ocorreu um erro ao enviar sua nova senha, tente novamente mais tarde.'
       });
-      return;
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
+
   return (
     <>
       <Controller

@@ -2,28 +2,24 @@ import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, ScrollView, Dimensions, TouchableOpacity, Image } from "react-native";
 import images from "@/constants/images";
-
 import { ArrowLeft } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Progress } from "@/components/Progress";
 import { z } from "zod";
 import { Control, FormProvider, useForm, UseFormHandleSubmit } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import UsernameStep from "@/components/form/sign-up/username-step";
-import EmailStep from "@/components/form/sign-up/email-step";
-import CodeStep from "@/components/form/sign-up/code-step";
-import PasswordStep from "@/components/form/sign-up/password-step";
-import PhoneStep from "@/components/form/sign-up/phone-step";
-import ChannelStep from "@/components/form/sign-up/channel-step";
-import TermsStep from "@/components/form/sign-up/terms-step";
+import EmailStep from "@/components/form/forgot-password/email-step";
+import CodeStep from "@/components/form/forgot-password/code-step";
+import PasswordStep from "@/components/form/forgot-password/password-step";
+import PhoneStep from "@/components/form/forgot-password/phone-step";
+import ChannelStep from "@/components/form/forgot-password/channel-step";
 import { router } from "expo-router";
+import Toast from "react-native-toast-message";
+import { resendEmailCode } from "@/api/user/resend-email-code";
+import { recoverPassword } from "@/api/auth/recover-password";
 
 const signUpSchema = z
   .object({
-    username: z
-      .string()
-      .min(1, "Username é obrigatório")
-      .max(15, "Nome deve ter no máximo 15 caracteres."),
     fieldType: z.enum(['email', 'phone']),
     email: z
       .string()
@@ -33,6 +29,7 @@ const signUpSchema = z
       .string()
       .optional(),
     code: z.string(),
+    resetToken: z.string(),
     password: z
       .string()
       .min(6, "Senha fraca demais")
@@ -58,13 +55,12 @@ type FieldKeys = keyof SignUpSchema;
 export interface StepProps {
   control: Control<SignUpSchema>;
   handleSubmit: UseFormHandleSubmit<SignUpSchema>;
-  onSubmit: (data: SignUpSchema) => void;
+  onSubmit: () => void;
   onNext: (nextStep?: 'email' | 'phone') => void;
   onPrev?: () => void;
 }
 
 const initialSteps = [
-  
   {
     progress: 20,
     Component: ChannelStep,
@@ -99,7 +95,6 @@ const ForgotPassword = () => {
     resolver: zodResolver(signUpSchema),
     mode: "all",
     defaultValues: {
-      username: "",
       email: "",
       phone: "",
       code: "",
@@ -108,6 +103,9 @@ const ForgotPassword = () => {
     },
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResendDisabled, setIsResendDisabled] = useState(false);
+  const [timer, setTimer] = useState<number>(60);
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(initialSteps[0].progress);
   const [steps, setSteps] = useState(initialSteps);
@@ -140,22 +138,61 @@ const ForgotPassword = () => {
     }
   };
 
-  const onSubmit = (data: SignUpSchema) => {
-    console.log(data);
-    router.replace("/");
+  async function resendCodeEmail() {
+    if (isResendDisabled) return;
+
+    try {
+      const { email } = methods.getValues();
+      
+      if (!email) return;
+
+      await resendEmailCode({ email });
+      
+      Toast.show({
+        type: 'success',
+        text1: 'Código enviado com sucesso',
+        text2: 'Verifique sua caixa de entrada ou seu spam.'
+      });
+
+      setIsResendDisabled(true);
+      setTimer(60);
+
+      const interval = setInterval(() => {
+        setTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            setIsResendDisabled(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Erro ao enviar código');
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Ocorreu um erro ao enviar código, tente novamente mais tarde.'
+      });
+    }
+  }
+
+  const onSubmit = () => {
+    router.replace("/sign-in");
   };
 
   const CurrentComponent = steps[currentStep].Component;
 
   return (
-    <SafeAreaView className="bg-black-100 h-full">
-      <View className="flex flex-row items-center justify-between w-full px-6 min-h-14 border-b-[1px] border-black-80">
+    <SafeAreaView style={{ flex: 1 }} className="bg-black-100 h-full" edges={['top']}>
+      <View className="flex flex-row items-center justify-between bg-black-100 w-full px-6 min-h-14 border-b-[1px] border-black-80">
         <TouchableOpacity activeOpacity={0.7} onPress={onPrev}>
           <ArrowLeft width={24} height={24} color={colors.brand.white} />
         </TouchableOpacity>
         <Progress value={progress} className="max-h-1 max-w-20" />
       </View>
-      <ScrollView>
+      <ScrollView className="bg-black-100">
         <View
           className="w-full flex items-center h-full px-6"
           style={{
@@ -170,7 +207,7 @@ const ForgotPassword = () => {
             />
 
             <View className="flex gap-2">
-              <Text className="text-4xl font-semibold text-white text-center">
+              <Text className="text-3xl font-semibold text-white text-center">
                 {currentStep === 0
                   ? "Esqueceu sua senha?"
                   : currentStep === 1
@@ -190,16 +227,15 @@ const ForgotPassword = () => {
                   : currentStep === 1
                   ? "Preencha abaixo com seu email para receber as instruções necessárias para criar uma nova senha."
                   : currentStep === 2
-                  ? "Informe o código de 6 dígitos enviado no email pedro*****@gmail.com para continuar."
+                  ? "Insira o código enviado para seu e-mail."
                   : currentStep === 3
-                  ? "Digite uma nova senha e confirme para recuperar o acesso à sua conta."
+                  ? "Crie uma nova senha."
                   : currentStep === 4
-                  ? ""
-                  : "Leia e aceite a nossa política de privacidade."}
+                  ? "Leia e aceite os Termos e Condições."
+                  : ""}
               </Text>
             </View>
           </View>
-
           <FormProvider {...methods}>
             <CurrentComponent
               control={methods.control}

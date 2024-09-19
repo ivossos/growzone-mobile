@@ -38,7 +38,6 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <View className="flex-1 bg-black-100 overflow-hidden">
-        {/* Cabeçalho */}
         {/* <View className="flex flex-row items-center gap-4 px-6 h-[72px] border-b-[1px] border-black-80">
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft className="w-6 h-6" color={colors.brand.white} />

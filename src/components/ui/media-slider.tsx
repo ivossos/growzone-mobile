@@ -50,7 +50,6 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) =>
         />
       );
     } else if (item.type === 'video') {
-      console.log('items', item)
       return <VideoPlayer source={item.hls_url!}/>
     }
     return null;

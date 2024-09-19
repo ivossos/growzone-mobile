@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ScrollView, Dimensions, TouchableOpacity, Image } from "react-native";
+import { View, Text, ScrollView, Dimensions, TouchableOpacity, Image, Alert } from "react-native";
 import images from "@/constants/images";
 
 import { ArrowLeft } from "lucide-react-native";
@@ -17,18 +17,25 @@ import PhoneStep from "@/components/form/sign-up/phone-step";
 import ChannelStep from "@/components/form/sign-up/channel-step";
 import TermsStep from "@/components/form/sign-up/terms-step";
 import { router } from "expo-router";
+import { createUser, verifyCode } from "@/api/user";
+import { findUsername } from "@/api/user/find-username";
+import { findEmail } from "@/api/user/find-email";
+import axios from "axios";
+
 
 const signUpSchema = z
   .object({
     username: z
       .string()
-      .min(1, "Username é obrigatório")
-      .max(15, "Nome deve ter no máximo 15 caracteres."),
+      .min(1, "Nome de usuário é obrigatório")
+      .max(15, "Nome de usuário deve ter no máximo 15 caracteres.")
+      .regex(/^(?![.])(?!.*[.]{2})(?!.*[.]$)[A-Za-z\d._]+$/, {
+        message: "Nome de usuário inválido.",
+      }),
     fieldType: z.enum(['email', 'phone']),
     email: z
       .string()
-      .email("Digite um e-mail válido")
-      .optional(),
+      .email("Digite um e-mail válido"),
     phone: z
       .string()
       .optional(),
@@ -36,7 +43,10 @@ const signUpSchema = z
     password: z
       .string()
       .min(6, "Senha fraca demais")
-      .max(30, "Máximo é 30 caracteres"),
+      .max(30, "Máximo é 30 caracteres")
+      .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$!%&*])[A-Za-z\d@#$!%&*]+$/, {
+        message: "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+      }),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -61,6 +71,9 @@ export interface StepProps {
   onSubmit: (data: SignUpSchema) => void;
   onNext: (nextStep?: 'email' | 'phone') => void;
   onPrev?: () => void;
+  isLoading: boolean;
+  timer?: number;
+  onResendCode?: () => void;
 }
 
 const initialSteps = [
@@ -76,13 +89,13 @@ const initialSteps = [
   },
   {
     progress: 60,
-    Component: CodeStep,
-    fields: ["code"] as FieldKeys[]
+    Component: PasswordStep,
+    fields: ["password", "confirmPassword"] as FieldKeys[], 
   },
   {
     progress: 80,
-    Component: PasswordStep,
-    fields: ["password", "confirmPassword"] as FieldKeys[]
+    Component: CodeStep,
+    fields: ["code"] as FieldKeys[]
   },
   {
     progress: 100,
@@ -117,6 +130,7 @@ const SignUp = () => {
     },
   });
 
+  const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [progress, setProgress] = useState(initialSteps[0].progress);
   const [steps, setSteps] = useState(initialSteps);
@@ -124,6 +138,8 @@ const SignUp = () => {
 
   const onNext = async (nextStep?: 'email' | 'phone') => {
     const { fields } = steps[currentStep];
+    const formData = methods.getValues();
+    
     if (fields.length > 0) {
       const isValid = await trigger(fields);
       if (!isValid) return;
@@ -140,31 +156,38 @@ const SignUp = () => {
       setCurrentStep((prev) => prev + 1);
       setProgress(steps[currentStep + 1]?.progress || 100);
     }
+
+    console.log('step -> ', currentStep)
+    
   };
 
   const onPrev = () => {
+    if(currentStep === 4) {
+      router.back()
+    } 
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
       setProgress(steps[currentStep - 1]?.progress || 0);
+    } else {
+      router.back()
     }
   };
 
-  const onSubmit = (data: SignUpSchema) => {
-    console.log(data);
-    router.replace("/");
+  const onSubmit = async (data: SignUpSchema) => {
+    router.replace("/sign-in");
   };
 
   const CurrentComponent = steps[currentStep].Component;
 
   return (
-    <SafeAreaView className="bg-black-100 h-full">
-      <View className="flex flex-row items-center justify-between w-full px-6 min-h-14 border-b-[1px] border-black-80">
+    <SafeAreaView className="bg-black-100 h-full" style={{ flex: 1 }} edges={['top']}>
+      <View className="flex flex-row items-center justify-between bg-black-100 w-full px-6 min-h-14 border-b-[1px] border-black-80">
         <TouchableOpacity activeOpacity={0.7} onPress={onPrev}>
           <ArrowLeft width={24} height={24} color={colors.brand.white} />
         </TouchableOpacity>
         <Progress value={progress} className="max-h-1 max-w-20" />
       </View>
-      <ScrollView>
+      <ScrollView className="bg-black-100">
         <View
           className="w-full flex items-center h-full px-6"
           style={{
@@ -184,9 +207,9 @@ const SignUp = () => {
                   ? "Crie um nome de usuário"
                   : currentStep === 1
                   ? "Escolha o canal para receber o código"
-                  : currentStep === 2
-                  ? "Digite o código de verificação"
                   : currentStep === 3
+                  ? "Digite o código de verificação"
+                  : currentStep === 4
                   ? "Crie uma senha de acesso"
                   : "Política de privacidade"}
               </Text>
@@ -196,9 +219,9 @@ const SignUp = () => {
                   ? "Seu nome de usuário será único, permitindo que outros membros o encontrem facilmente."
                   : currentStep === 1
                   ? "Escolha como você deseja receber seu código de verificação."
-                  : currentStep === 2
-                  ? "Digite o código que você recebeu via email ou celular."
                   : currentStep === 3
+                  ? "Digite o código que você recebeu via email ou celular."
+                  : currentStep === 4
                   ? "Escolha uma senha forte para proteger sua conta."
                   : "Leia e aceite a nossa política de privacidade."}
               </Text>
@@ -212,6 +235,7 @@ const SignUp = () => {
               onSubmit={onSubmit}
               onNext={onNext}
               onPrev={onPrev}
+              isLoading={isLoading}
             />
           </FormProvider>
         </View>
