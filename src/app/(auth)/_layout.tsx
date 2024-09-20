@@ -54,6 +54,18 @@ export default function AuthLayout() {
         }}
       />
       <Stack.Screen
+        name="terms"
+        options={{
+          headerShown: false,
+        }}
+      />
+       <Stack.Screen
+        name="term-detail"
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
         name="forgot-password"
         options={{
           headerShown: false,

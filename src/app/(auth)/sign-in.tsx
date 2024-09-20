@@ -128,7 +128,7 @@ const SignIn = () => {
                 <FormField
                   title="Nome de usuário"
                   placeholder="Digite seu nome de usuário"
-                  otherStyles="mt-6"
+                  otherStyles="mt-6 w-full"
                   leftIcon={AtSign}
                   onBlur={onBlur}
                   value={value}
@@ -146,7 +146,7 @@ const SignIn = () => {
                   title="Password"
                   type="password"
                   placeholder="•••••••••"
-                  otherStyles="mt-6"
+                  otherStyles="mt-6 w-full"
                   leftIcon={Lock}
                   onBlur={onBlur}
                   value={value}

@@ -6,12 +6,15 @@ import { Lock } from "lucide-react-native";
 import { StepProps } from "@/app/(auth)/sign-up";
 import Toast from "react-native-toast-message";
 import { createUser } from "@/api/user";
+import { Text, View } from "react-native";
+import { Checkbox } from "@/components/Checkbox";
+import { router } from "expo-router";
 
 export default function PasswordStep({
   control,
   onNext
 }: StepProps) {
-  
+  const [isAccepted, setIsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { trigger, getValues } = useFormContext()
 
@@ -76,10 +79,26 @@ export default function PasswordStep({
         )}
       />
 
+      <View className="flex flex-row items-center gap-2 mt-2 w-full">
+        <Checkbox 
+          labelClasses="text-base font-medium text-black-30" 
+          isChecked={isAccepted}
+          toggleCheckbox={() => setIsAccepted((prevState) => !prevState)}
+        />
+        <Text className="text-lg font-regular text-black-30 flex-1 flex-wrap">
+        Ao se cadastrar você concorda com os nossos{' '}
+        <Text className="text-brand-green" onPress={() => router.push('/terms')}>
+          termos de uso, políticas de privacidade, uso de dados e normas da comunidade
+        </Text>
+        .
+      </Text>
+      </View>
+
       <Button
         handlePress={handleNextStep}
         containerStyles="w-full mt-6"
         title="Continuar"
+        isDisabled={!isAccepted}
         isLoading={isLoading}
       />
     </>

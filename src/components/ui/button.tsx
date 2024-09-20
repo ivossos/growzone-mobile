@@ -10,6 +10,7 @@ interface Props {
   containerStyles?: string;
   textStyles?: string;
   isLoading?: boolean;
+  isDisabled?: boolean;
   variant?: 'default' | 'secondary' | 'outline';
   leftIcon?: LucideIcon;
   rightIcon?: LucideIcon;
@@ -21,14 +22,15 @@ const Button: React.FC<Props> = ({
   containerStyles,
   textStyles,
   isLoading,
+  isDisabled,
   variant = 'default',
   leftIcon: LeftIcon,
   rightIcon: RightIcon
 }) => {
   const buttonClassName = variant === 'outline'
-    ? `border border-primary active:bg-primary rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center group-isolate ${containerStyles} ${isLoading ? "opacity-50" : ""}`
-    : variant === 'default' ? `bg-primary rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center gap-2 ${containerStyles} ${isLoading ? "opacity-50" : ""}`
-    : `bg-black-80 rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center gap-2 ${containerStyles} ${isLoading ? "opacity-50" : ""}`;
+    ? `border border-primary active:bg-primary rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center group-isolate ${containerStyles} ${(isLoading || isDisabled) ? "opacity-50" : ""}`
+    : variant === 'default' ? `bg-primary rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center gap-2 ${containerStyles} ${(isLoading || isDisabled) ? "opacity-50" : ""}`
+    : `bg-black-80 rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center gap-2 ${containerStyles} ${(isLoading || isDisabled) ? "opacity-50" : ""}`;
 
 
   const textClassName = variant === 'outline'
@@ -43,7 +45,7 @@ const Button: React.FC<Props> = ({
       onPress={handlePress}
       activeOpacity={0.7}
       className={buttonClassName}
-      disabled={isLoading}
+      disabled={isLoading || isDisabled}
     >
       {LeftIcon && (
         <LeftIcon 
