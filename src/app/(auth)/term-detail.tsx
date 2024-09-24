@@ -12,7 +12,7 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InfoCard from "@/components/ui/info-card";
 
-export default function Terms() {
+export default function TermDetail() {
   const navigation = useNavigation();
   const { title, description, Icon } = screens['preference-center'];
   return (

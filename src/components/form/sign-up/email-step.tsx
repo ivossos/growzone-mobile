@@ -5,6 +5,7 @@ import Button from '@/components/ui/button';
 import { StepProps } from '@/app/(auth)/sign-up';
 import Toast from 'react-native-toast-message';
 import { findEmail } from '@/api/user/find-email';
+import { Text, View } from 'react-native';
 
 export default function EmailStep({ control, onNext = () => {} }: StepProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +43,14 @@ export default function EmailStep({ control, onNext = () => {} }: StepProps) {
   }
   return (
     <>
+      <View className="flex gap-2 pt-6 mb-4">
+        <Text className="text-4xl font-semibold text-white text-center">
+          Qual é seu e-mail ?
+        </Text>
+        <Text className="text-lg font-regular text-black-30 text-center ">
+          Pedimos seu e-mail para facilitar o acesso na Growzone.
+        </Text>
+      </View>
       <Controller
         control={control}
         name="email"

@@ -12,7 +12,7 @@ import axios from "axios";
 import Toast from "react-native-toast-message";
 import { resendEmailCode } from "@/api/user/resend-email-code";
 
-export default function CodeStep({ control, onNext = () => {} }: StepProps) {
+export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [timer, setTimer] = useState<number>(60);
@@ -26,7 +26,7 @@ export default function CodeStep({ control, onNext = () => {} }: StepProps) {
       setIsLoading(true);
       const { code, email } = getValues();
       await verifyCode({ email, code: code });
-      onNext();
+      onSubmit();
     } catch (error) {
       if (axios.isAxiosError(error)) {
         setError("code", {
@@ -52,8 +52,6 @@ export default function CodeStep({ control, onNext = () => {} }: StepProps) {
     if (isResendDisabled) return;
     
     const { email } = getValues();
-
-    console.log('values', email)
 
     try {
       await resendEmailCode({email});
@@ -87,48 +85,59 @@ export default function CodeStep({ control, onNext = () => {} }: StepProps) {
   }
 
   return (
-    <View className="flex flex-col w-full">
-      <Controller
-        control={control}
-        name="code"
-        render={({ fieldState, field: { onChange, value } }) => (
-          <OtpInput
-            title="Código"
-            onComplete={onChange}
-            defaultValue={value}
-            otpLength={6}
-            errorMessage={fieldState.error?.message}
-          />
-        )}
-      />
-
-      <TouchableOpacity
-        className="flex flex-row items-center gap-2 mt-2"
-        onPress={() => resendCodeEmail()}
-        disabled={isResendDisabled}
-      >
-        <RefreshCw
-          width={16}
-          height={16}
-          color={isResendDisabled ? colors.black[70] : colors.brand.white}
-        />
-        <Text
-          className={`text-lg font-medium ${
-            isResendDisabled ? "text-black-70" : "text-brand-grey"
-          }`}
-        >
-          {isResendDisabled
-            ? `Reenviar código em ${timer}s`
-            : "Reenviar código"}
+    <>
+      <View className="flex gap-2 pt-6 mb-4">
+        <Text className="text-4xl font-semibold text-white text-center">
+          Digite o código de verificação
         </Text>
-      </TouchableOpacity>
 
-      <Button
-        handlePress={handleNextStep}
-        containerStyles="w-full mt-6"
-        title="Continuar"
-        isLoading={isLoading}
-      />
-    </View>
+        <Text className="text-lg font-regular text-black-30 text-center ">
+          Digite o código que você recebeu via email ou celular.
+        </Text>
+      </View>
+      <View className="flex flex-col w-full">
+        <Controller
+          control={control}
+          name="code"
+          render={({ fieldState, field: { onChange, value } }) => (
+            <OtpInput
+              title="Código"
+              onComplete={onChange}
+              defaultValue={value}
+              otpLength={6}
+              errorMessage={fieldState.error?.message}
+            />
+          )}
+        />
+
+        <TouchableOpacity
+          className="flex flex-row items-center gap-2 mt-2"
+          onPress={() => resendCodeEmail()}
+          disabled={isResendDisabled}
+        >
+          <RefreshCw
+            width={16}
+            height={16}
+            color={isResendDisabled ? colors.black[70] : colors.brand.white}
+          />
+          <Text
+            className={`text-lg font-medium ${
+              isResendDisabled ? "text-black-70" : "text-brand-grey"
+            }`}
+          >
+            {isResendDisabled
+              ? `Reenviar código em ${timer}s`
+              : "Reenviar código"}
+          </Text>
+        </TouchableOpacity>
+
+        <Button
+          handlePress={handleNextStep}
+          containerStyles="w-full mt-6"
+          title="Continuar"
+          isLoading={isLoading}
+        />
+      </View>
+    </>
   );
 }

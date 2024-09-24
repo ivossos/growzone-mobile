@@ -68,7 +68,7 @@ type FieldKeys = keyof SignUpSchema;
 export interface StepProps {
   control: Control<SignUpSchema>;
   handleSubmit: UseFormHandleSubmit<SignUpSchema>;
-  onSubmit: (data: SignUpSchema) => void;
+  onSubmit: () => void;
   onNext: (nextStep?: 'email' | 'phone') => void;
   onPrev?: () => void;
   isLoading: boolean;
@@ -88,30 +88,25 @@ const initialSteps = [
     fields: [] as FieldKeys[]
   },
   {
-    progress: 60,
+    progress: 70,
     Component: PasswordStep,
     fields: ["password", "confirmPassword"] as FieldKeys[], 
   },
   {
-    progress: 80,
+    progress: 100,
     Component: CodeStep,
     fields: ["code"] as FieldKeys[]
-  },
-  {
-    progress: 100,
-    Component: TermsStep,
-    fields: [] as FieldKeys[]
   },
 ];
 
 const emailStep = {
-  progress: 40,
+  progress: 50,
   Component: EmailStep,
   fields: ["email"] as FieldKeys[]
 };
 
 const phoneStep = {
-  progress: 40,
+  progress: 50,
   Component: PhoneStep,
   fields: ["phone"] as FieldKeys[]
 };
@@ -173,7 +168,7 @@ const SignUp = () => {
     }
   };
 
-  const onSubmit = async (data: SignUpSchema) => {
+  const onSubmit = async () => {
     router.replace("/sign-in");
   };
 
@@ -194,41 +189,16 @@ const SignUp = () => {
             minHeight: Dimensions.get("window").height - 100,
           }}
         >
-          <View className="flex items-center justify-center gap-6 my-10">
-            <Image
-              source={images.logoGreen}
-              className="w-[250px] h-10"
-              resizeMode="contain"
-            />
-
-            <View className="flex gap-2">
-              <Text className="text-4xl font-semibold text-white text-center">
-                {currentStep === 0
-                  ? "Crie um nome de usuário"
-                  : currentStep === 1
-                  ? "Escolha o canal para receber o código"
-                  : currentStep === 3
-                  ? "Digite o código de verificação"
-                  : currentStep === 4
-                  ? "Crie uma senha de acesso"
-                  : "Política de privacidade"}
-              </Text>
-
-              <Text className="text-lg font-regular text-black-30 text-center ">
-                {currentStep === 0
-                  ? "Seu nome de usuário será único, permitindo que outros membros o encontrem facilmente."
-                  : currentStep === 1
-                  ? "Escolha como você deseja receber seu código de verificação."
-                  : currentStep === 3
-                  ? "Digite o código que você recebeu via email ou celular."
-                  : currentStep === 4
-                  ? "Escolha uma senha forte para proteger sua conta."
-                  : "Leia e aceite a nossa política de privacidade."}
-              </Text>
-            </View>
-          </View>
-
           <FormProvider {...methods}>
+            <View className="flex items-center justify-center my-10">
+              <Image
+                source={images.logoGreen}
+                className="w-[250px] h-10"
+                resizeMode="contain"
+              />
+
+            </View>
+
             <CurrentComponent
               control={methods.control}
               handleSubmit={handleSubmit}

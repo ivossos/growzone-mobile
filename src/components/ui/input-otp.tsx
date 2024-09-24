@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   StyleProp,
   Text,
@@ -97,58 +99,63 @@ export default function OtpInput({
   };
 
   return (
-    <View className={`flex flex-col gap-2 w-full ${otpContainerStyle}`}>
-      <Text className={`text-base font-medium ${errorMessage ? 'text-red-500' : 'text-white'}`}>
-        {title}
-      </Text>
-      <Pressable onPress={onFocusHandler} className="flex-row">
-        {new Array(otpLength).fill(0).map((_value, index) => {
-          const digit = otpInputValue[index] || '';
-          const isCurrentDigit = index === otpInputValue.length;
-          const isLastDigit = index === otpLength - 1;
-          const isOtpInputFull = otpInputValue.length === otpLength;
-          const isActive = isInputFocused && (isCurrentDigit || (isLastDigit && isOtpInputFull));
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+    >
+      <View className={`flex flex-col gap-2 w-full ${otpContainerStyle}`}>
+        <Text className={`text-base font-medium ${errorMessage ? 'text-red-500' : 'text-white'}`}>
+          {title}
+        </Text>
+        <Pressable onPress={onFocusHandler} className="flex-row">
+          {new Array(otpLength).fill(0).map((_value, index) => {
+            const digit = otpInputValue[index] || '';
+            const isCurrentDigit = index === otpInputValue.length;
+            const isLastDigit = index === otpLength - 1;
+            const isOtpInputFull = otpInputValue.length === otpLength;
+            const isActive = isInputFocused && (isCurrentDigit || (isLastDigit && isOtpInputFull));
 
-          return (
-            <View
-              key={index}
-              style={getOtpFieldStyle(isActive, !!errorMessage)}
-              className={`flex flex-col flex-1 gap-2 items-center justify-center ${
-                !otpFieldStyle && 'h-16 px-4 mr-2 border-2 rounded-lg bg-black-90'
-              } ${!!errorMessage ? 'border-red-500' : isActive ? 'border-brand-green' : ''}`}
-            >
-              <Text
-                style={otpTextStyle}
-                className={`text-center text-lg font-bold dark:text-white`}
+            return (
+              <View
+                key={index}
+                style={getOtpFieldStyle(isActive, !!errorMessage)}
+                className={`flex flex-col flex-1 gap-2 items-center justify-center ${
+                  !otpFieldStyle && 'h-16 px-4 mr-2 border-2 rounded-lg bg-black-90'
+                } ${!!errorMessage ? 'border-red-500' : isActive ? 'border-brand-green' : ''}`}
               >
-                {digit}
-              </Text>
-            </View>
-          );
-        })}
-      </Pressable>
+                <Text
+                  style={otpTextStyle}
+                  className={`text-center text-lg font-bold dark:text-white`}
+                >
+                  {digit}
+                </Text>
+              </View>
+            );
+          })}
+        </Pressable>
 
-      <TextInput
-        ref={inputRef}
-        style={[
-          {
-            position: 'absolute',
-            left: 0,
-            opacity: 0,
-            zIndex: -1,
-            color: 'transparent',
-            textAlign: 'center',
-          },
-          getOtpFieldStyle(true, false),
-        ]}
-        value={otpInputValue}
-        onChangeText={onChangeTextHandler}
-        maxLength={otpLength}
-        keyboardType="phone-pad"
-        defaultValue={defaultValue}
-      />
+        <TextInput
+          ref={inputRef}
+          style={[
+            {
+              position: 'absolute',
+              left: 0,
+              opacity: 0,
+              zIndex: -1,
+              color: 'transparent',
+              textAlign: 'center',
+            },
+            getOtpFieldStyle(true, false),
+          ]}
+          value={otpInputValue}
+          onChangeText={onChangeTextHandler}
+          maxLength={otpLength}
+          keyboardType="number-pad"
+          defaultValue={defaultValue}
+        />
 
-      {errorMessage && <Text className="text-red-500 text-base font-medium">{errorMessage}</Text>}
-    </View>
+        {errorMessage && <Text className="text-red-500 text-base font-medium">{errorMessage}</Text>}
+      </View>
+    </KeyboardAvoidingView>
   );
 }

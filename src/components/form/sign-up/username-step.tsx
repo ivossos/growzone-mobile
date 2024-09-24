@@ -5,6 +5,7 @@ import Button from "@/components/ui/button";
 import { StepProps } from "@/app/(auth)/sign-up";
 import { findUsername } from "@/api/user/find-username";
 import Toast from "react-native-toast-message";
+import { Text, View } from "react-native";
 
 export default function UsernameStep({
   control,
@@ -45,6 +46,15 @@ export default function UsernameStep({
 
   return (
     <>
+      <View className="flex gap-2 pt-6 mb-4">
+        <Text className="text-4xl font-semibold text-white text-center">
+          Crie um nome de usuário
+        </Text>
+
+        <Text className="text-lg font-regular text-black-30 text-center ">
+          Seu nome de usuário será único, permitindo que outros membros o encontrem facilmente.
+        </Text>
+      </View>
       <Controller
         control={control}
         name="username"

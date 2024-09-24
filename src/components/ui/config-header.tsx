@@ -3,7 +3,7 @@ import { SvgProps } from "react-native-svg";
 
 interface Props {
   title: string;
-  description: string;
+  description?: string;
   Icon: React.ComponentType<SvgProps>;
 }
 

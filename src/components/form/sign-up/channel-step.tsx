@@ -2,13 +2,22 @@ import React from 'react';
 import { StepProps } from '@/app/(auth)/sign-up';
 import { colors } from '@/styles/colors';
 import { Mail, Phone } from 'lucide-react-native';
-import { Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
 import { Controller } from 'react-hook-form';
 
 export default function ChannelStep({ control, onNext }: StepProps) {
   return (
     <>
-    <Controller
+      <View className="flex gap-2 pt-6 mb-4">
+        <Text className="text-4xl font-semibold text-white text-center">
+          Escolha o canal para receber o código
+        </Text>
+
+        <Text className="text-lg font-regular text-black-30 text-center ">
+          Escolha como você deseja receber seu código de verificação.
+        </Text>
+      </View>
+      <Controller
         control={control}
         name="fieldType"
         render={({ field: { onChange, } }) => (

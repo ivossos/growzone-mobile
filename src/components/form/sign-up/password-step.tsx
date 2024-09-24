@@ -43,6 +43,15 @@ export default function PasswordStep({
   }
   return (
     <>
+      <View className="flex gap-2 pt-6 mb-4">
+        <Text className="text-4xl font-semibold text-white text-center">
+          Crie uma senha de acesso
+        </Text>
+
+        <Text className="text-lg font-regular text-black-30 text-center ">
+          Escolha uma senha forte para proteger sua conta.
+        </Text>
+      </View>
       <Controller
         control={control}
         name="password"

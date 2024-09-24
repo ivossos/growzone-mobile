@@ -29,7 +29,7 @@ export default function PrivacyPolicy() {
 
             <ConfigHeader title={title} description={description} Icon={Icon}/>
             <InfoCard description="Ao utilizar o aplicativo Growzone, você concorda com as práticas descritas nesta política." />
-            <TermsCard data={terms} />
+            {/* <TermsCard data={terms} /> */}
           </View>
         </ScrollView>
       </SafeAreaView>

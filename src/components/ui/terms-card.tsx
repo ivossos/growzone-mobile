@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { Text, useWindowDimensions, View } from "react-native";
+import RenderHtml, { HTMLSource } from 'react-native-render-html';
 
 type Term = {
   title?: string;
@@ -10,25 +11,28 @@ interface Data {
 }
 
 interface Props {
-  data: Data[]
+  html: string;
 }
 
-export default function TermsCard({ data }: Props) {
+export default function TermsCard({ html }: Props) {
+  const { width } = useWindowDimensions();
+
+  const tagsStyles = {
+    body: {color: '#fff'}
+  };
+
+  const source = { html };
+
+  if(!html) return null;
 
   return (
     <View className="bg-black-90 rounded-lg">
       <View className="flex flex-col gap-4 p-6">
-      {data.map(({title, terms}) => (
-        <>
-          <Text className="text-xl font-semibold text-white">{title}</Text>
-          {terms.map(({ title, description }) => (
-            <View key={title} className="flex flex-row items-start justify-start flex-wrap">
-              {title && <Text className="text-lg font-medium text-white inline">{title}:</Text>}
-              <Text className="text-lg font-normal text-black-30 inline whitespace-pre-wrap">{description}</Text>
-            </View>
-          ))}
-          </>
-      ))}
+      <RenderHtml
+        contentWidth={width}
+        source={source}
+        tagsStyles={tagsStyles}
+      />
       </View>
     </View>
   )
