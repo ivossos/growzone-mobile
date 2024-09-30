@@ -1,7 +1,7 @@
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
-import { Avatar, AvatarImage } from "../Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { ChevronLeft } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 
@@ -12,8 +12,12 @@ import { DrawerButton } from "./drawer-button";
 import { CustomOptions } from "@/@types/navigation";
 import { router, useNavigation } from "expo-router";
 import { DrawerActions } from "@react-navigation/native";
+import { useAuth } from "@/hooks/use-auth";
+import { getInitials } from "@/lib/utils";
 
 export function DrawerContent( props: DrawerContentComponentProps) {
+  const { user } = useAuth();
+
   const navigation = useNavigation();
   const toggleMenu = () => navigation.dispatch(DrawerActions.toggleDrawer());
 
@@ -35,16 +39,19 @@ export function DrawerContent( props: DrawerContentComponentProps) {
               Configurações
             </Text>
           </View>
-          <TouchableOpacity onPress={() => router.push('/profile/1')} className="flex flex-row items-center gap-2 p-4 rounded-lg bg-black-90">
-            <Avatar className="w-12 h-12">
-              <AvatarImage
-                className="rounded-full"
-                source={require("@/assets/images/profile2.png")}
-              />
+          <TouchableOpacity onPress={() => router.push({ pathname: '/profile/[id]', params: { id: user.id }})} className="flex flex-row items-center gap-2 p-4 rounded-lg bg-black-90">
+            <Avatar className="w-12 h-12 bg-black-100">
+              {user?.image && 
+                <AvatarImage
+                  className="rounded-full"
+                  source={{ uri: user.image.image}}
+                />
+              }
+              <AvatarFallback>{getInitials(user?.name || user.username)}</AvatarFallback>
             </Avatar>
             <View className="flex flex-row items-center gap-1">
               <Text className="text-white text-base font-semibold">
-                Pedro Oliveira
+                {user?.name || user.username}
               </Text>
               <VerifiedIcon width={18} heigth={18} />
             </View>

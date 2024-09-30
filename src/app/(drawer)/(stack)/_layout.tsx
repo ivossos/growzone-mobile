@@ -8,10 +8,12 @@ import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
 import ReportBottomSheet from '@/components/ui/report-bottom-sheet';
 import { useRef } from 'react';
 import BottomSheet from '@gorhom/bottom-sheet';
+import RateProfileBottomSheet from '@/components/ui/rate-profile-bottom-sheet';
 
 export default function PostLayout() {
   const reportSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
+  const rateProfileSheetRef = useRef<BottomSheet>(null);
 
   const closeReportBottomSheet = () => {
     reportSheetRef.current?.close()
@@ -27,8 +29,9 @@ export default function PostLayout() {
         }} 
       />
 
-        <CommentBottomSheet ref={commentSheetRef} />
-        <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+      <CommentBottomSheet ref={commentSheetRef} />
+      <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+      <RateProfileBottomSheet ref={rateProfileSheetRef} />
     </BottomSheetProvider>
 
     <StatusBar backgroundColor={colors.black[100]} style="light" />

@@ -31,7 +31,7 @@ export default function SearchScreen() {
   const { openBottomSheet } = useBottomSheetContext();
 
   const handleOpenFilterBottomSheet = () => {
-    openBottomSheet('search', undefined);
+    openBottomSheet({ type: 'search' });
   };
 
 

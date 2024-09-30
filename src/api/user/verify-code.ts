@@ -1,4 +1,4 @@
-import { api } from '@/lib/axios';
+import { authApi } from '@/lib/axios';
 
 export interface VerifyCodeBody {
   email: string;
@@ -9,7 +9,7 @@ export async function verifyCode({
   email,
   code,
 }: VerifyCodeBody) {
-  const response = await api.post('/user/verify-code', { 
+  const response = await authApi.post('/user/verify-code', { 
     email,
     code
   });

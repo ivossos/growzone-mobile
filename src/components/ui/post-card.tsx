@@ -58,11 +58,11 @@ export function PostCard({ post }: Props) {
   const { openBottomSheet } = useBottomSheetContext();
 
   const handleOpenCommentBottomSheet = () => {
-    openBottomSheet('comment', post.id);
+    openBottomSheet({ type: 'comment', id: post.id});
   };
 
   const handleOpenReportBottomSheet = () => {
-    openBottomSheet('report', post.id);
+    openBottomSheet({type: 'report', id: post.id});
   };
 
   

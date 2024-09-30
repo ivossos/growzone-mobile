@@ -1,15 +1,16 @@
-import React, { createContext, useState, useContext, ReactNode, useRef } from 'react';
-import BottomSheet from '@gorhom/bottom-sheet';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
-type BottomSheetType = 'comment' | 'report' | 'search'; 
+type BottomSheetType = 'comment' | 'report' | 'search' | 'rate-profile' | 'reviews-profile';
 
 type BottomSheetContextType = {
   postId: number | null;
+  userId: number | null;
   setPostId: (id: number | null) => void;
   isVisible: boolean;
-  openBottomSheet: (type: BottomSheetType, id?: number) => void;
+  openBottomSheet: (data: { type: BottomSheetType; id?: number; userId?: number, callbackFn?: (() => Promise<void>) | null}) => void;
   closeBottomSheet: () => void;
   currentType: BottomSheetType | null;
+  callback: (() => Promise<void>) | null;
 };
 
 const BottomSheetContext = createContext<BottomSheetContextType | undefined>(undefined);
@@ -24,25 +25,38 @@ export const useBottomSheetContext = () => {
 
 export const BottomSheetProvider = ({ children }: { children: ReactNode }) => {
   const [postId, setPostId] = useState<number | null>(null);
+  const [userId, setUserId] = useState<number | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [currentType, setCurrentType] = useState<BottomSheetType | null>(null);
+  const [callback, setCallback] = useState<(() => Promise<void>) | null>(null); 
 
-  const openBottomSheet = (type: BottomSheetType, id?: number) => {
-    if(id) setPostId(id);
+  const openBottomSheet = (
+    { type, id, userId, callbackFn }: { type: BottomSheetType; id?: number; userId?: number, callbackFn?: (() => Promise<void>) | null}) => {
+    if (id) setPostId(id);
+    if (userId) setUserId(userId);
     setCurrentType(type);
     setIsVisible(true);
+    if (callbackFn) {
+      setCallback(() => callbackFn); 
+    }
   };
 
   const closeBottomSheet = () => {
     setTimeout(() => {
       setIsVisible(false);
       setPostId(null);
+      setUserId(null);
       setCurrentType(null);
-    }, 300);
+      if (callback) {
+        setCallback(null);
+      }
+    }, 200);
   };
 
   return (
-    <BottomSheetContext.Provider value={{ postId, setPostId, isVisible, openBottomSheet, closeBottomSheet, currentType }}>
+    <BottomSheetContext.Provider
+      value={{ postId, userId, setPostId, isVisible, openBottomSheet, closeBottomSheet, currentType, callback }}
+    >
       {children}
     </BottomSheetContext.Provider>
   );

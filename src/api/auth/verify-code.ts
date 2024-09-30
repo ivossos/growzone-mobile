@@ -1,4 +1,4 @@
-import { api } from '@/lib/axios';
+import { authApi } from '@/lib/axios';
 import { AuthTokenResponse } from '../@types/models';
 
 type VerifyTokenResponse = AuthTokenResponse & {
@@ -6,7 +6,7 @@ type VerifyTokenResponse = AuthTokenResponse & {
 }
 
 export async function verifyCode(email: string, code: string) {
-  const res = await api.post<VerifyTokenResponse>(`/login/verify-code`, {
+  const res = await authApi.post<VerifyTokenResponse>(`/login/verify-code`, {
     email, code
   });
 

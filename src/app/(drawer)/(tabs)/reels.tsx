@@ -19,7 +19,7 @@ export default function Reels() {
 
 
   const handleBottomSheet = (post: any) => {
-    openBottomSheet('comment', post)
+    openBottomSheet({ type: 'comment', id: post})
   };
   
   

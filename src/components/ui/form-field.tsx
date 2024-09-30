@@ -9,10 +9,11 @@ interface FormFieldProps extends TextInputProps {
   placeholder: string;
   type?: string;
   handleChangeText: (text: string) => void;
+  containerStyles?: string;
   otherStyles?: string;
   leftIcon?: LucideIcon;
   rightIcon?: LucideIcon;
-  error?: string;  
+  error?: string; 
 }
 
 export function FormField({
@@ -20,21 +21,25 @@ export function FormField({
   value,
   placeholder,
   handleChangeText,
+  containerStyles,
   otherStyles,
   type = '',
   leftIcon: LeftIcon,
   rightIcon: RightIcon,
   error,
+  editable = true,
+  onBlur = () => {}, 
   ...props
 }: FormFieldProps) {
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
   return (
-    <View className={`flex flex-col gap-2 ${otherStyles}`}>
-      {title && <Text className={`text-base font-medium ${error ? 'text-red-500' : 'text-white'}`}>{title}</Text>}
+    <View className={`flex flex-col gap-2 ${otherStyles} ${!editable && 'opacity-80'}`}>
+      {title && <Text className={`text-base font-medium ${error ? 'text-red-500' : 'text-white'} ${!editable && 'text-black-60'}`}>{title}</Text>}
 
-      <View className={`w-full h-16 px-4 bg-black-90 rounded-lg flex flex-row items-center gap-2 
+      <View className={`w-full h-16 p-4 bg-black-90 rounded-lg flex flex-row gap-2
+        ${containerStyles} 
         ${isFocused && 'border border-brand-green'}
         ${error && 'border border-red-500'}`}>
         {LeftIcon && (
@@ -45,14 +50,19 @@ export function FormField({
           />
         )}
         <TextInput
-          className="flex-1 text-white font-medium text-base"
+          className={`flex-1 text-white text-start font-medium text-base ${!editable && 'text-black-60'}`}
+          style={{ textAlignVertical: 'top'}}
           value={value}
           placeholder={placeholder}
           placeholderTextColor={error ? colors.brand.error : "#B6B6B6"}
           onChangeText={handleChangeText}
           secureTextEntry={type === "password" && !showPassword}
           onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onBlur={(e) => {
+            setIsFocused(false);
+            onBlur(e);
+          }}
+          editable={editable}
           {...props}
         />
 

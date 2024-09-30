@@ -1,4 +1,4 @@
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ArrowLeft, ChevronLeft, Search } from "lucide-react-native";
 import { useLocalSearchParams, useNavigation } from "expo-router";
@@ -6,13 +6,57 @@ import { colors } from "@/styles/colors";
 import LogoIcon from "@/assets/icons/logo-small.svg";
 import UserIcon from "@/assets/icons/user-check.svg";
 import { FormField } from "@/components/ui/form-field";
-import { Avatar, AvatarImage } from "@/components/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
 import { users } from "@/constants/mock";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import Toast from "react-native-toast-message";
+import { Following } from "@/api/@types/models";
+import { getInitials } from "@/lib/utils";
+import { readFollowing } from "@/api/social/follow/read-following";
 
 export default function Followers() {
+  const [following, setFollowing] = useState<Following[]>([]);
+  const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const navigation = useNavigation();
   const { id } = useLocalSearchParams();
-  console.log('id', id)
+  const normalizedId = Array.isArray(id) ? id[0] : id;
+
+  const loadFollowing = async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    
+    try {
+      const res = await readFollowing({ id: parseInt(normalizedId), page, size: 50 });
+      setFollowing((prev) => [
+        ...prev,
+        ...res.filter((newUser) => !prev.some((existingUser) => existingUser.id === newUser.id))
+      ]);
+      setHasMore(res.length > 0);
+      setPage(prev => prev + 1);
+    } catch (error) {
+      console.error("Erro ao carregar os usuários que esse perfil segue:", error);
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Aconteceu um erro buscar os os usuários que esse perfil segue, tente novamente mais tarde.',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFollowing();
+  }, []);
+
+  const handleLoadMore = () => {
+    if (!loading && hasMore) {
+      loadFollowing();
+    }
+  };
   return(
     <View className="flex-1 bg-black-100 overflow-hidden">
       <SafeAreaView>
@@ -26,7 +70,7 @@ export default function Followers() {
           <View className="flex flex-row items-center gap-2">
             <UserIcon width={24} heigth={24} />
             <Text className="text-white text-lg font-semibold">
-              Seguidores
+              Seguindo
             </Text>
           </View>
 
@@ -37,29 +81,39 @@ export default function Followers() {
             rightIcon={Search}
           />
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            onMomentumScrollEnd={handleLoadMore}
+          >
             <View className="flex flex-col gap-4 pb-[400px]">
-
-              {users.map(user => (
+              {following.map(user => (
                 <View key={user.id} className="flex flex-row items-center justify-between w-full">
                 <View className="flex flex-row items-center gap-2 ">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage
-                      className="rounded-full"
-                      source={user.avatar}
-                    />
+                  <Avatar className="w-12 h-12 bg-black-80">
+                    {false ? (
+                        <AvatarImage
+                          className="rounded-full"
+                          source={{ uri: '' }}
+                        />
+                      ) : (
+                        <AvatarFallback textClassname="text-lg">
+                          {getInitials(user?.followed?.name || user?.followed?.username)}
+                        </AvatarFallback>
+                      )}
                   </Avatar>
                   <View>
-                    <Text className="text-white text-lg text-start font-semibold">
-                      {user.name}
-                    </Text>
-                    <Text className="text-brand-grey text-sm text-start font-regular">
-                      {user.username}
+                    {user?.followed?.name && (
+                        <Text className="text-white text-base text-start font-semibold">
+                          {user?.followed?.name}
+                        </Text>
+                      )}
+                    <Text className={`${ user?.followed?.name ? 'text-sm text-brand-grey text-start font-regular' : 'text-white text-base text-start font-semibold'}`}>
+                      {user?.followed?.username}
                     </Text>
                   </View>
                 </View>
 
-                {user.isFollowing ? 
+                {false ? 
                   <TouchableOpacity className="px-3 py-1 bg-black-80 rounded-[64px] ">
                     <Text className="text-base text-neutral-400">Seguindo</Text>
                   </TouchableOpacity>
@@ -71,6 +125,15 @@ export default function Followers() {
 
               </View>
               ))}
+              {loading && (
+                <View className="flex items-center justify-center">
+                  <ActivityIndicator
+                    animating
+                    color="#fff"
+                    size="small"
+                  />
+                </View>
+              )}
             </View>
           </ScrollView>
         </View>

@@ -8,7 +8,6 @@ import {
   Pressable,
 } from "react-native";
 
-import TabContent from "./tab-content";
 import { colors } from "@/styles/colors";
 import PostIcon from "@/assets/icons/post.svg";
 import PostGreenIcon from "@/assets/icons/post-green.svg";
@@ -27,31 +26,30 @@ const tabs = [
 
 const TabProfile = ({ onPress }) => {
   const [selected, setSelected] = useState(1);
-  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false); // Controle manual do scroll
+  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
   const scrollRef = useRef(null);
 
   const onScroll = ({ nativeEvent }) => {
-    if (isManuallyScrolling) return; // Ignora onScroll enquanto manualmente estamos mudando de aba
+    if (isManuallyScrolling) return;
 
     const index = Math.round(nativeEvent.contentOffset.x / w);
     const tab = tabs[index];
     if (tab) {
-      setSelected(tab.id); // Atualiza a aba com base no scroll
+      setSelected(tab.id); 
     }
   };
 
   const handleTabPress = (id) => {
     setSelected(id);
-    setIsManuallyScrolling(true); // Inicia scroll manual
+    setIsManuallyScrolling(true);
     const index = tabs.findIndex(tab => tab.id === id);
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ x: index * w, animated: true });
     }
 
-    // Reinicia controle após o scroll
     setTimeout(() => {
       setIsManuallyScrolling(false); 
-    }, 300); // Tempo suficiente para o scroll acontecer
+    }, 300);
   };
 
   return (

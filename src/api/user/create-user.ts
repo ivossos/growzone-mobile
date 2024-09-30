@@ -1,4 +1,4 @@
-import { api } from '@/lib/axios';
+import { authApi } from '@/lib/axios';
 import { User } from '../@types/models';
 
 export interface CreateUsertBody {
@@ -12,7 +12,7 @@ export async function createUser({
   username,
   password,
 }: CreateUsertBody) {
-  const response = await api.post<User>('/user/', { 
+  const response = await authApi.post<User>('/user/', { 
     email,
     username,
     password

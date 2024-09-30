@@ -1,6 +1,4 @@
-import { api } from '@/lib/axios';
-import { User } from '../@types/models';
-
+import { authApi } from '@/lib/axios';
 export interface LegalDocumentResponse {
   id: number;
   title: string;
@@ -12,6 +10,6 @@ export interface LegalDocumentResponse {
 }
 
 export async function getLegalDocument() {
-  const response = await api.get<LegalDocumentResponse[]>('/legal-document/');
+  const response = await authApi.get<LegalDocumentResponse[]>('/legal-document/');
   return response.data;
 }

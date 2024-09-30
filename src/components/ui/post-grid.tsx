@@ -10,10 +10,8 @@ const w = Dimensions.get("window").width;
 
 export default function PostGrid() {
   const renderItem = ({ item }: { item: Post}) => {
-    console.log('-> ', item)
     const image = item?.media?.find(m => m.type === 'image');
     
-    console.log(image)
     if(!image) return;
 
     return (

@@ -63,7 +63,7 @@ export default function DrawerLayout() {
           }
         />
 
-        <Drawer.Screen
+        {/* <Drawer.Screen
           name="event"
           options={
             {
@@ -72,7 +72,7 @@ export default function DrawerLayout() {
               isDivider: true,
             } as CustomOptions
           }
-        />
+        /> */}
 
         <Drawer.Screen
           name="security"
@@ -85,7 +85,7 @@ export default function DrawerLayout() {
           }
         />
 
-        <Drawer.Screen
+        {/* <Drawer.Screen
           name="preference-center"
           options={
             {
@@ -94,7 +94,7 @@ export default function DrawerLayout() {
               isDivider: true,
             } as CustomOptions
           }
-        />
+        /> */}
 
         <Drawer.Screen
           name="terms-conditions"
@@ -107,7 +107,7 @@ export default function DrawerLayout() {
           }
         />
 
-        <Drawer.Screen
+        {/* <Drawer.Screen
           name="privacy-policy"
           options={
             {
@@ -116,7 +116,7 @@ export default function DrawerLayout() {
               isDivider: true
             } as CustomOptions
           }
-        />
+        /> */}
 
         <Drawer.Screen
           listeners={{
