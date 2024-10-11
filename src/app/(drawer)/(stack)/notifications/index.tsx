@@ -32,7 +32,7 @@ export default function NotificationsScreen() {
         <ScrollView showsVerticalScrollIndicator={false}>
           <View className="flex flex-col gap-2 py-6 px-6 pb-24">
             {notificationsMock.map((n) => (
-              <View key={n.id} className="flex flex-row items-center h-[72px] bg-black-90 px-4 rounded-lg">
+              <View key={n.id + n.user_info.name} className="flex flex-row items-center h-[72px] bg-black-90 px-4 rounded-lg">
                 <View className="flex flex-row items-center gap-2">
                   <Avatar className="w-10 h-10">
                     <AvatarImage

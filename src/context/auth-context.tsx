@@ -1,7 +1,7 @@
 import { UserSocial } from "@/api/@types/models";
 import { accessToken } from "@/api/auth/access-token";
 import { getCurrentUser } from "@/api/social/user/get-current-user";
-import { authApi, socialApi } from "@/lib/axios";
+import { authApi, compressApi, socialApi } from "@/lib/axios";
 import { storageGetAuthToken, storageRemoveAuthToken, storageSaveAuthToken } from "@/storage/storage-auth-token";
 import { storageGetUser, storageRemoveUser, storageSaveUser } from "@/storage/storage-user";
 import { createContext, ReactNode, useEffect, useState } from "react";
@@ -48,6 +48,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
       authApi.defaults.headers.common['Authorization'] = `Bearer ${res.access_token}`;
       socialApi.defaults.headers.common['Authorization'] = `Bearer ${res.access_token}`;
+      compressApi.defaults.headers.common['Authorization'] = `Bearer ${res.access_token}`;
 
       const userData = await getCurrentUser();
 
@@ -106,6 +107,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     try {
       authApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       socialApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      compressApi.defaults.headers.common['Authorization'] = `Bearer ${token}`;
      
       setUser(user);
     } catch (error) {
@@ -120,10 +122,12 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   useEffect(() => {
     const authSubscribe = authApi.registerInterceptTokenManager(signOut);
     const socialSubscribe = socialApi.registerInterceptTokenManager(signOut);
+    const compressSubscribe = compressApi.registerInterceptTokenManager(signOut);
   
     return () => {
       authSubscribe();
       socialSubscribe();
+      compressSubscribe();
     }
   },[signOut])
 

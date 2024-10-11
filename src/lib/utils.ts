@@ -1,6 +1,8 @@
 import { clsx, type ClassValue } from 'clsx';
-import { ImagePickerAsset } from 'expo-image-picker';
 import { twMerge } from 'tailwind-merge';
+import { formatDistanceToNow, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { lookup } from 'react-native-mime-types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -97,4 +99,13 @@ export function formatDateToMonthYear(dateString: string) {
   const year = date.getFullYear();
 
   return `${month}/${year}`;
+}
+
+export function formatDistance(dateString: string) {
+  const date = parseISO(dateString);
+  return formatDistanceToNow(date, { addSuffix: true, locale: ptBR });
+}
+
+export function getMimeType(uri: string): string | false {
+  return lookup(uri);
 }

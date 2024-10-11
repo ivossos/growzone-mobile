@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
-type BottomSheetType = 'comment' | 'report' | 'search' | 'rate-profile' | 'reviews-profile';
+type BottomSheetType = 'comment' | 'report' | 'search' | 'rate-profile' | 'reviews-profile' | 'create-post';
 
 type BottomSheetContextType = {
   postId: number | null;

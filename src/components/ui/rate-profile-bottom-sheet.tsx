@@ -21,14 +21,16 @@ import { DotIcon } from 'lucide-react-native';
 import { readUserReview } from '@/api/social/review/read-user-review';
 import { useAuth } from '@/hooks/use-auth';
 
-interface RateProfileBottomSheetProps {}
+interface RateProfileBottomSheetProps {
+  onClose: () => void;
+}
 
 const validationSchema = z.object({
   rate: z.number().max(5),
   description: z.string().max(300, 'A avaliação pode ter no máximo 300 caracteres'),
 });
 
-const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSheetProps>((_, ref) => {
+const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSheetProps>(({ onClose }, ref) => {
   const { isVisible, userId, currentType, closeBottomSheet, openBottomSheet, callback } = useBottomSheetContext();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
@@ -93,16 +95,19 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
     setReportSubmitted(false);
     setReview(updateReview ? updateReview : undefined);
     setUpdateReview(undefined);
+    onClose();
     closeBottomSheet();
   };
 
   const handleCloseReportSubmitted = () => {
     form.reset();
-    closeBottomSheet();
+    onClose();
+    
     setTimeout(() => {
       setReportSubmitted(false);
       setReview(undefined);
       setUpdateReview(undefined);
+      closeBottomSheet();
     }, 500)
   };
 
@@ -188,11 +193,11 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
 
   const renderEmptyReview = () => (
     <BottomSheetView className="flex flex-col justify-center flex-1 gap-4 bg-black-100 mb-4 px-6">
-      <Text className="text-center text-2xl text-brand-grey">Esse perfil ainda não tem nenhuma avaliação.</Text>
-      <Button
+      <Text className="text-center text-2xl text-brand-grey">{`${user.id === userId ? 'Você' : 'Esse perfil'} ainda não tem nenhuma avaliação.`}</Text>
+      {user.id !== userId && <Button
         title="Fazer uma avaliação agora"
         handlePress={onChangeTypeBottomSheet}
-      />
+      />}
     </BottomSheetView>
   );
 

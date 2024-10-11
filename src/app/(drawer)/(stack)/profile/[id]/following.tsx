@@ -1,35 +1,48 @@
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, ChevronLeft, Search } from "lucide-react-native";
+import { ChevronLeft, Search } from "lucide-react-native";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { colors } from "@/styles/colors";
 import LogoIcon from "@/assets/icons/logo-small.svg";
 import UserIcon from "@/assets/icons/user-check.svg";
 import { FormField } from "@/components/ui/form-field";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
-import { users } from "@/constants/mock";
 import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/use-auth";
 import Toast from "react-native-toast-message";
 import { Following } from "@/api/@types/models";
 import { getInitials } from "@/lib/utils";
 import { readFollowing } from "@/api/social/follow/read-following";
+import { debounce } from 'lodash';
 
-export default function Followers() {
+export default function FollowingPage() {
   const [following, setFollowing] = useState<Following[]>([]);
   const [page, setPage] = useState(0);
+  const [query, setQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const navigation = useNavigation();
   const { id } = useLocalSearchParams();
   const normalizedId = Array.isArray(id) ? id[0] : id;
 
+  useEffect(() => {
+    const handler = debounce(() => {
+      setDebouncedQuery(query);
+    }, 500);
+
+    handler();
+
+    return () => {
+      handler.cancel();
+    };
+  }, [query]);
+
   const loadFollowing = async () => {
     if (loading || !hasMore) return;
     setLoading(true);
     
     try {
-      const res = await readFollowing({ id: parseInt(normalizedId), page, size: 50 });
+      const res = await readFollowing({ id: parseInt(normalizedId), page, size: 50, query: debouncedQuery });
       setFollowing((prev) => [
         ...prev,
         ...res.filter((newUser) => !prev.some((existingUser) => existingUser.id === newUser.id))
@@ -41,7 +54,7 @@ export default function Followers() {
       Toast.show({
         type: 'error',
         text1: 'Opss',
-        text2: 'Aconteceu um erro buscar os os usuários que esse perfil segue, tente novamente mais tarde.',
+        text2: 'Aconteceu um erro buscar os usuários que esse perfil segue, tente novamente mais tarde.',
       });
     } finally {
       setLoading(false);
@@ -50,13 +63,14 @@ export default function Followers() {
 
   useEffect(() => {
     loadFollowing();
-  }, []);
+  }, [debouncedQuery]);
 
   const handleLoadMore = () => {
     if (!loading && hasMore) {
       loadFollowing();
     }
   };
+
   return(
     <View className="flex-1 bg-black-100 overflow-hidden">
       <SafeAreaView>
@@ -76,8 +90,13 @@ export default function Followers() {
 
           <FormField
             placeholder="Buscar"
-            value={''}
-            handleChangeText={(e) => {}}
+            value={query}
+            handleChangeText={(text) => {
+              setFollowing([]);
+              setPage(0);
+              setHasMore(true);
+              setQuery(text);
+            }}
             rightIcon={Search}
           />
 
@@ -90,10 +109,11 @@ export default function Followers() {
                 <View key={user.id} className="flex flex-row items-center justify-between w-full">
                 <View className="flex flex-row items-center gap-2 ">
                   <Avatar className="w-12 h-12 bg-black-80">
-                    {false ? (
+                    {user.followed?.image?.image ? (
                         <AvatarImage
                           className="rounded-full"
-                          source={{ uri: '' }}
+                          source={{ uri: user.followed.image.image }}
+                          resizeMode="contain"
                         />
                       ) : (
                         <AvatarFallback textClassname="text-lg">
@@ -139,5 +159,5 @@ export default function Followers() {
         </View>
       </SafeAreaView>
     </View>
-  )
+  );
 }

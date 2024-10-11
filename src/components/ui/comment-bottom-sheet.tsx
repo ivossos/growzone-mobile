@@ -1,21 +1,103 @@
-import React, { useCallback, useMemo } from 'react';
-import { TouchableOpacity, View, Text } from 'react-native';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetView } from '@gorhom/bottom-sheet';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetFooter } from '@gorhom/bottom-sheet';
 import { colors } from '@/styles/colors';
-import { commentsMock } from '@/constants/mock';
-import { Avatar, AvatarImage } from '../Avatar';
-import { DotIcon, EllipsisIcon } from 'lucide-react-native';
-import LikeIcon from "@/assets/icons/like.svg";
-import CommentIcon from "@/assets/icons/comment.svg";
 import { useBottomSheetContext } from '@/context/bottom-sheet-context';
+import { getPostComments } from '@/api/social/post/comment/get-comments';
+import Toast from 'react-native-toast-message';
+import { Comment } from '@/api/@types/models';
+import CommentCard from './comment-card';
+import Loader from './loader';
+import { Text, View } from 'react-native';
+import { useAuth } from '@/hooks/use-auth';
+import createComment from '@/api/social/post/comment/create-comment';
+import { BottomSheetDefaultFooterProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetFooter/types';
+import CommentInput from './comment-input';
 
 const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
+  const { user } = useAuth();
+  const [page, setPage] = useState(0);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isLoadingAddComment, setIsLoadingAddComment] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [newComment, setNewComment] = useState('');
+
   const { postId, isVisible, currentType, closeBottomSheet } = useBottomSheetContext();
 
-  if (!isVisible || currentType !== 'comment') return null;
-  const snapPoints = useMemo(() => ['30%', '60%', '90%'], []);
+  const snapPoints = useMemo(() => ['50%', '70%', '90%'], []);
 
-  
+  const loadPostComments = async (isLoadMore = false) => {
+    try {
+      if (!postId || loading) return;
+      setLoading(true);
+      const data = await getPostComments({ postId, page, size: 20 });
+     
+      if (data.length <= 20) {
+        setHasMore(false);
+      }
+
+      setComments((prev) => isLoadMore ? [...prev, ...data] : data);
+      if (data.length > 0) {
+        setPage((prev) => prev + 1);
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Erro ao buscar comentários. Tente novamente mais tarde.',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClose = () => {
+    setComments([]);
+    setPage(0);
+    setHasMore(false);
+    setNewComment('');
+    closeBottomSheet();
+  };
+
+  const handleCommentSubmit = useCallback(async () => {
+    if (newComment.trim()) {
+      try {
+        setIsLoadingAddComment(true);
+        const res = await createComment({ postId: postId!, content: newComment });
+        const comment = {
+          id: res.id,
+          content: res.content,
+          like_count: 0,
+          reply_count: 0,
+          created_at: res.created_at,
+          user: user
+        }
+        setComments((prev) =>  [...[comment], ...prev])
+        setNewComment('');
+      } catch (error) {
+        Toast.show({
+          type: 'error',
+          text1: 'Opss',
+          text2: 'Aconteceu um erro ao enviar seu comentário.',
+        });
+      } finally {
+        setIsLoadingAddComment(false);
+      }
+    } else {
+      Toast.show({
+        type: 'info',
+        text1: 'Opss',
+        text2: 'Você precisa digitar um comentário.',
+      });
+    }
+  }, [newComment, postId]);
+
+  const handleLoadMore = () => {
+    if (!loading && hasMore) {
+      loadPostComments(true);
+    }
+  };
+
   const renderBackdrop = useCallback(
     (props: any) => (
       <BottomSheetBackdrop {...props} opacity={0.8} appearsOnIndex={1} />
@@ -24,79 +106,63 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   );
 
   const renderItem = useCallback(
-    ({ item }) => (
-      <View className='flex flex-col flex-1 gap-2 bg-black-100 mb-4'>
-        <View className="flex flex-row items-center justify-between gap-2 w-full">
-          <View className="flex flex-row items-center gap-2 ">
-            <Avatar className="w-10 h-10">
-              <AvatarImage
-                className="rounded-full"
-                source={require("@/assets/images/profile2.png")}
-              />
-            </Avatar>
-            <View className='flex flex-row items-center'>
-              <Text className="text-white text-sm text-center font-semibold">
-                Pedro Oliveira
-              </Text>
-              <DotIcon className="w-3 h-3" color={colors.black[70]} />
-              <Text className="text-brand-grey text-xs">agora mesmo</Text>
-            </View>
-          </View>
-
-          <View className="flex flex-row items-center">
-            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-          </View>
-        </View>
-        <View className='flex flex-row gap-2'>
-          <View className='max-w-10 w-full'>
-            <View className='h-full w-[1px] bg-black-80 mx-auto' />
-          </View>
-         
-          <View className='flex flex-col flex-1'>
-            <Text className="text-start text-sm text-brand-grey font-normal max-w-full">
-              Se for para consumo da flor. Costumo colher com cerca de 80/90% dos pistilos já marrom e os tricomas com 20/25% deles âmbar.
-            </Text>
-            <View className="flex flex-row items-center gap-3 mt-2">
-              <TouchableOpacity className="flex flex-row items-center gap-1">
-                <LikeIcon width={24} height={24} />
-                <Text className="text-white font-medium">75</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity className="flex flex-row items-center gap-1" >
-                <CommentIcon width={24} height={24} />
-                <Text className="text-white font-medium">75</Text>
-              </TouchableOpacity>
-            </View>
-
-          </View>
-          
-        </View>
-      </View>
-    ),
+    ({ item }: { item: Comment }) => <CommentCard comment={item} />,
     []
   );
 
+  const renderFooter = useCallback(
+    (props: BottomSheetDefaultFooterProps) => (
+      <BottomSheetFooter {...props} bottomInset={0}>
+        <CommentInput
+          user={user}
+          newComment={newComment}
+          setNewComment={setNewComment}
+          handleCommentSubmit={handleCommentSubmit}
+          isLoadingAddComment={isLoadingAddComment}
+        />
+      </BottomSheetFooter>
+    ),
+    [user, newComment, isLoadingAddComment] 
+  );
 
+  useEffect(() => {
+    if (postId && isVisible) {
+      setPage(0);
+      setComments([]);
+      setHasMore(true);
+      loadPostComments();
+    }
+  }, [postId, isVisible]);
 
-  return (
+  return isVisible && currentType === 'comment' ? (
     <BottomSheet
-    ref={ref}
+      ref={ref}
       index={1}
       snapPoints={snapPoints}
       enablePanDownToClose
       handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
-      backgroundStyle={{ backgroundColor: colors.black[100]}}
+      backgroundStyle={{ backgroundColor: colors.black[100] }}
       backdropComponent={renderBackdrop}
-      onClose={closeBottomSheet}
+      onClose={handleClose}
+      footerComponent={renderFooter}
+      keyboardBehavior="fillParent"
     >
       <BottomSheetFlatList
-          data={commentsMock}
-          className="h-full p-6"
-          keyExtractor={(i) => 'key-' + i.id}
-          renderItem={renderItem}
-        />
+        data={comments}
+        className="h-full p-6"
+        keyExtractor={(item) => 'key-' + item.id}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <View className="flex flex-col justify-center items-center flex-1 py-10">
+            <Text className="font-medium text-white text-lg">Nenhum comentário nessa postagem</Text>
+          </View>
+        }
+        onEndReached={handleLoadMore}
+      />
+      <Loader isLoading={loading} />
     </BottomSheet>
-  );
-})
+  ) : null;
+});
 
-export default CommentBottomSheet;
+export default memo(CommentBottomSheet);

@@ -1,4 +1,4 @@
-import { Follow, UserProfile } from "@/api/@types/models";
+import { Follow, SocialPost, UserProfile } from "@/api/@types/models";
 import { isFollower } from "@/api/social/follow/read-follow";
 import { getProfileUser } from "@/api/social/profile/get-profile-user";
 import ProfileDetails from "@/components/profile/profile-details";
@@ -6,6 +6,7 @@ import Loader from "@/components/ui/loader";
 import { useAuth } from "@/hooks/use-auth";
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
+import React from "react";
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -14,8 +15,8 @@ export default function Profile() {
   const route = useRoute();
   const id = (route.params as { id: number })?.id;
   const [isLoading, setIsLoading] = useState(false);
-  const [profile, setProfile] = useState<UserProfile>({} as UserProfile);
   const [isFollow, setIsFollow] = useState<Follow | undefined>();
+  const [profile, setProfile] = useState<UserProfile>({} as UserProfile);
   const { user } = useAuth();
 
   const fetchProfileData = async () => {
@@ -55,6 +56,7 @@ export default function Profile() {
       <SafeAreaView className="bg-black-100" style={{ flex: 1 }}>
         {profile.info && (
           <ProfileDetails 
+            userId={id}
             profile={profile} 
             isLoggerUser={user?.id == id} 
             isFollow={isFollow} 

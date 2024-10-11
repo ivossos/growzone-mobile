@@ -63,6 +63,8 @@ export interface UserMetrics {
   followers: number;
   review_count: number;
   average_review: number;
+  social_count: number;
+  reel_count: number;
 }
 
 export interface UserProfile {
@@ -70,6 +72,16 @@ export interface UserProfile {
   image: UserImage;
   cover: UserCover;
   metric: UserMetrics;
+}
+
+export interface UserCategory {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
 }
 
 export interface CreateUserImage {
@@ -105,6 +117,8 @@ export interface UserDTO {
   username: string;
   created_at: string;
   is_active: boolean;
+  image?:UserImage;
+  is_following: boolean;
 }
 
 export interface Review {
@@ -138,5 +152,125 @@ export interface Follower {
   id: number;
   follower: UserDTO;
   created_at: string; 
+  is_active: boolean;
+}
+
+export interface GlobalSearchResponse {
+  id: number;
+  image?: UserImage;
+  name: string;
+  username: string;
+  created_at: string;
+  is_active: boolean;
+  is_following: boolean;
+}
+
+export interface SocialPostFile {
+  id: number;
+  file: string;
+  type: "video" | "image";
+  created_at: string;
+}
+
+export interface SocialPost {
+  id: number;
+  post_id: number;
+  file: SocialPostFile;
+  view_count: number;
+  description?: string,
+  created_at: string;
+  is_compressing: boolean;
+}
+
+export interface PostDetail {
+  id: number;
+  post_id: number;
+  user: {
+    id: number;
+    image: {
+      id: number;
+      image: string;
+      created_at: string;
+    };
+    name: string;
+    username: string;
+    created_at: string;
+    is_following: boolean;
+  };
+  files: SocialPostFile[];
+  description?: string;
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+  is_compressing: boolean;
+  is_liked: boolean;
+}
+
+export interface ReelsDetail {
+  id: number;
+  post_id: number;
+  user: {
+    id: number;
+    image: {
+      id: number;
+      image: string;
+      created_at: string;
+    };
+    name: string;
+    username: string;
+    created_at: string;
+    is_following: boolean;
+  };
+  file: SocialPostFile;
+  description?: string;
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+  is_compressing: boolean;
+  is_liked: boolean;
+  is_viewed: boolean;
+}
+
+export interface Comment {
+  id: number;
+  user: UserDTO; 
+  content: string;
+  like_count: number;
+  reply_count: number;
+  created_at: string;
+  is_liked: boolean
+}
+
+export interface PostLike {
+  id: number;
+  user: UserDTO
+  created_at: string;
+}
+
+
+export interface Like {
+  id: number;
+  userId: number;
+  postId: number;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+}
+
+export interface View {
+  id: number;
+  userId: number;
+  postId: number;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+}
+
+export interface CommentLike {
+  id: number;
+  user_id: number;
+  comment_id: number;
+  created_at: string;
+  updated_at: string;
   is_active: boolean;
 }

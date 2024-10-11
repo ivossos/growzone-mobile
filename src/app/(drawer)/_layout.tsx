@@ -2,11 +2,8 @@ import { CustomOptions } from '@/@types/navigation'
 import { DrawerContent } from '@/components/ui/drawer-content'
 import { Drawer } from 'expo-router/drawer'
 import ProfileIcon from "@/assets/icons/profile.svg";
-import CalenderIcon from "@/assets/icons/calender.svg";
 import PadlockIcon from "@/assets/icons/padlock.svg";
-import SettingsIcon from "@/assets/icons/settings.svg";
 import FileIcon from "@/assets/icons/file.svg";
-import SecurityIcon from "@/assets/icons/security.svg";
 import CloseIcon from "@/assets/icons/close.svg";
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '@/styles/colors';
@@ -101,6 +98,17 @@ export default function DrawerLayout() {
           options={
             {
               title: 'Termos e condições',
+              iconName: FileIcon,
+              isDivider: true,
+            } as CustomOptions
+          }
+        />
+
+        <Drawer.Screen
+          name="user-category"
+          options={
+            {
+              title: 'Perfil Grower',
               iconName: FileIcon,
               isDivider: true,
             } as CustomOptions

@@ -1,84 +1,125 @@
 import { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FlatList, TouchableOpacity, View, ViewabilityConfigCallbackPair } from "react-native";
+import { FlatList, RefreshControl, TouchableOpacity, View, ViewabilityConfigCallbackPair } from "react-native";
 import { Stack, useNavigation } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { colors } from "@/styles/colors";
 
 import ReelsPost from "@/components/ui/reels-post";
-import { reelsMock } from "@/constants/mock";
 import { Camera, ChevronLeft } from "lucide-react-native";
 import LogoIcon from "@/assets/icons/logo-small-white.svg";
-import BottomSheet from "@gorhom/bottom-sheet";
+import Toast from "react-native-toast-message";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
+import { getReels } from "@/api/social/post/get-reels";
+import { ReelsDetail } from "@/api/@types/models";
 
 export default function Reels() {
-  const [activePostId, setActivePostId] = useState(reelsMock[0].id);
-  const [posts, setPosts] = useState<typeof reelsMock>([]);
-  const { openBottomSheet } = useBottomSheetContext();
-
-
-  const handleBottomSheet = (post: any) => {
-    openBottomSheet({ type: 'comment', id: post})
-  };
-  
-  
+  const [refreshing, setRefreshing] = useState(false);
+  const [activePostId, setActivePostId] = useState<number>();
+  const [posts, setPosts] = useState<ReelsDetail[]>([]);
+  const [page, setPage] = useState(0);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const navigation = useNavigation();
 
+
+  const fetchPostsData = async (pageNumber: number) => {
+    try {
+      if (loadingMore || refreshing) return;
+
+      setLoadingMore(true);
+      const data = await getReels({ page: pageNumber, size: 20 });
+
+      if (data.length === 0) {
+        setHasMorePosts(false);
+      } else {
+        setPosts((prevPosts) => [...prevPosts, ...data]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar os reels:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Ops!',
+        text2: 'Aconteceu um erro ao buscar os reels. Tente novamente mais tarde.'
+      });
+    } finally {
+      setLoadingMore(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setPage(0);
+    setHasMorePosts(true);
+    setPosts([]);
+    await fetchPostsData(0);
+  };
+
   useEffect(() => {
-    const fetchPosts = async () => setPosts(reelsMock);
-    
-    fetchPosts();
-  }, []);
+    if (hasMorePosts) {
+      fetchPostsData(page);
+    }
+  }, [page]);
+
+  const loadMorePosts = () => {
+    if (!loadingMore && hasMorePosts) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  };
 
   const viewabilityConfigCallbackPairs = useRef<ViewabilityConfigCallbackPair[]>([
     {
       viewabilityConfig: { itemVisiblePercentThreshold: 80 },
-      onViewableItemsChanged: ({ changed, viewableItems }) => {
+      onViewableItemsChanged: ({ viewableItems }) => {
         if (viewableItems?.length > 0 && viewableItems[0].isViewable) {
-          console.log("video => ", viewableItems);
-          setActivePostId(viewableItems[0].item.id);
+          setActivePostId(viewableItems[0].item.post_id);
         }
       },
     },
   ]);
 
-  const onEndReached = () => {
-    setPosts((currentPosts) => [...currentPosts, ...reelsMock]);
-  };
-
   return (
-    <View style={{  backgroundColor: colors.black[100] }}>
+    <View style={{ backgroundColor: colors.black[100], flex: 1 }}>
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar backgroundColor={colors.black[100]} style="light" />
 
-      <SafeAreaView
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
+      {/* Header */}
+      <SafeAreaView style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
         <View className="flex flex-row items-center justify-between h-[72px] px-6">
           <View className="flex flex-row items-center gap-2">
-            <TouchableOpacity className="p-2 rounded-lg border border-brand-white" style={{borderColor: 'rgba(255, 255, 255, 0.16)'}} 
-              onPress={() => navigation.goBack()}>
+            <TouchableOpacity
+              className="p-2 rounded-lg border border-brand-white"
+              style={{ borderColor: 'rgba(255, 255, 255, 0.16)' }}
+              onPress={() => navigation.goBack()}
+            >
               <ChevronLeft className="w-8 h-8" color={colors.brand.white} />
             </TouchableOpacity>
-            <LogoIcon width={107} heigth={11} />
+            <LogoIcon width={107} height={30} />
           </View>
           <TouchableOpacity>
             <Camera className="w-8 h-8" color={colors.brand.white} />
           </TouchableOpacity>
         </View>
-        
       </SafeAreaView>
+
       <FlatList
         data={posts}
         renderItem={({ item }) => (
-          <ReelsPost post={item} activePostId={activePostId} openComment={handleBottomSheet}/>
+          <ReelsPost post={item} activePostId={activePostId!} />
         )}
         keyExtractor={(item, index) => `${item.id}-${index}`}
         pagingEnabled
         viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
         showsVerticalScrollIndicator={false}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={3}
+        onEndReached={loadMorePosts}
+        onEndReachedThreshold={0.3}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        initialNumToRender={10}
+        maxToRenderPerBatch={10}
+        windowSize={5}
       />
     </View>
   );

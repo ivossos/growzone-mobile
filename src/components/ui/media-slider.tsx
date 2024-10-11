@@ -1,58 +1,44 @@
 import { View, StyleSheet, Dimensions, Text, Image } from 'react-native';
-import React from 'react';
+import React, { memo } from 'react';
 import Carousel from 'pinar';
 
-import { Media } from './post-card';
 import { colors } from '@/styles/colors';
 import VideoPlayer from './video-player';
+import { SocialPostFile } from '@/api/@types/models';
 
 interface MediaSliderProps {
-  items: Media[];
+  items: SocialPostFile[];
 }
 
 const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) => {
-
-  function removeQueryString(url?: string): string | undefined {
-
-    if(!url) return; 
-    
-    try {
-      const urlObject = new URL(url);
-      return urlObject.origin + urlObject.pathname;
-    } catch (e) {
-      return url;
-    }
-  }
-
+  
   if(items.length === 1) {
     if (items[0].type === 'image') {
       return (
         <Image
-          source={{ uri: removeQueryString(items[0]?.file || '')  }}
+          source={{ uri: items[0].file  }}
           style={{ width: '100%', height: 350, borderRadius: 16}}
           resizeMode="cover"
         />
       );
-    } else if (items[0].type === 'video') {
-      return <VideoPlayer source={items[0].hls_url!}/>
-    }
-    return null;
+    }  
+    
+    return <VideoPlayer source={items[0].file}/>
   }
 
 
-  const RenderItem = ({ item }: { item: Media }) => {
+  const RenderItem = ({ item }: { item: SocialPostFile }) => {
     if (item.type === 'image') {
       return (
         <Image
-          source={{ uri: removeQueryString(item?.file || '') }}
-          style={{ width: '100%', height: '100%', borderRadius: 16}}
+          source={{ uri: item.file }}
+          style={{ width: '100%', height: '100%', borderRadius: 16 }}
           resizeMode="cover"
         />
       );
-    } else if (item.type === 'video') {
-      return <VideoPlayer source={item.hls_url!}/>
     }
-    return null;
+    
+    return <VideoPlayer source={item.file}/>
   };
 
   return (
@@ -67,7 +53,7 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) =>
   );
 };
 
-export default MediaSlider;
+export default memo(MediaSlider);
 
 const styles = StyleSheet.create({
   dotStyle: {
@@ -80,6 +66,7 @@ const styles = StyleSheet.create({
   },
   carousel: {
     height: 350,
+    minHeight: 350,
     width: '100%',
   },
 });

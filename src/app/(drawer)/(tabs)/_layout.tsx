@@ -55,9 +55,14 @@ export default function TabLayout() {
   const searchSheetRef = useRef<BottomSheet>(null);
   const reportSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
+  const createPostSheetRef = useRef<BottomSheet>(null);
 
   const openBottomSheet = () => {
     bottomSheetRef.current?.snapToIndex(1)
+  };
+
+  const closeCreateBottomSheet = () => {
+    bottomSheetRef.current?.close()
   };
 
   const closeReportBottomSheet = () => {
@@ -66,6 +71,10 @@ export default function TabLayout() {
 
   const closeSeachBottomSheet = () => {
     searchSheetRef.current?.close()
+  };
+
+  const createPostBottomSheet = () => {
+    createPostSheetRef.current?.close()
   };
 
   return (
@@ -165,7 +174,7 @@ export default function TabLayout() {
             }}
           />
         </Tabs>
-        <CreateBottomSheet ref={bottomSheetRef} />
+        <CreateBottomSheet ref={bottomSheetRef} onClose={closeCreateBottomSheet} />
         <CommentBottomSheet ref={commentSheetRef} />
         <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
         <GlobalSearchBottomSheet ref={searchSheetRef}  onClose={closeSeachBottomSheet} />

@@ -1,70 +1,83 @@
 import { postsMock } from "@/constants/mock";
-import { FlatList, Image, StyleSheet, View, Dimensions, Text } from "react-native";
+import { FlatList, Image, StyleSheet, View, Dimensions, Text, TouchableOpacity } from "react-native";
 import { Post } from "./post-card";
-import { Avatar, AvatarImage } from "../Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
+import { SocialPost } from "@/api/@types/models";
+import { Video } from "expo-av";
+import { useAuth } from "@/hooks/use-auth";
+import { getInitials } from "@/lib/utils";
+import { router } from "expo-router";
 
 
 const numColumns = 2;
 const w = Dimensions.get("window").width;
 
-export default function ReelsGrid() {
-  const renderItem = ({ item }: { item: Post}) => {
-    const image = item?.media?.find(m => m.type === 'image');
-    
-    if(!image) return;
+type ReelsGridProps = {
+  reels: SocialPost[]
+}
 
+export default function ReelsGrid({ reels }: ReelsGridProps) {
+  const { user} = useAuth();
+
+  const renderItem = ({ item }: { item: SocialPost}) => {
     return (
-      <View className="flex flex-col gap-2 mb-4">
-        <Image src={image.file!} style={styles.image} resizeMode="cover" />
+      <TouchableOpacity onPress={() => router.push(`/reels/${item.post_id}`)} className="flex flex-col gap-2 mb-4">
+         <Video
+          source={{ uri: item?.file?.file}}
+          style={styles.image}
+          shouldPlay={false}
+          isLooping
+          useNativeControls={false}
+        />
         <LinearGradient
           colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
           style={styles.blurContainer}
         >
           <Eye size={18} color={colors.brand.white}/>
-          <Text className="text-white text-base font-medium">75</Text>
+          <Text className="text-white text-base font-medium">{item.view_count}</Text>
         </LinearGradient>
         <View className="flex flex-col gap-1">
-          <Text
+          {item.description && <Text
             className="text-base text-brand-grey font-normal"
             numberOfLines={1}
             ellipsizeMode="tail"
             style={styles.description}
             >
-              {item.content}
-          </Text>
-          <View className="flex flex-row items-center gap-2">
-            <Avatar className="w-6 h-6">
-              <AvatarImage
+              {item.description}
+          </Text>}
+          {/* <View className="flex flex-row items-center gap-2">
+            <Avatar className="w-6 h-6 bg-black-60">
+              {!!(user.image?.image) && <AvatarImage
                 className="rounded-full"
-                src={item?.user_info?.avatar!}
-              />
+                source={{ uri: user.image?.image}}
+              />}
+              <AvatarFallback>{getInitials(user?.name || user?.username)}</AvatarFallback>
             </Avatar>
             <Text 
               className="text-white text-sm text-start font-semibold" 
               numberOfLines={1}
               ellipsizeMode="tail"
             >
-                {item?.user_info?.name}
+                {user?.name || user?.username}
               </Text>
-          </View>
+          </View> */}
 
         </View>
-      </View>
+      </TouchableOpacity>
     )
 };
 
   return (
     <FlatList
-      data={postsMock}
+      data={reels.filter(r => !r.is_compressing)}
       renderItem={renderItem}
       keyExtractor={(item) => item.id.toString()}
       numColumns={numColumns}
       columnWrapperClassName="flex gap-4 px-6 w-full"
       scrollEnabled={false}
-      row
     />
   );
 }

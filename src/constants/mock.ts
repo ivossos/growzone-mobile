@@ -1053,69 +1053,57 @@ export const users = [
 ];
 
 export const reelsMock = [
-  {
-    id: "2",
-    video:
-      "https://prd.img.growzone.co/posts/videos/9d229263-cbd5-4c52-8938-4080a2f413e6/output.m3u8",
-    caption:
-      "🤔 Você conhecia os benefícios da Cannabis para o tratamento de Burnout??? A Síndrome de Burnout, também chamada de Síndrome de Esgotamento Profissional, é uma condição que vem acometendo os indivíduos no ambiente de trabalho. As consequências desse problema afetam negativamente tanto o indivíduo como a organização onde ele desempenha sua atividade, uma vez que pode gerar baixo rendimento ou produtividade, aumento das faltas e até mesmo o abandono do emprego... continuar lendo ",
-    userInfo: {
-      id: 452,
-      name: "Maconhia",
-      avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
-      isFollowing: false,
-    },
-  },
-  {
-    id: "1",
-    video: 
-    "https://prd.img.growzone.co/posts/videos/350bcda1-3d1e-4397-b287-c80fd4f52505/output.m3u8",
-    caption: "Hey there",
-    userInfo: {
-      id: 452,
-      name: "Pedro",
-      avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
-      isFollowing: false,
-    },
-  },
-  {
-    id: "3",
-    video: "https://prd.img.growzone.co/posts/videos/da344cc4-51d4-4b8f-ab8e-5f70ee77a1de/output.m3u8",
-    caption: "Hola",
-    userInfo: {
-      id: 452,
-      name: "Comedia",
-      avatar:
-        "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
-      isFollowing: false,
-    },
-  },
-  {
-    id: "4",
-    video:
-      "https://prd.img.growzone.co/posts/videos/b61fa8b8-c897-4ed2-8172-dcc1489e6d2b/output.m3u8",
-    caption: "Piano practice",
-    userInfo: {
-      id: 452,
-      name: "Pedro",
-      avatar:
-        "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
-      isFollowing: false,
-    },
-  },
-  {
-    id: "5",
-    video:
-       "https://prd.img.growzone.co/posts/videos/6853c1ef-0106-4315-80bf-38f158ae1289/output.m3u8",
-    caption: "Hello World!",
-    userInfo: {
-      id: 452,
-      name: "Zé da manga",
-      avatar:
-        "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
-      isFollowing: false,
-    },
-  },
+  {"comment_count": 0, "created_at": "2024-10-09T03:30:26.912919+00:00", "description": null, "file": {"created_at": "2024-10-09T03:43:02.450682+00:00", "file": "https://dev.img.growzone.co/media/reel_post_files/6892e4ec-b166-4ef6-b57c-0e30643a6bb4/output.m3u8", "id": 15, "type": "video"}, "id": 39, "is_compressing": false, "is_liked": false, "is_viewed": false, "like_count": 0, "post_id": 132, "user": {"created_at": "2024-09-12T05:03:18.888562+00:00", "id": 5, "image": {"created_at": "2024-10-03T02:20:09.535980+00:00", "id": 17, "image": "https://dev.img.growzone.co/media/user_images/d523c2be-a479-4f23-972a-98213734ebc7.webp"}, "is_following": false, "name": "Fabio Mendes", "username": "mendesvieira"}}
+  // {
+  //   id: "1",
+  //   video: 
+  //   "https://prd.img.growzone.co/posts/videos/350bcda1-3d1e-4397-b287-c80fd4f52505/output.m3u8",
+  //   caption: "Hey there",
+  //   userInfo: {
+  //     id: 452,
+  //     name: "Pedro",
+  //     avatar: "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
+  //     isFollowing: false,
+  //   },
+  // },
+  // {
+  //   id: "3",
+  //   video: "https://prd.img.growzone.co/posts/videos/da344cc4-51d4-4b8f-ab8e-5f70ee77a1de/output.m3u8",
+  //   caption: "Hola",
+  //   userInfo: {
+  //     id: 452,
+  //     name: "Comedia",
+  //     avatar:
+  //       "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/22/84183f5f-0038-4df1-995e-f3581e22b090.webp",
+  //     isFollowing: false,
+  //   },
+  // },
+  // {
+  //   id: "4",
+  //   video:
+  //     "https://prd.img.growzone.co/posts/videos/b61fa8b8-c897-4ed2-8172-dcc1489e6d2b/output.m3u8",
+  //   caption: "Piano practice",
+  //   userInfo: {
+  //     id: 452,
+  //     name: "Pedro",
+  //     avatar:
+  //       "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+  //     isFollowing: false,
+  //   },
+  // },
+  // {
+  //   id: "5",
+  //   video:
+  //      "https://prd.img.growzone.co/posts/videos/6853c1ef-0106-4315-80bf-38f158ae1289/output.m3u8",
+  //   caption: "Hello World!",
+  //   userInfo: {
+  //     id: 452,
+  //     name: "Zé da manga",
+  //     avatar:
+  //       "https://sfo3.digitaloceanspaces.com/growzone-storage/media/avatar/2024/07/03/maconha-default.webp",
+  //     isFollowing: false,
+  //   },
+  // },
 ];
 
 export const notificationsMock = [

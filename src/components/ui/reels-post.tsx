@@ -4,35 +4,96 @@ import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { Avatar, AvatarImage } from "../Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { Heart, MessageCircleMore } from "lucide-react-native";
 import { colors } from "@/styles/colors";
-import { useFocusEffect } from "expo-router";
+import { Link, useFocusEffect } from "expo-router";
 import ExpandableText from "./expandable-text";
-type Post = {
-  id: string;
-  video: string;
-  caption: string;
-  userInfo: {
-    id: number;
-    name: string;
-    avatar: string;
-    isFollowing: boolean;
-  };
-};
+import { ReelsDetail } from "@/api/@types/models";
+import { getInitials } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { useBottomSheetContext } from "@/context/bottom-sheet-context";
+import Toast from "react-native-toast-message";
+import { createFollow } from "@/api/social/follow/create-follow";
+import { deleteFollow } from "@/api/social/follow/delete-follow";
+import { deleteLike } from "@/api/social/post/like/delete-like";
+import { createLike } from "@/api/social/post/like/create-like";
+import LikeIcon from "@/assets/icons/like-white.svg";
+import LikedIcon from "@/assets/icons/liked.svg";
 
 type ReelsPostProps = {
-  post: Post;
-  activePostId: string;
-  openComment: (post: Post) => void;
+  post: ReelsDetail;
+  activePostId: number;
 };
 
-const ReelsPost = ({ post, activePostId, openComment }: ReelsPostProps) => {
+const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
+  const { user } = useAuth();
   const video = useRef<Video>(null);
   const [status, setStatus] = useState<AVPlaybackStatus>();
+  const [follow, setFollow] = useState<boolean>(post.user.is_following);
+  const [liked, setLiked] = useState(post.is_liked);
+  const [likedCount, setLikedCount] = useState(post.like_count);
+  const [isLoadingLiked, setIsLoadingLiked] = useState(false);
+  
+  const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false)
+  const { openBottomSheet } = useBottomSheetContext();
  
   const isPlaying = status?.isLoaded && status.isPlaying;
   const isBuffering = status?.isLoaded && status.isBuffering;
+
+  const handleBottomSheet = (post: any) => {
+    openBottomSheet({ type: 'comment', id: post})
+  };
+
+ 
+  async function handleFollower() {
+    try {
+      setIsLoadingHandleFollower(true);
+      if (follow) {
+        await deleteFollow(post.user.id);
+        setFollow(false);
+      } else {
+        await createFollow(post.user.id)
+        setFollow(true);
+      }
+
+    } catch (error) {
+      console.error("erro on handleFollower", error);
+
+      Toast.show({
+        type: "error",
+        text1: "Opss",
+        text2:
+          'Aconteceu um erro realizar essa açåo", "Tente novamente mais tarde.',
+      });
+    } finally {
+      setIsLoadingHandleFollower(false);
+    }
+  }
+
+  const handleLike = async () => {
+    try {
+      setIsLoadingLiked(true);
+      if (liked) {
+        await deleteLike(post.post_id);
+        setLiked(false);
+        setLikedCount((prev) => prev - 1);
+      } else {
+        await createLike(post.post_id);
+        setLiked(true);
+        setLikedCount((prev) => prev + 1);
+      }
+    } catch (err) {
+      console.error("Erro em handleLike", err);
+      Toast.show({
+        type: "error",
+        text1: "Opss",
+        text2: `Aconteceu um erro no ${liked ? "deslike" : "like"} do post. Tente novamente mais tarde.`,
+      });
+    } finally {
+      setIsLoadingLiked(false);
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -47,7 +108,7 @@ const ReelsPost = ({ post, activePostId, openComment }: ReelsPostProps) => {
   useEffect(() => {
     if (!video.current) return;
 
-    if (activePostId !== post.id) {
+    if (activePostId !== post.post_id) {
       video.current.pauseAsync().then(() => {
         video.current?.setStatusAsync({ shouldPlay: false });
       });
@@ -81,8 +142,8 @@ const ReelsPost = ({ post, activePostId, openComment }: ReelsPostProps) => {
       <Video
         ref={video}
         style={[StyleSheet.absoluteFill, styles.video]}
-        source={{ uri: post.video }}
-        resizeMode={ResizeMode.COVER}
+        source={{ uri: post.file.file }}
+        resizeMode={ResizeMode.CONTAIN}
         onPlaybackStatusUpdate={setStatus}
         isLooping
         isMuted={false}
@@ -113,55 +174,89 @@ const ReelsPost = ({ post, activePostId, openComment }: ReelsPostProps) => {
           <View style={styles.footer}>
             <View style={{ flex: 1 }} className="flex gap-2">
               <View
-                key={post.userInfo.id}
+                key={post.user.id}
                 className="flex flex-row items-center justify-start w-full"
               >
                 <View className="flex flex-row items-center gap-2 mr-2">
-                  <Avatar className="w-12 h-12">
+                  <Avatar className="w-12 h-12 bg-black-80">
+                  {!!(post.user.image?.image) &&
                     <AvatarImage
                       className="rounded-full"
-                      src={post.userInfo.avatar}
-                    />
+                      src={post.user.image.image}
+                    />}
+                    <AvatarFallback>{getInitials(post.user?.name || post.user?.username)}</AvatarFallback>
                   </Avatar>
                   <View>
                     <Text className="text-white text-lg text-start font-semibold">
-                      {post.userInfo.name}
+                      {post.user.name || post.user.username}
                     </Text>
                   </View>
                 </View>
 
-                {post.userInfo.isFollowing ? (
-                  <TouchableOpacity className="px-3 py-1 bg-black-80 rounded-[64px] ">
-                    <Text className="text-base text-neutral-400">Seguindo</Text>
+                {(user.id !== post.user.id) && (post.user.is_following ? (
+                  <TouchableOpacity className="px-3 py-1 bg-black-80 rounded-[64px]" onPress={handleFollower}>
+                    {isLoadingHandleFollower && (
+                      <ActivityIndicator
+                        animating
+                        color="#fff"
+                        size="small"
+                        className="ml-2"
+                      />
+                    )}
+                    {!isLoadingHandleFollower && <Text className="text-base text-neutral-400">Seguindo</Text>}
                   </TouchableOpacity>
                 ) : (
-                  <TouchableOpacity className="px-3 py-1 border border-brand-green rounded-[64px] ">
-                    <Text className="text-base text-brand-green ">
+                  <TouchableOpacity className="px-3 py-1 border border-brand-green rounded-[64px]" onPress={handleFollower}>
+                    {isLoadingHandleFollower && (
+                      <ActivityIndicator
+                        animating
+                        color="#fff"
+                        size="small"
+                        className="ml-2"
+                      />
+                    )}
+                    {!isLoadingHandleFollower && <Text className="text-base text-brand-green ">
                       + Seguir
-                    </Text>
+                    </Text>}
                   </TouchableOpacity>
-                )}
+                ))}
               </View>
-              <ExpandableText text={post.caption} numberOfLines={1} />
+              {post.description && <ExpandableText text={post.description} numberOfLines={1} />}
             </View>
 
             <View style={styles.rightColumn}>
-              <LinearGradient
-                colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
-                style={styles.blurContainer}
-              >
-                <TouchableOpacity onPress={() => {}}>
-                  <Heart size={20} color={colors.brand.white} />
-                </TouchableOpacity>
-              </LinearGradient>
-              <LinearGradient
-                colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
-                style={styles.blurContainer}
-              >
-                <TouchableOpacity onPress={() => openComment(post)}>
-                  <MessageCircleMore size={20} color={colors.brand.white} />
-                </TouchableOpacity>
-              </LinearGradient>
+              <View className="flex flex-col items-center justify-center gap-2">
+                <LinearGradient
+                  colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
+                  style={styles.blurContainer}
+                >
+                  <TouchableOpacity onPress={handleLike}>
+                  {liked ? (
+                  <LikedIcon width={20} height={20} />
+                ) : (
+                  <LikeIcon width={20} height={20} />
+                )}
+                  </TouchableOpacity>
+                </LinearGradient>
+                {likedCount > 0 && (
+                  <Link href={{ pathname: '/reels/[id]/likes', params: { id: post.post_id } }} >
+                    <Text className="text-white font-medium">{likedCount}</Text>
+                  </Link>
+                )}
+              </View>
+              <View className="flex flex-col items-center justify-center gap-2">
+                <LinearGradient
+                  colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
+                  style={styles.blurContainer}
+                >
+                  <TouchableOpacity onPress={() => handleBottomSheet(post.post_id)}>
+                    <MessageCircleMore size={20} color={colors.brand.white} />
+                  </TouchableOpacity>
+                </LinearGradient>
+                {post.comment_count > 0 && (
+                  <Text className="text-white font-medium">{post.comment_count}</Text>
+                )}
+              </View>
             </View>
           </View>
       </Pressable>
@@ -181,7 +276,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1
   },
-  video: {},
+  video: {
+    height: '100%'
+  },
   content: {
     flex: 1,
     padding: 24,

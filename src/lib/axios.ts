@@ -15,6 +15,7 @@ type APIInstanceProps = AxiosInstance & {
 
 const authBaseURL = "https://dev.auth.growzone.co/api/v1";
 const socialBaseURL = "https://dev.social.growzone.co/api/v1";
+const compressBaseURL = "https://dev.compress.growzone.co/api/v1";
 
 const createAPIInstance = (baseURL: string): APIInstanceProps => {
   const api = axios.create({ baseURL }) as APIInstanceProps;
@@ -24,9 +25,9 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 
   api.registerInterceptTokenManager = signOut => {
     const interceptTokenManager = api.interceptors.response.use(res => res, async (requestError) => {
-
-      console.log('----> error', requestError?.response)
+      console.log('error', requestError?.response.status)
       if (requestError?.response?.status === 401) {
+        
         const { refresh_token } = await storageGetAuthToken();
 
         if (!refresh_token) {
@@ -72,6 +73,7 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
             originalRequestConfig.headers['Authorization'] = `Bearer ${data.access_token}`;
             api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
 
+            //todo criar limitar para nao derrubar server 
             failedQueued.forEach(request => {
               request.onSuccess(data.access_token);
             });
@@ -90,6 +92,7 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
         });
       }
 
+      console.log('----> error', JSON.stringify(requestError?.response.status))
       return Promise.reject(requestError);
     });
 
@@ -103,5 +106,6 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 
 const authApi = createAPIInstance(authBaseURL);
 const socialApi = createAPIInstance(socialBaseURL);
+const compressApi = createAPIInstance(compressBaseURL);
 
-export { authApi, socialApi };
+export { authApi, socialApi, compressApi };

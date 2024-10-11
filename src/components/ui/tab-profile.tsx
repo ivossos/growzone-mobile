@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Dimensions,
   ScrollView,
@@ -16,6 +16,10 @@ import ReelsGreenIcon from "@/assets/icons/reels-green.svg";
 import clsx from "clsx";
 import PostGrid from "./post-grid";
 import ReelsGrid from "./reels-grid";
+import { SocialPost } from "@/api/@types/models";
+import Toast from "react-native-toast-message";
+import { getUserPosts } from "@/api/social/post/get-user-posts";
+import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 
 const w = Dimensions.get("screen").width;
 
@@ -24,8 +28,15 @@ const tabs = [
   { id: 2, title: "Wellz", Icon: ReelsIcon, IconSelected: ReelsGreenIcon },
 ];
 
-const TabProfile = ({ onPress }) => {
+type TabProfileProps = {
+  userId: number;
+}
+
+const TabProfile = ({ userId }: TabProfileProps) => {
   const [selected, setSelected] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [posts, setPosts] = useState<SocialPost[]>([]);
+  const [reels, setReels] = useState<SocialPost[]>([]);
   const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
   const scrollRef = useRef(null);
 
@@ -51,6 +62,33 @@ const TabProfile = ({ onPress }) => {
       setIsManuallyScrolling(false); 
     }, 300);
   };
+
+  const fetchPostsData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await getUserPosts({ id: userId });
+      setPosts(data);
+
+      const reels = await getUserReelsPosts({ id: userId })
+      setReels(reels);
+
+    } catch (error) {
+      console.log('erro  ao buscar as postagens: ', error )
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Aconteceu um erro ao buscar as postagens desse perfil", "Tente novamente mais tarde.'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchPostsData();
+  }, [userId]);
+ 
 
   return (
     <>
@@ -88,8 +126,8 @@ const TabProfile = ({ onPress }) => {
       >
         {tabs.map((tab) => (
           <View className="mt-4" key={tab.id} style={{ width: w }}>
-            {tab.id === 1 && <PostGrid />}
-            {tab.id === 2 && <ReelsGrid />}
+            {tab.id === 1 && <PostGrid posts={posts} />}
+            {tab.id === 2 && <ReelsGrid reels={reels} />}
           </View>
         ))}
       </ScrollView>

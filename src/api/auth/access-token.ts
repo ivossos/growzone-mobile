@@ -21,7 +21,5 @@ export async function accessToken({
     }
   });
 
-  console.log(res)
-
   return res?.data;
 }

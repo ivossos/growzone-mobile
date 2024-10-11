@@ -1,14 +1,92 @@
+import { Comment, PostDetail, PostLike, SocialPost } from "@/api/@types/models";
+import { getPostComments } from "@/api/social/post/comment/get-comments";
+import { getPost } from "@/api/social/post/get-post";
+import { getPostLikes } from "@/api/social/post/like/get-likes";
 import { PostCard } from "@/components/ui/post-card";
-import { postsMock } from "@/constants/mock";
 import { colors } from "@/styles/colors";
+import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ScrollView, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 export default function Post() {
-  const post = postsMock[2]
+  const route = useRoute();
+  const id = (route.params as { id: number })?.id;
+  const [isLoadingPost, setIsLoadingPost] = useState(false);
+  const [isLoadingPostComments, setIsLoadingPostComments] = useState(false);
+  const [isLoadingPostLikes, setIsLoadingPostLikes] = useState(false);
+  const [post, setPost] = useState<PostDetail>();
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [likes, setLikes] = useState<PostLike[]>([]);
+
+  const fetchPost = async () => {
+    try {
+      setIsLoadingPost(true);
+      const data = await getPost(id);
+      setPost(data);
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
+      });
+
+      router.back();
+    } finally {
+      setIsLoadingPost(false);
+    }
+  };
+
+  const fetchPostComments = async () => {
+    try {
+      setIsLoadingPostComments(true);
+      const data = await getPostComments({ postId: id, page: 0, size: 4 });
+      setComments(data);
+    } catch (error) {
+
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
+      });
+
+      router.back();
+      
+    } finally {
+      setIsLoadingPostComments(false);
+    }
+  }
+
+  const fetchPostLikes = async () => {
+    try {
+      setIsLoadingPostLikes(true);
+      const data = await getPostLikes({ postId: id, page: 0, size: 2 });
+      setLikes(data);
+    } catch (error) {
+
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
+      });
+
+      router.back();
+      
+    } finally {
+      setIsLoadingPostLikes(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchPost();
+    fetchPostLikes();
+    fetchPostComments();
+  }, [id]);
+
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
     <View className="flex-1 bg-black-100 overflow-hidden">
@@ -20,7 +98,11 @@ export default function Post() {
           Publicação
         </Text>
       </View>
-    <PostCard post={post}/>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {!isLoadingPost && !isLoadingPostComments && !isLoadingPostLikes && (
+          post && <PostCard post={post} comments={comments} likes={likes} />
+        )}
+      </ScrollView>
     </View>
     </SafeAreaView>
   )
