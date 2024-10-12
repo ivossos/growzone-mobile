@@ -6,6 +6,7 @@ import { Link } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
+import { getInitials } from "@/lib/utils";
 
 interface ContributorCardProps {
   user: UserDTO;
@@ -45,9 +46,13 @@ export default function ContributorCard({ user: contributor }: ContributorCardPr
     <Link href={{ pathname: '/profile/[id]', params: { id: contributor.id } }} >
       <View className="flex w-[155px] rounded-2xl border border-black-90">
 
-        <Image height={160} width={155} source={{ uri: contributor.image?.image }} resizeMode="cover" className="rounded-t-2xl" />
+        {contributor.image?.image ? <Image height={160} width={155} source={{ uri: contributor.image?.image }} resizeMode="cover" className="rounded-t-2xl" /> :
+        <View style={{ height: 160 }} className="flex flex-row justify-center items-center w-full bg-black-80 rounded-t-2xl">
+          <Text className="text-brand-green text-center text-7xl">{getInitials(contributor?.name || contributor?.username)}</Text>  
+        </View>
+        }
         <View className="flex gap-2 p-3">
-          <Text className="text-sm text-white font-semibold">{contributor.name}</Text>
+          <Text className="text-sm text-white font-semibold">{contributor.name || contributor?.username}</Text>
           {user.id !== contributor.id ? (
             contributor.is_following ? 
             <TouchableOpacity className="mr-auto px-3 py-1 bg-black-80 rounded-[64px]" onPress={handleFollower}>

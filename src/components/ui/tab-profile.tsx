@@ -1,14 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  Dimensions,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  Pressable,
-} from "react-native";
+import React, { useState, useRef } from "react";
+import { Dimensions, ScrollView, Text, View, Pressable } from "react-native";
+import PagerView from 'react-native-pager-view';
 
-import { colors } from "@/styles/colors";
 import PostIcon from "@/assets/icons/post.svg";
 import PostGreenIcon from "@/assets/icons/post-green.svg";
 import ReelsIcon from "@/assets/icons/reels.svg";
@@ -16,10 +9,6 @@ import ReelsGreenIcon from "@/assets/icons/reels-green.svg";
 import clsx from "clsx";
 import PostGrid from "./post-grid";
 import ReelsGrid from "./reels-grid";
-import { SocialPost } from "@/api/@types/models";
-import Toast from "react-native-toast-message";
-import { getUserPosts } from "@/api/social/post/get-user-posts";
-import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 
 const w = Dimensions.get("screen").width;
 
@@ -34,61 +23,24 @@ type TabProfileProps = {
 
 const TabProfile = ({ userId }: TabProfileProps) => {
   const [selected, setSelected] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [posts, setPosts] = useState<SocialPost[]>([]);
-  const [reels, setReels] = useState<SocialPost[]>([]);
-  const [isManuallyScrolling, setIsManuallyScrolling] = useState(false);
-  const scrollRef = useRef(null);
+  const [contentHeight, setContentHeight] = useState(0);
+  const pagerRef = useRef<PagerView>(null);
 
-  const onScroll = ({ nativeEvent }) => {
-    if (isManuallyScrolling) return;
-
-    const index = Math.round(nativeEvent.contentOffset.x / w);
-    const tab = tabs[index];
-    if (tab) {
-      setSelected(tab.id); 
-    }
-  };
-
-  const handleTabPress = (id) => {
+  const handleTabPress = (id: number) => {
     setSelected(id);
-    setIsManuallyScrolling(true);
-    const index = tabs.findIndex(tab => tab.id === id);
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ x: index * w, animated: true });
-    }
-
-    setTimeout(() => {
-      setIsManuallyScrolling(false); 
-    }, 300);
-  };
-
-  const fetchPostsData = async () => {
-    try {
-      setIsLoading(true);
-      const data = await getUserPosts({ id: userId });
-      setPosts(data);
-
-      const reels = await getUserReelsPosts({ id: userId })
-      setReels(reels);
-
-    } catch (error) {
-      console.log('erro  ao buscar as postagens: ', error )
-      Toast.show({
-        type: 'error',
-        text1: 'Opss',
-        text2: 'Aconteceu um erro ao buscar as postagens desse perfil", "Tente novamente mais tarde.'
-      });
-    } finally {
-      setIsLoading(false);
+    if (pagerRef.current) {
+      pagerRef.current.setPage(id - 1);
     }
   };
 
+  const handlePageSelected = (e: any) => {
+    const index = e.nativeEvent.position;
+    setSelected(tabs[index].id);
+  };
 
-  useEffect(() => {
-    fetchPostsData();
-  }, [userId]);
- 
+  const handleContentSizeChange = (width: number, height: number) => {
+    setContentHeight(height);
+  };
 
   return (
     <>
@@ -97,7 +49,7 @@ const TabProfile = ({ userId }: TabProfileProps) => {
           <Pressable 
             key={id} 
             onPress={() => handleTabPress(id)}
-            className={clsx("flex flex-row gap-2 items-center justify-center px-4 h-full mx-auto", { 'border-b-[1px] border-primary': selected === id})}
+            className={clsx("flex flex-row gap-2 items-center justify-center px-4 h-full mx-auto", { 'border-b-[1px] border-primary': selected === id })}
           >
             {selected === id ? (
               <IconSelected width={24} height={24} />
@@ -114,24 +66,30 @@ const TabProfile = ({ userId }: TabProfileProps) => {
         ))}
       </View>
 
-      <ScrollView
-        ref={scrollRef}
-        horizontal
-        pagingEnabled
-        snapToAlignment="center"
-        onScroll={onScroll}
-        decelerationRate="fast"
-        scrollEventThrottle={16}
-        showsHorizontalScrollIndicator={false}
-      >
-        {tabs.map((tab) => (
-          <View className="mt-4" key={tab.id} style={{ width: w }}>
-            {tab.id === 1 && <PostGrid posts={posts} />}
-            {tab.id === 2 && <ReelsGrid reels={reels} />}
+      <View style={{ height: contentHeight }}>
+        <PagerView
+          ref={pagerRef}
+          style={{ flex: 1 }}
+          initialPage={0}
+          onPageSelected={handlePageSelected}
+        >
+          <View key="1" style={{ width: w }}>
+            {selected === 1 && (
+              <ScrollView onContentSizeChange={handleContentSizeChange}>
+                <PostGrid userId={userId} />
+              </ScrollView>
+            )}
           </View>
-        ))}
-      </ScrollView>
 
+          <View key="2" style={{ width: w }}>
+            {selected === 2 && (
+              <ScrollView onContentSizeChange={handleContentSizeChange}>
+                <ReelsGrid userId={userId} />
+              </ScrollView>
+            )}
+          </View>
+        </PagerView>
+      </View>
     </>
   );
 };

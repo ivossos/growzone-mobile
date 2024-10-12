@@ -3,11 +3,11 @@ import { Review } from '@/api/@types/models';
 
 interface GetUserReviewsProps {
   id: number;
-  page?: number;
-  size?: number
+  skip?: number;
+  limit?: number
 }
 
-export async function getUserReviews({id, page = 0, size = 100}: GetUserReviewsProps) {
-  const response = await socialApi.get<Review[]>(`/review/reviews/${id}?skip=${page}&limit=${size}`);
+export async function getUserReviews({id, skip = 0, limit = 20}: GetUserReviewsProps) {
+  const response = await socialApi.get<Review[]>(`/review/reviews/${id}?skip=${skip}&limit=${limit}`);
   return response.data;
 }

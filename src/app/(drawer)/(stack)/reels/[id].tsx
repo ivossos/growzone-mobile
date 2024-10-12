@@ -1,37 +1,30 @@
 import { Comment, ReelsDetail, PostLike, SocialPost } from "@/api/@types/models";
-import { getPostComments } from "@/api/social/post/comment/get-comments";
-import { getReels } from "@/api/social/post/get-reels";
-import { getPostLikes } from "@/api/social/post/like/get-likes";
-import { PostCard } from "@/components/ui/post-card";
 import LogoIcon from "@/assets/icons/logo-small-white.svg";
 import ReelsPost from "@/components/ui/reels-post";
 import { colors } from "@/styles/colors";
 import { useRoute } from "@react-navigation/native";
 import { router, Stack, useNavigation } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ArrowLeft, Camera, ChevronLeft } from "lucide-react-native";
+import { Camera, ChevronLeft } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
+import { getReel } from "@/api/social/post/get-reel";
 
 export default function Reels() {
   const route = useRoute();
   const id = (route.params as { id: number })?.id;
   const [isLoadingPost, setIsLoadingPost] = useState(false);
-  const [isLoadingPostComments, setIsLoadingPostComments] = useState(false);
-  const [isLoadingPostLikes, setIsLoadingPostLikes] = useState(false);
   const [post, setPost] = useState<ReelsDetail>();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [likes, setLikes] = useState<PostLike[]>([]);
   const navigation = useNavigation();
  
   const fetchPost = async () => {
     try {
       setIsLoadingPost(true);
-      const data = await getReels(id);
+      const data = await getReel(id);
       setPost(data);
     } catch (error) {
       Toast.show({

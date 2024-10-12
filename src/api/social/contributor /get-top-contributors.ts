@@ -2,15 +2,15 @@ import { socialApi } from '@/lib/axios';
 import { UserDTO } from '@/api/@types/models';
 
 interface GetTopContributorsProps {
-  page?: number;
-  size?: number
+  skip?: number;
+  limit?: number
 }
 
-export async function getTopContributors({ page = 0, size = 20 }: GetTopContributorsProps) {
+export async function getTopContributors({ skip = 0, limit = 20 }: GetTopContributorsProps) {
   const response = await socialApi.get<UserDTO[]>('/top-contributor/', {
     params: {
-      skip: page,
-      limit: size
+      skip,
+      limit
     }
   });
   return response.data;

@@ -2,7 +2,7 @@ import { Comment, PostDetail, PostLike, SocialPost } from "@/api/@types/models";
 import { getPostComments } from "@/api/social/post/comment/get-comments";
 import { getPost } from "@/api/social/post/get-post";
 import { getPostLikes } from "@/api/social/post/like/get-likes";
-import { PostCard } from "@/components/ui/post-card";
+import PostCard from "@/components/ui/post-card";
 import { colors } from "@/styles/colors";
 import { useRoute } from "@react-navigation/native";
 import { router } from "expo-router";
@@ -44,7 +44,7 @@ export default function Post() {
   const fetchPostComments = async () => {
     try {
       setIsLoadingPostComments(true);
-      const data = await getPostComments({ postId: id, page: 0, size: 4 });
+      const data = await getPostComments({ postId: id, skip: 0, limit: 4 });
       setComments(data);
     } catch (error) {
 
@@ -64,7 +64,7 @@ export default function Post() {
   const fetchPostLikes = async () => {
     try {
       setIsLoadingPostLikes(true);
-      const data = await getPostLikes({ postId: id, page: 0, size: 2 });
+      const data = await getPostLikes({ postId: id, skip: 0, limit: 4  });
       setLikes(data);
     } catch (error) {
 

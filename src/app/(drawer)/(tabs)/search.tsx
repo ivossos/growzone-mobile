@@ -34,7 +34,10 @@ import { getTrendingWells } from "@/api/social/wells/get-trending-wells";
 export default function SearchScreen() {
   const { user } = useAuth();
   const [searchResponse, setSearchResponse] = useState<GlobalSearchResponse[]>([]);
-  const [page, setPage] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(10);
+  
+  const [loadingMore, setLoadingMore] = useState(false);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(false);
@@ -115,7 +118,6 @@ export default function SearchScreen() {
     try {
       setIsLoadingTrendingWells(true);
       const data = await getTrendingWells({});
-      console.log(' Trending Wells: ', data);
       setTrendingWells(data);
     } catch (error) {
       console.log('Erro ao buscar as Trending Wells: ', error);
@@ -128,21 +130,21 @@ export default function SearchScreen() {
       setIsLoadingTrendingWells(false);
     }
   };
-  
 
-
-  const loadGlobalSearch = async () => {
-    if (loading || !hasMore) return;
-    setLoading(true);
-    
+  const fetchGlobalSearch = async (skipValue: number, limitValue: number) => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
     try {
-      const res = await searchGlobal({ page, size: 50, query: debouncedQuery });
-      setSearchResponse((prev) => [
-        ...prev,
-        ...res.filter((newUser) => !prev.some((existingUser) => existingUser.id === newUser.id))
-      ]);
-      setHasMore(res.length > 0);
-      setPage(prev => prev + 1);
+      const res = await searchGlobal({ skip: skipValue, limit: limitValue, query: debouncedQuery });
+
+      if (res.length === 0) {
+        setHasMore(false);
+      } else {
+        setSearchResponse((prev) => [
+          ...prev,
+          ...res
+        ]);
+      }
     } catch (error) {
       console.error("Erro ao carregar os usuários que esse perfil segue:", error);
       Toast.show({
@@ -151,26 +153,31 @@ export default function SearchScreen() {
         text2: 'Aconteceu um erro buscar a pesquisa, tente novamente mais tarde.',
       });
     } finally {
-      setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    loadGlobalSearch();
+    fetchGlobalSearch(skip, limit);
   }, [debouncedQuery]);
+  
 
   useEffect(() => {
     fetchTopContributors();
     fetchTrendingWells();
   }, [])
 
-  // const handleLoadMore = () => {
-  //   if (!loading && hasMore) {
-  //     loadGlobalSearch();
-  //   }
-  // };
+  useEffect(() => {
+    if (hasMore) {
+      fetchGlobalSearch(skip, limit);
+    }
+  }, [skip]);
 
-  const handleLoadMore = () => {}
+   const loadMorePosts = () => {
+    if (!loadingMore && hasMore) {
+      setSkip((prevSkip) => prevSkip + limit);
+    }
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -190,7 +197,7 @@ export default function SearchScreen() {
             value={query}
             handleChangeText={(text) => {
               setSearchResponse([]);
-              setPage(0);
+              setSkip(0);
               setHasMore(true);
               setQuery(text);
             }}
@@ -205,7 +212,7 @@ export default function SearchScreen() {
 
         {query && <ScrollView 
             showsVerticalScrollIndicator={false}
-            onMomentumScrollEnd={handleLoadMore}
+            onMomentumScrollEnd={loadMorePosts}
           >
             <View className="flex flex-col gap-4 mt-2  px-6 pb-[400px]">
               {searchResponse.map(res => (
@@ -269,12 +276,12 @@ export default function SearchScreen() {
                   </View>
                 </Link>
               ))}
-               {!loading && searchResponse.length === 0 && (
+               {!loadingMore && searchResponse.length === 0 && (
                 <View className="flex flex-col justify-center items-center py-6">
                   <Text className="text-base text-brand-grey">Nenhum item foi encontrado para sua pesquisa</Text>
                 </View>
                )}
-              {loading && (
+              {loadingMore && (
                 <View className="flex items-center justify-center">
                   <ActivityIndicator
                     animating
@@ -292,10 +299,16 @@ export default function SearchScreen() {
           keyExtractor={(item) => item.key}
           showsVerticalScrollIndicator={false}
           contentContainerClassName="pb-6"
-          renderItem={({ item }) => {
+          renderItem={({ item, index}) => {
             if (item.key === 'contributors') {
               return (
-                <View className="flex flex-col gap-5 px-6">
+                (isLoadingTopContributors ? <ActivityIndicator
+                  animating
+                  color="#fff"
+                  size="small"
+                  className="my-8"
+                /> :
+                topContributors.length > 0 && <View className="flex flex-col gap-5 px-6">
                   <Text className="text-lg text-white font-semibold">
                     Top Contribuidores
                   </Text>
@@ -310,10 +323,15 @@ export default function SearchScreen() {
                     contentContainerStyle={{ gap: 16 }}
                   />
                 </View>
-              );
+              ));
             } else if (item.key === 'reels') {
               return (
-                <View className="flex flex-col gap-5 px-6 pt-6">
+                (isLoadingTrendingWells ? <ActivityIndicator
+                  animating
+                  color="#fff"
+                  size="small"
+                  className="my-8"
+                /> : trendingWells?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
                   <View className="flex flex-row justify-between items-center ">
                     <Text className="text-lg text-white font-semibold">
                       Weelz em Alta
@@ -333,7 +351,7 @@ export default function SearchScreen() {
                     )}
                     contentContainerStyle={{ gap: 16 }}
                   />
-                </View>
+                </View>)
               );
             } else {
               return null

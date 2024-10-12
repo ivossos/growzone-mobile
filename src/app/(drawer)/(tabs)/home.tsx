@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { StyleSheet, View, RefreshControl, FlatList, Text } from 'react-native';
+import { StyleSheet, View, RefreshControl, FlatList, Text, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/ui/header';
@@ -18,25 +18,25 @@ export default function HomeScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const [selectedPost, setSelectedPost] = useState<PostDetail | null>(null);
   const [posts, setPosts] = useState<PostDetail[]>([]);
-  const [page, setPage] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(10);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const fetchPostsData = async (pageNumber: number) => {
+  const fetchPostsData = async (skipValue: number, limitValue: number) => {
     try {
       if (loadingMore || refreshing) return;
 
       setLoadingMore(true);
-      const data = await getPosts({ page: pageNumber, size: 20 });
+      const data = await getPosts({ skip: skipValue, limit: limitValue });
 
       if (data.length === 0) {
         setHasMorePosts(false);
       } else {
-      
         setPosts((prevPosts) => [...prevPosts, ...data]);
       }
     } catch (error) {
-      console.log('Erro ao buscar as postagens: ', error);
+      console.error('Erro ao buscar as postagens: ', error);
       Toast.show({
         type: 'error',
         text1: 'Ops!',
@@ -50,21 +50,21 @@ export default function HomeScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    setPage(0);
+    setSkip(0);
     setHasMorePosts(true);
     setPosts([]);
-    await fetchPostsData(0);
+    await fetchPostsData(0, limit);
   };
 
   useEffect(() => {
     if (hasMorePosts) {
-      fetchPostsData(page);
+      fetchPostsData(skip, limit);
     }
-  }, [page]);
+  }, [skip]);
 
   const loadMorePosts = () => {
     if (!loadingMore && hasMorePosts) {
-      setPage((prevPage) => prevPage + 1); 
+      setSkip((prevSkip) => prevSkip + limit);
     }
   };
 
@@ -102,7 +102,11 @@ export default function HomeScreen() {
           }
           onEndReached={loadMorePosts}
           onEndReachedThreshold={0.1}
-          ListFooterComponent={loadingMore ? <View style={{ padding: 20 }}><Text className="text-white">Carregando mais...</Text></View> : null}
+          ListFooterComponent={loadingMore ? (
+            <View className="flex flex-row justify-center items-center py-4">
+              <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
+            </View>
+          ) : null}
           initialNumToRender={10}
           maxToRenderPerBatch={10}
           windowSize={5}

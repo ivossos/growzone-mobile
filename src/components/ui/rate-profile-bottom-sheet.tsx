@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { TouchableOpacity, Text, Keyboard, ActivityIndicator } from 'react-native';
 import StarRating, { StarRatingDisplay } from 'react-native-star-rating-widget';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetView } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetView } from '@gorhom/bottom-sheet';
 import { colors } from '@/styles/colors';
 import { useBottomSheetContext } from '@/context/bottom-sheet-context';
 import { Controller, useForm } from 'react-hook-form';
@@ -39,6 +39,8 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
   const [reviews, setReviews] = useState<Review[]>([]);
   const [review, setReview] = useState<ReadReview>();
   const [updateReview, setUpdateReview] = useState<ReadReview>();
+  const [skip, setSkip] = useState(0);
+  const [hasMore, setHasMore] = useState(true); 
 
   const snapPoints = useMemo(() => ['30%', '60%', '90%'], []);
 
@@ -131,7 +133,8 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
         username: user.username,
         name: user.name,
         created_at: user.created_at,
-        is_active: user.is_active
+        is_active: user.is_active,
+        is_following: false,
       }
     }
   }
@@ -143,12 +146,42 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
   } 
 
   const fetchReviews = useCallback(async () => {
+    if (!userId || !hasMore || isLoadingFetchReviews) return;
+  
+    try {
+      setIsLoadingFetchReviews(true);
+      
+      const data = await getUserReviews({ id: userId, skip, limit: 10 });
+      
+      setReviews(prevReviews => [...prevReviews, ...data]);
+    
+      setSkip(prevSkip => prevSkip + 10);
+      
+      if (data.length < 10) {
+        setHasMore(false);
+      }
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Aconteceu um erro buscar os reviews desse perfil, tente novamente mais tarde.',
+      });
+    } finally {
+      setIsLoadingFetchReviews(false);
+    }
+  }, [userId, skip, hasMore, isLoadingFetchReviews]);
+
+  const loadMoreReviews = () => {
+    if (!isLoadingFetchReviews && hasMore) {
+      fetchReviews();
+    }
+  };
+
+  const fetchReview = useCallback(async () => {
     if (!userId) return;
     try {
       setIsLoadingFetchReviews(true);
-      const data = await getUserReviews({ id: userId });
       const reviewData = await readUserReview(userId);
-      setReviews(data);
       setReview(reviewData);
     } catch (error) {
       Toast.show({
@@ -163,10 +196,12 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
 
   useEffect(() => {
     if (currentType === 'reviews-profile' || currentType === 'rate-profile') { 
-      console.log('entrou useEffect', userId);
-      fetchReviews();
+      if (!isLoadingFetchReviews && userId) {
+        fetchReview();
+        fetchReviews();
+      }
     }
-  }, [currentType, fetchReviews]);
+  }, [currentType, userId]);
 
 
   const renderBackdrop = useCallback(
@@ -315,7 +350,7 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
       ))}
 
       {currentType === 'reviews-profile' && (
-        isLoadingFetchReviews ? (
+        isLoadingFetchReviews && reviews.length === 0 ? (
           <BottomSheetView className="flex flex-col justify-center items-center flex-1 py-6">
             <ActivityIndicator
               animating={isLoadingFetchReviews}
@@ -324,7 +359,24 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
             />
           </BottomSheetView>
         ) : (
-          reviews.length > 0 ? reviews.map(renderReview) : renderEmptyReview()
+          <BottomSheetFlatList
+            data={reviews}
+            keyExtractor={(item) => 'key-' + item.id.toString()}
+            renderItem={({ item }) => renderReview(item)}
+            ListEmptyComponent={renderEmptyReview}
+            ListFooterComponent={isLoadingFetchReviews ? (
+              <BottomSheetView className="flex flex-col justify-center items-center flex-1 py-6">
+                <ActivityIndicator
+                  animating={isLoadingFetchReviews}
+                  color="#fff"
+                  size="small"
+                />
+              </BottomSheetView>
+            ) : null}
+            onEndReached={loadMoreReviews}
+            onEndReachedThreshold={0.5} 
+            contentContainerStyle={{ flexGrow: 1 }}
+          />
         )
       )}
     </BottomSheet>

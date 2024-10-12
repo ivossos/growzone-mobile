@@ -4,16 +4,16 @@ import { Comment } from '@/api/@types/models';
 interface GetPostCommentsProps {
   postId: number;
   parentId?: number;
-  page?: number;
-  size?: number
+  skip?: number;
+  limit?: number
 }
 
-export async function getPostComments({ postId, parentId, page = 0, size = 100 }: GetPostCommentsProps) {
+export async function getPostComments({ postId, parentId, skip = 0, limit = 20 }: GetPostCommentsProps) {
   const response = await socialApi.get<Comment[]>(`/listed-comment/${postId}`, {
     params: {
       parent_id: parentId, 
-      skip: page, 
-      limit: size 
+      skip, 
+      limit
     }
   });
   return response.data;

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FlatList, RefreshControl, TouchableOpacity, View, ViewabilityConfigCallbackPair } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, TouchableOpacity, View, ViewabilityConfigCallbackPair } from "react-native";
 import { Stack, useNavigation } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { colors } from "@/styles/colors";
@@ -17,18 +17,19 @@ export default function Reels() {
   const [refreshing, setRefreshing] = useState(false);
   const [activePostId, setActivePostId] = useState<number>();
   const [posts, setPosts] = useState<ReelsDetail[]>([]);
-  const [page, setPage] = useState(0);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(10);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const navigation = useNavigation();
 
 
-  const fetchPostsData = async (pageNumber: number) => {
+  const fetchPostsData = async (skipValue: number, limitValue: number) => {
     try {
       if (loadingMore || refreshing) return;
 
       setLoadingMore(true);
-      const data = await getReels({ page: pageNumber, size: 20 });
+      const data = await getReels({ skip: skipValue, limit: limitValue });
 
       if (data.length === 0) {
         setHasMorePosts(false);
@@ -50,21 +51,21 @@ export default function Reels() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    setPage(0);
+    setSkip(0);
     setHasMorePosts(true);
     setPosts([]);
-    await fetchPostsData(0);
+    await fetchPostsData(0, limit);
   };
 
   useEffect(() => {
     if (hasMorePosts) {
-      fetchPostsData(page);
+      fetchPostsData(skip, limit);
     }
-  }, [page]);
+  }, [skip]);
 
   const loadMorePosts = () => {
     if (!loadingMore && hasMorePosts) {
-      setPage((prevPage) => prevPage + 1);
+      setSkip((prevSkip) => prevSkip + limit);
     }
   };
 
@@ -117,6 +118,11 @@ export default function Reels() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        ListFooterComponent={loadingMore ? (
+          <View className="flex flex-row justify-center items-center py-4">
+            <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
+          </View>
+        ) : null}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}

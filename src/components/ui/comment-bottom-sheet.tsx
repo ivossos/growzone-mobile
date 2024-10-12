@@ -15,7 +15,7 @@ import CommentInput from './comment-input';
 
 const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const { user } = useAuth();
-  const [page, setPage] = useState(0);
+  const [skip, setSkip] = useState(0);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoadingAddComment, setIsLoadingAddComment] = useState(false);
@@ -30,15 +30,16 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
     try {
       if (!postId || loading) return;
       setLoading(true);
-      const data = await getPostComments({ postId, page, size: 20 });
+      const limit = 10;
+      const data = await getPostComments({ postId, skip, limit });
      
-      if (data.length <= 20) {
+      if (data.length < limit) {
         setHasMore(false);
       }
 
       setComments((prev) => isLoadMore ? [...prev, ...data] : data);
       if (data.length > 0) {
-        setPage((prev) => prev + 1);
+        setSkip((prev) => prev + limit);
       }
     } catch (error) {
       Toast.show({
@@ -53,8 +54,8 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
 
   const handleClose = () => {
     setComments([]);
-    setPage(0);
-    setHasMore(false);
+    setSkip(0);
+    setHasMore(true);
     setNewComment('');
     closeBottomSheet();
   };
@@ -70,9 +71,10 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
           like_count: 0,
           reply_count: 0,
           created_at: res.created_at,
-          user: user
-        }
-        setComments((prev) =>  [...[comment], ...prev])
+          user: { ...user, is_following: false },
+          is_liked: false
+        } as Comment
+        setComments((prev) => [...[comment], ...prev])
         setNewComment('');
       } catch (error) {
         Toast.show({
@@ -127,7 +129,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
 
   useEffect(() => {
     if (postId && isVisible) {
-      setPage(0);
+      setSkip(0);
       setComments([]);
       setHasMore(true);
       loadPostComments();
@@ -150,7 +152,8 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
       <BottomSheetFlatList
         data={comments}
         className="h-full p-6"
-        keyExtractor={(item) => 'key-' + item.id}
+        contentContainerClassName={'mb-80'}
+        keyExtractor={(item) => 'key-' + item.id + item.created_at}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={

@@ -3,15 +3,15 @@ import { PostLike } from '@/api/@types/models';
 
 interface GetPostLikesProps {
   postId: number;
-  page?: number;
-  size?: number
+  skip?: number;
+  limit?: number
 }
 
-export async function getPostLikes({ postId, page = 0, size = 100 }: GetPostLikesProps) {
+export async function getPostLikes({ postId, skip = 0, limit = 20 }: GetPostLikesProps) {
   const response = await socialApi.get<PostLike[]>(`/like/likes/${postId}`, {
     params: {
-      skip: page, 
-      limit: size 
+      skip, 
+      limit
     }
   });
   return response.data;

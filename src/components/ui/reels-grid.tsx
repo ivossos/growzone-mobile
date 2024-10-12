@@ -1,26 +1,74 @@
-import { postsMock } from "@/constants/mock";
-import { FlatList, Image, StyleSheet, View, Dimensions, Text, TouchableOpacity } from "react-native";
-import { Post } from "./post-card";
-import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
+import { FlatList, StyleSheet, View, Dimensions, Text, TouchableOpacity, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { SocialPost } from "@/api/@types/models";
 import { Video } from "expo-av";
-import { useAuth } from "@/hooks/use-auth";
-import { getInitials } from "@/lib/utils";
 import { router } from "expo-router";
-
+import { useEffect, useState } from "react";
+import Toast from "react-native-toast-message";
+import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 
 const numColumns = 2;
 const w = Dimensions.get("window").width;
 
 type ReelsGridProps = {
-  reels: SocialPost[]
+  userId: number
 }
 
-export default function ReelsGrid({ reels }: ReelsGridProps) {
-  const { user} = useAuth();
+export default function ReelsGrid({ userId }: ReelsGridProps) {
+  const [refreshing, setRefreshing] = useState(false);
+  const [reels, setReels] = useState<SocialPost[]>([]);
+  const [skip, setSkip] = useState(0);
+  const [limit, setLimit] = useState(10);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchPostsData = async (skipValue: number, limitValue: number) => {
+    try {
+      if (!userId || loadingMore || refreshing) return;
+
+      setLoadingMore(true);
+      console.log('skip ReelsGrid', skipValue);
+      const data = await getUserReelsPosts({ id: userId, skip: skipValue, limit: limitValue });
+
+      if (data.length < limit) {
+        setHasMorePosts(false);
+      }
+
+      setReels((prevPosts) => [...prevPosts, ...data]);
+    } catch (error) {
+      console.log('Erro ao buscar as postagens: ', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Aconteceu um erro ao buscar as Wells desse perfil. Tente novamente mais tarde.'
+      });
+    } finally {
+      setLoadingMore(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setSkip(0);
+    setHasMorePosts(true);
+    setReels([]);
+    await fetchPostsData(0, limit);
+  };
+
+  const loadMorePosts = () => {
+    if (!loadingMore && hasMorePosts) {
+      setSkip((prevSkip) => prevSkip + limit);
+    }
+  };
+
+  useEffect(() => {
+    if (hasMorePosts) {
+      fetchPostsData(skip, limit);
+    }
+  }, [skip]);
 
   const renderItem = ({ item }: { item: SocialPost}) => {
     return (
@@ -72,12 +120,26 @@ export default function ReelsGrid({ reels }: ReelsGridProps) {
 
   return (
     <FlatList
+      nestedScrollEnabled
       data={reels.filter(r => !r.is_compressing)}
       renderItem={renderItem}
       keyExtractor={(item) => item.id.toString()}
       numColumns={numColumns}
       columnWrapperClassName="flex gap-4 px-6 w-full"
       scrollEnabled={false}
+      onEndReached={loadMorePosts}
+      onEndReachedThreshold={0.5} 
+      initialNumToRender={10}
+      maxToRenderPerBatch={10}
+      windowSize={5}
+      // refreshControl={
+      //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      // }
+      ListFooterComponent={loadingMore ? (
+        <View className="flex flex-row justify-center items-center py-4">
+          <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
+        </View>
+      ) : null}
     />
   );
 }

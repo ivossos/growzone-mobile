@@ -2,16 +2,16 @@ import { socialApi } from '@/lib/axios';
 import { GlobalSearchResponse } from '@/api/@types/models';
 
 interface SearchGlobalQuery {
-  page?: number;
-  size?: number,
+  skip?: number;
+  limit?: number;
   query?: string;
 }
 
-export async function searchGlobal({ page = 0, size = 100, query }: SearchGlobalQuery) {
+export async function searchGlobal({ skip = 0, limit = 20, query }: SearchGlobalQuery) {
   const response = await socialApi.get<GlobalSearchResponse[]>('/global-research/', {
     params: {
-      skip: page,
-      limit: size,
+      skip,
+      limit,
       query: query,
     }
   });

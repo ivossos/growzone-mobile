@@ -18,7 +18,7 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) =>
         <Image
           source={{ uri: items[0].file  }}
           style={{ width: '100%', height: 350, borderRadius: 16}}
-          resizeMode="cover"
+          resizeMode="contain"
         />
       );
     }  
@@ -33,7 +33,7 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) =>
         <Image
           source={{ uri: item.file }}
           style={{ width: '100%', height: '100%', borderRadius: 16 }}
-          resizeMode="cover"
+          resizeMode="contain"
         />
       );
     }

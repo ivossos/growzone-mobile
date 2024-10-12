@@ -45,7 +45,7 @@ export default function CommentCard({ comment }: Props) {
     <View className='flex flex-col gap-2 bg-black-100 mb-4'>
       <View className="flex flex-row items-center justify-between gap-2 w-full">
         <View className="flex flex-row items-center gap-2">
-          <Avatar className="w-10 h-10">
+          <Avatar className="w-10 h-10 bg-black-80">
             {comment.user?.image?.image && (
               <AvatarImage className="rounded-full" source={{ uri: comment.user?.image?.image }} />
             )}

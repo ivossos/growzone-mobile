@@ -25,7 +25,7 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 
   api.registerInterceptTokenManager = signOut => {
     const interceptTokenManager = api.interceptors.response.use(res => res, async (requestError) => {
-      console.log('error', requestError?.response.status)
+      console.log('error', requestError?.response)
       if (requestError?.response?.status === 401) {
         
         const { refresh_token } = await storageGetAuthToken();
