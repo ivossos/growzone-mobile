@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetFooter } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetFooter, BottomSheetTextInput } from '@gorhom/bottom-sheet';
 import { colors } from '@/styles/colors';
 import { useBottomSheetContext } from '@/context/bottom-sheet-context';
 import { getPostComments } from '@/api/social/post/comment/get-comments';
@@ -7,11 +7,13 @@ import Toast from 'react-native-toast-message';
 import { Comment } from '@/api/@types/models';
 import CommentCard from './comment-card';
 import Loader from './loader';
-import { Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
 import { useAuth } from '@/hooks/use-auth';
 import createComment from '@/api/social/post/comment/create-comment';
 import { BottomSheetDefaultFooterProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetFooter/types';
 import CommentInput from './comment-input';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { orderBy, uniqBy } from 'lodash';
 
 const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const { user } = useAuth();
@@ -23,8 +25,10 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const [newComment, setNewComment] = useState('');
 
   const { postId, isVisible, currentType, closeBottomSheet } = useBottomSheetContext();
+  const { bottom: bottomSafeArea } = useSafeAreaInsets();
 
-  const snapPoints = useMemo(() => ['50%', '70%', '90%'], []);
+
+  const snapPoints = useMemo(() => ['60%', '70%', '90%'], []);
 
   const loadPostComments = async (isLoadMore = false) => {
     try {
@@ -37,7 +41,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         setHasMore(false);
       }
 
-      setComments((prev) => isLoadMore ? [...prev, ...data] : data);
+      setComments((prev) => isLoadMore ? orderBy(uniqBy([...prev, ...data], 'id'), 'created_at', 'desc') : [...data]);
       if (data.length > 0) {
         setSkip((prev) => prev + limit);
       }
@@ -112,20 +116,23 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
     []
   );
 
-  const renderFooter = useCallback(
-    (props: BottomSheetDefaultFooterProps) => (
-      <BottomSheetFooter {...props} bottomInset={0}>
-        <CommentInput
-          user={user}
-          newComment={newComment}
-          setNewComment={setNewComment}
-          handleCommentSubmit={handleCommentSubmit}
-          isLoadingAddComment={isLoadingAddComment}
-        />
-      </BottomSheetFooter>
-    ),
-    [user, newComment, isLoadingAddComment] 
-  );
+  // const renderFooter = useCallback(
+  //   (props: BottomSheetDefaultFooterProps) => {
+  //     return (
+  //       <BottomSheetFooter {...props} bottomInset={bottomSafeArea} >
+  //         <CommentInput
+  //           user={user}
+  //           newComment={newComment}
+  //           setNewComment={setNewComment}
+  //           handleCommentSubmit={handleCommentSubmit}
+  //           isLoadingAddComment={isLoadingAddComment}
+  //         />
+  //       </BottomSheetFooter>
+  //     )
+  //   },
+  //   [newComment, setNewComment, isLoadingAddComment, bottomSafeArea]
+  // );
+
 
   useEffect(() => {
     if (postId && isVisible) {
@@ -139,22 +146,25 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   return isVisible && currentType === 'comment' ? (
     <BottomSheet
       ref={ref}
-      index={1}
+      index={2}
       snapPoints={snapPoints}
       enablePanDownToClose
+      enableDynamicSizing={true}
       handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
       backgroundStyle={{ backgroundColor: colors.black[100] }}
       backdropComponent={renderBackdrop}
       onClose={handleClose}
-      footerComponent={renderFooter}
-      keyboardBehavior="fillParent"
-    >
+      keyboardBehavior={Platform.OS === 'ios' ? 'extend' : 'interactive'}
+      keyboardBlurBehavior="restore"
+      android_keyboardInputMode='adjustResize' 
+      onChange={handleSheetChanges}
+      >
       <BottomSheetFlatList
         data={comments}
         className="h-full p-6"
-        contentContainerClassName={'mb-80'}
         keyExtractor={(item) => 'key-' + item.id + item.created_at}
         renderItem={renderItem}
+        keyboardDismissMode="none"
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View className="flex flex-col justify-center items-center flex-1 py-10">
@@ -163,6 +173,15 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         }
         onEndReached={handleLoadMore}
       />
+      <View className="pb-4">
+        <CommentInput
+          user={user}
+          newComment={newComment}
+          setNewComment={setNewComment}
+          handleCommentSubmit={handleCommentSubmit}
+          isLoadingAddComment={isLoadingAddComment}
+        />
+      </View>
       <Loader isLoading={loading} />
     </BottomSheet>
   ) : null;

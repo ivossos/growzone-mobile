@@ -29,7 +29,7 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(SigninValidation),
@@ -62,6 +62,10 @@ const SignIn = () => {
     } finally {
       setIsLoading(false);
     }
+    
+    if(!user.is_verified) {
+      return router.replace("/verify-user");
+    } 
 
     router.replace("/home");
   };

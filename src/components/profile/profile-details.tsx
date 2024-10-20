@@ -108,6 +108,7 @@ export default function ProfileDetails({
 
       <ScrollView
         className="flex flex-1 bg-black-100"
+        contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
       >
         <View style={{ flex: 1 }} className="h-auto">
@@ -293,7 +294,7 @@ export default function ProfileDetails({
           </View>
         </View>
 
-        <View className="mt-8 h-full ">
+        <View className="mt-8 h-full">
           <TabProfile userId={userId} />
         </View>
       </ScrollView>

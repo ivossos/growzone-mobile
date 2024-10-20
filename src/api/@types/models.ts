@@ -4,6 +4,9 @@ export interface User {
   username: string;
   is_active: boolean;
   is_verified: boolean;
+  hashed_password: string;
+  created_at: string
+  "updated_at": "2019-08-24T14:15:22Z"
 }
 
 export interface DefaultResponse {
@@ -20,18 +23,18 @@ export interface AuthTokenResponse {
 //SOCIAL
 export interface UserSocial {
   id: number;
-  name: string;
+  name?: string;
   username: string;
-  biography: string;
-  document: string;
-  date_of_birth: string;
+  biography?: string;
+  document?: string;
+  date_of_birth?: string;
   email: string;
-  phone: string;
+  phone?: string;
   image?: UserImage;
   cover?: UserCover;
   hashed_password: string;
-  category_id: number;
-  indicated_by_id: number;
+  category_id?: number;
+  indicated_by_id?: number;
   is_verified: boolean;
   is_active: boolean;
   created_at: string;
@@ -44,6 +47,10 @@ export interface UserInfo {
   username: string;
   biography: string;
   created_at: string;
+  category?: {
+    id: number,
+    name: string
+  } 
 }
 
 export interface UserImage {
@@ -272,5 +279,138 @@ export interface CommentLike {
   comment_id: number;
   created_at: string;
   updated_at: string;
+  is_active: boolean;
+}
+
+export interface Genetic {
+  name: string;
+  id: number;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
+
+export interface Phase {
+  name: string;
+  id: number;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
+
+export interface File {
+  id: number;
+  file: string;
+  type: "image" | "video";
+  created_at: string;
+}
+export interface Strain {
+  id: number;
+  name: string;
+  created_at: string;
+}
+
+export interface Phase {
+  id: number;
+  name: string;
+  created_at: string;
+}
+
+export interface GrowPost {
+  id: number;
+  post_id: number;
+  file: File;
+  strain: Strain;
+  phase: Phase;
+  day: number;
+  created_at: string;
+  is_compressing: boolean;
+}
+
+export interface GrowPostDetail {
+  id: number;
+  post_id: number;
+  user: UserDTO;
+  files: File[];
+  strain: Strain;
+  phase: Phase;
+  day: number;
+  description: string;
+  like_count: number;
+  comment_count: number;
+  created_at: string; 
+  is_liked: boolean;
+  is_viewed: boolean;
+  is_compressing: boolean;
+}
+
+export interface FeedAllPost {
+  type: 'grow' | 'social'
+  post: GrowPostDetail | PostDetail
+}
+
+export interface ReportReason {
+  id: number;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+}
+
+export interface SenderImage {
+  id: number;
+  image: string;
+  created_at: string;
+}
+
+
+export interface Sender {
+  id: number;
+  image: SenderImage;
+  name: string;
+  username: string;
+  created_at: string;
+  is_following: boolean;
+}
+
+export interface NotificationType {
+  id: number;
+  name: 'Review Profile' | 'Report Post' | 'Comment Post' | 'Like Post' | 'Follow Profile';
+  description: string;
+  created_at: string;
+}
+
+export interface PostFile {
+  id: number;
+  file: File;
+  type: 'image' | 'video';
+  created_at: string;
+}
+
+export interface Post {
+  id: number;
+  file: File;
+  created_at: string;
+}
+
+export interface Notification {
+  id: number;
+  sender: Sender;
+  type: NotificationType;
+  post: Post;
+  created_at: string;
+  is_read: boolean;
+}
+
+export interface Lead {
+  id: number;
+  user_id: number;
+  store_name: string;
+  department: string;
+  product_quantity: number;
+  average_revenue: number;
+  erp_name: string;
+  created_at: Date;
+  updated_at: Date;
   is_active: boolean;
 }

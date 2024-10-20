@@ -11,7 +11,7 @@ function Switch({
 
   const trackColor = props.trackColor || {
     false: colors.black[80], 
-    true: colors.black[80], 
+    true: colors.primary, 
   };
   const thumbColor = props.thumbColor;
   const ios_backgroundColor =

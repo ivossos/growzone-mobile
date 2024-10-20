@@ -40,7 +40,6 @@ export default function Terms() {
         setIsLoading(true);
         const data = await getLegalDocument();
         setLegalDocuments(data);
-        console.log(data);
       } catch (error) {
         Toast.show({
           type: 'error',

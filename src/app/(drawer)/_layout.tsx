@@ -4,6 +4,7 @@ import { Drawer } from 'expo-router/drawer'
 import ProfileIcon from "@/assets/icons/profile.svg";
 import PadlockIcon from "@/assets/icons/padlock.svg";
 import FileIcon from "@/assets/icons/file.svg";
+import QuestionIcon from "@/assets/icons/question.svg";
 import CloseIcon from "@/assets/icons/close.svg";
 import { StatusBar } from 'expo-status-bar';
 import { colors } from '@/styles/colors';
@@ -19,7 +20,9 @@ export default function DrawerLayout() {
     if (user?.id && !isLoadingUserStorage) {
       if (!user.is_verified) {
         router.replace('/verify-user');
-      }
+      } else if(!user.category_id || user.category_id === 0) {
+        router.replace('/user-category');
+      } 
     }
   }, [user, isLoadingUserStorage, router]);
 
@@ -105,6 +108,17 @@ export default function DrawerLayout() {
         />
 
         <Drawer.Screen
+          name="help"
+          options={
+            {
+              title: 'Ajuda',
+              iconName: QuestionIcon,
+              isDivider: true,
+            } as CustomOptions
+          }
+        />
+
+        {/* <Drawer.Screen
           name="user-category"
           options={
             {
@@ -113,7 +127,7 @@ export default function DrawerLayout() {
               isDivider: true,
             } as CustomOptions
           }
-        />
+        /> */}
 
         {/* <Drawer.Screen
           name="privacy-policy"

@@ -1,38 +1,71 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
   ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LogoIcon from "@/assets/icons/logo.svg";
 import { UserCategory } from "@/api/@types/models";
 import { getUserCategories } from "@/api/social/user/get-user-categories";
 import Toast from "react-native-toast-message";
-import Carousel from "react-native-reanimated-carousel";
-import Animated, { interpolate, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import Button from "@/components/ui/button";
-import { colors } from "@/styles/colors";
-
-const { width } = Dimensions.get("window");
-const ITEM_SIZE = width * 0.7;
-const SPACING = 20;
+import { router } from "expo-router";
+import { orderBy } from "lodash";
+import { updateUser } from "@/api/social/profile/update-user";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function UserCategoryScreen() {
   const [loading, setLoading] = useState(false);
+  const [isLoadingSaveCategory, setIsLoadingSaveCategory] = useState(false);
   const [categories, setCategories] = useState<UserCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const pressAnim = useSharedValue<number>(0);
+
+  const { updateUserData } = useAuth();
+
+  async function handleSaveCategory() {
+    if(!selectedCategory) {
+      Toast.show({
+        type: 'error',
+        text1: 'Ops!',
+        text2: 'Você precisa selecionar uma categoria!',
+      });
+      return 
+    }
+
+    try {
+      setIsLoadingSaveCategory(true);
+      await updateUser({ category_id: selectedCategory });
+      await updateUserData();
+      Toast.show({
+        type: 'success',
+        text1: 'Sucesso',
+        text2: 'Sua categoria foi adicionada com sucesso.',
+      });
+    } catch (err) {
+      console.error('Erro ao atualizar perfil', err);
+      Toast.show({
+        type: 'error',
+        text1: 'Ops!',
+        text2: 'Ocorreu um erro ao Salvar sua categoria',
+      });
+
+    } finally {
+      setIsLoadingSaveCategory(false);
+      router.push('/home');
+    }
+  }
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
         const data = await getUserCategories({ page: 0, size: 20 });
-        setCategories(data);
+        setCategories(orderBy(data, "name", "asc"));
+        setSelectedCategory(data[0].id);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
         Toast.show({
@@ -41,6 +74,8 @@ export default function UserCategoryScreen() {
           text2:
             "Aconteceu um erro buscar as categorias, tente novamente mais tarde.",
         });
+
+        router.replace("/home");
       } finally {
         setLoading(false);
       }
@@ -49,65 +84,56 @@ export default function UserCategoryScreen() {
     fetchCategories();
   }, []);
 
-  const animationStyle = useCallback((value: number) => {
-    "worklet";
-    const zIndex = interpolate(value, [-1, 0, 1], [-1000, 0, 1000]);
-    const translateX = interpolate(value, [-1, 0, 1], [-width, 0, width]);
-
-    return {
-      transform: [{ translateX }],
-      zIndex,
-    };
-  }, []);
-
   const handleSelectCategory = (categoryId: number) => {
     setSelectedCategory(categoryId);
   };
 
-  const renderCategoryItem = ({ item }: { item: UserCategory }) => {
+  const renderCategoryItem = (item: UserCategory) => {
     return (
-      <View style={{ flex: 1, marginHorizontal: SPACING / 2 }}>
-        <TouchableOpacity onPress={() => handleSelectCategory(item.id)}>
-          <View
-            className={`flex flex-col items-center gap-2 p-4 rounded-lg ${
-              selectedCategory === item.id
-                ? "border-2 border-brand-green"
-                : "border border-black-80"
-            }`}
-          >
-            <Image
-              source={{ uri: item.image }}
-              className="w-full h-full rounded-lg"
-              resizeMode="contain"
-            />
-            <Text
-              className={`text-lg text-center font-semibold ${
-                selectedCategory === item.id ? "text-brand-green" : "text-white"
-              }`}
-            >
-              {item.name}
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity onPress={() => handleSelectCategory(item.id)}>
+        <View
+          className={`flex flex-row items-center gap-4 bg-black-80 rounded-lg w-full ${
+            selectedCategory === item.id && "border border-brand-green"
+          }`}
+        >
+          <Image
+            source={{ uri: item.image }}
+            resizeMode="center"
+            style={{
+              width: 96,
+              height: 80,
+              borderBottomLeftRadius: 8,
+              borderTopLeftRadius: 8,
+            }}
+          />
+          <Text className="text-xl text-white font-bold">{item.name}</Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
   return (
     <View className="flex-1 bg-black-100">
-      <SafeAreaView className="flex flex-col flex-1 justify-center items-center">
-        <View className="flex flex-col justify-center items-center w-full px-6">
-          <View className="flex flex-row justify-center items-center gap-4 h-[72px]">
-            <LogoIcon width={150} height={30} />
-          </View>
+      <SafeAreaView edges={["top"]} className="flex-1">
+        <ScrollView
+          contentContainerStyle={{ gap: 12, paddingBottom: 94 }}
+          stickyHeaderIndices={[0]}
+          showsVerticalScrollIndicator={false}
+        >
 
-          <View className="flex flex-col gap-6 py-6 w-full items-center">
-            <Text className="text-white text-2xl text-center font-medium">
-              Selecione o item que mais encaixa com seu perfil
-            </Text>
-            <Text className="text-brand-grey text-lg font-regular text-center">
-              Isso vai diferenciar sua experiência na plataforma
-            </Text>
+          <View className="bg-black-100">
+            <View className="flex flex-row justify-center items-center pt-10">
+              <LogoIcon width={150} height={30} />
+            </View>
+
+            <View className="flex flex-col gap-4 py-6 w-full items-center">
+              <Text className="text-white text-2xl text-center font-medium">
+                Selecione o perfil que te define melhor
+              </Text>
+              <Text className="text-brand-grey text-lg font-regular text-center">
+                Isso vai diferenciar sua experiência na plataforma
+              </Text>
+            </View>
           </View>
 
           {loading ? (
@@ -115,79 +141,23 @@ export default function UserCategoryScreen() {
               <ActivityIndicator animating color="#fff" size="small" />
             </View>
           ) : (
-            <View className="flex flex-col flex-1 items-center bg-red-500">
-              <Carousel
-                loop
-                width={width}
-                autoPlay={false}
-                data={categories}
-                customAnimation={animationStyle}
-                scrollAnimationDuration={1200}
-                onSnapToItem={(index) => console.log("current index:", index)}
-                style={{ width: width, height: 400 }}
-                renderItem={({ index, item }) => (
-                  <CustomItem
-                    source={item.image}
-                    name={item.name}
-                    key={index}
-                    pressAnim={pressAnim}
-                  />
-                )}
-              />
-
-              {/* Botão centralizado abaixo do carrossel */}
-              <View className="flex-1 absolute bottom-0 mt-6">
-                <Button
-                  containerStyles="w-64"
-                  title="Selecionar"
-                  handlePress={() => {
-                    if (selectedCategory !== null) {
-                      // Lógica ao selecionar a categoria
-                      console.log("Categoria selecionada:", selectedCategory);
-                    }
-                  }}
-                  isLoading={false}
-                />
+            categories.map((category) => (
+              <View key={category.id} className="px-6">
+                {renderCategoryItem(category)}
               </View>
-            </View>
+            ))
           )}
-        </View>
+        </ScrollView>
+
+        {!loading && <View className="absolute bottom-0 w-full px-6 py-3 mb-6">
+          <Button
+            containerStyles="w-full"
+            title="Selecionar"
+            handlePress={() => handleSaveCategory()}
+            isLoading={isLoadingSaveCategory}
+          />
+        </View>}
       </SafeAreaView>
     </View>
   );
 }
-
-interface ItemProps {
-  pressAnim: Animated.SharedValue<number>;
-  source: string;
-  name: string;
-}
-
-const CustomItem: React.FC<ItemProps> = ({ pressAnim, source, name }) => {
-  const animStyle = useAnimatedStyle(() => {
-    const scale = interpolate(pressAnim.value, [0, 1], [1, 0.9]);
-    const borderRadius = interpolate(pressAnim.value, [0, 1], [0, 30]);
-
-    return {
-      transform: [{ scale }],
-      borderRadius,
-    };
-  }, []);
-
-  return (
-    <Animated.View
-      className="flex flex-col gap-4 overflow-hidden items-center p-4 rounded-lg border-2 border-brand-green"
-      style={[animStyle]}
-    >
-      <Animated.Image
-        source={{ uri: source }}
-        resizeMode="center"
-        style={{ width: "100%", height: "80%" }}
-      />
-
-      <Animated.Text className="text-xl text-center font-semibold text-white">
-        {name}
-      </Animated.Text>
-    </Animated.View>
-  );
-};

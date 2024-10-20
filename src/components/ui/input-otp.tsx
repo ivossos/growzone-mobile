@@ -125,7 +125,7 @@ export default function OtpInput({
               >
                 <Text
                   style={otpTextStyle}
-                  className={`text-center text-lg font-bold dark:text-white`}
+                  className={`text-center text-lg font-bold text-white`}
                 >
                   {digit}
                 </Text>

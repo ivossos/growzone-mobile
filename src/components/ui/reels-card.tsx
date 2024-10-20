@@ -1,52 +1,80 @@
 import { Image, StyleSheet, View, Text } from "react-native";
-import { Post } from "./post-card";
 import { Avatar, AvatarImage } from "../Avatar";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
+import { SocialPost } from "@/api/@types/models";
+import { useEffect, useRef } from "react";
+import { Video } from "expo-av";
+import { Link } from "expo-router";
 
-export default function ReelsCard( item: Post) {
-  const image = item?.media?.find(m => m.type === 'image');
-    
-  if(!image) return;
+export default function ReelsCard( item: SocialPost) {
+  const videoRef = useRef<(Video | null)>(null);
+
+  useEffect(() => {
+    return () => {
+      const releaseVideo = async () => {
+        if (videoRef.current) {
+          await videoRef.current.pauseAsync();
+          await videoRef.current.unloadAsync();
+        }
+      };
+
+      releaseVideo().catch(error => console.error("Erro ao liberar o vídeo:", error));
+    };
+  }, []);
 
   return (
-    <View className="flex flex-col gap-2 w-[155px]">
-        <Image height={224} width={155} source={{ uri: image.file! }} resizeMode="cover" className="rounded-t-2xl" />
-        <LinearGradient
-          colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
-          style={styles.blurContainer}
-        >
-          <Eye size={18} color={colors.brand.white}/>
-          <Text className="text-white text-base font-medium">75</Text>
-        </LinearGradient>
-        <View className="flex flex-col gap-1">
-          <Text
-            className="text-base text-brand-grey font-normal"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{ width: 224 }}
-            >
-              {item.content}
-          </Text>
-          <View className="flex flex-row items-center gap-2">
-            <Avatar className="w-6 h-6">
-              <AvatarImage
-                className="rounded-full"
-                src={item?.user_info?.avatar!}
-              />
-            </Avatar>
-            <Text 
-              className="text-white text-sm text-start font-semibold" 
+    <Link href={{ pathname: '/reels/[id]', params: { id: item.post_id } }}>
+
+      <View className="flex flex-col gap-2 w-[155px]">
+          <Video
+            ref={ref => (videoRef.current = ref)} 
+            source={{ uri: item?.file?.file}}
+            className="rounded-t-2xl"
+            style={{
+              height: 224, 
+              width: 155
+            }}
+            shouldPlay={false}
+            isLooping
+            useNativeControls={false}
+          />
+          <LinearGradient
+            colors={["rgba(255, 255, 255, 0.20)", "rgba(255, 255, 255, 0.20)"]}
+            style={styles.blurContainer}
+          >
+            <Eye size={14} color={colors.brand.white}/>
+            <Text className="text-white text-base font-medium">{item.view_count}</Text>
+          </LinearGradient>
+          {/* <View className="flex flex-col gap-1">
+            <Text
+              className="text-base text-brand-grey font-normal"
               numberOfLines={1}
               ellipsizeMode="tail"
-            >
-                {item?.user_info?.name}
-              </Text>
-          </View>
-
+              style={{ width: 224 }}
+              >
+                {item.description}
+            </Text>
+            <View className="flex flex-row items-center gap-2">
+              <Avatar className="w-6 h-6 bg-black-60">
+                {!!(item..image?.image) && <AvatarImage
+                  className="rounded-full"
+                  source={{ uri: user.image?.image}}
+                />}
+                <AvatarFallback>{getInitials(user?.name || user?.username)}</AvatarFallback>
+              </Avatar>
+              <Text 
+                className="text-white text-sm text-start font-semibold" 
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >
+                  {user?.name || user?.username}
+                </Text>
+            </View>
+          </View> */}
         </View>
-      </View>
+    </Link>
   )
 }
 
@@ -55,6 +83,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 16,
     left: 16,
+    alignItems: 'center',
     flexDirection: 'row',
     gap: 4,
     paddingVertical: 4,

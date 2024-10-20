@@ -1,22 +1,143 @@
-import { Avatar, AvatarImage } from "@/components/Avatar";
-import { notificationsMock } from "@/constants/mock";
-import { colors } from "@/styles/colors";
-import { router, useFocusEffect } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Image} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { ArrowLeft } from "lucide-react-native";
+import Toast from "react-native-toast-message";
 import NotificationIcon from "@/assets/icons/notification-green.svg";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
+import { getNotifications } from "@/api/social/notification/get-notifications";
+import { Notification } from "@/api/@types/models";
+import { formatDistance, getInitials } from "@/lib/utils";
+import { colors } from "@/styles/colors";
+import { orderBy, uniqBy } from "lodash";
+import { useAuth } from "@/hooks/use-auth";
 
-const notificationMessages = {
-  COMMENT: " comentou seu post",
-  LIKE: " curtiu seu post",
-  MENTION: " mencionou você",
-  FOLLOWING: " seguiu seu perfil",
-};
 
 export default function NotificationsScreen() {
+  const [refreshing, setRefreshing] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [skip, setSkip] = useState(0);
+  const [limit] = useState(10);
+  const [hasMoreNotifications, setHasMoreNotifications] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  useFocusEffect(() => console.log('entrou'))
+  const { user } = useAuth();
+
+  const fetchNotifications = async (skipValue: number, limitValue: number) => {
+    try {
+      if (loadingMore || refreshing) return;
+
+      setLoadingMore(true);
+      const data = await getNotifications({ skip: skipValue, limit: limitValue });
+      if (data.length === 0) {
+        setHasMoreNotifications(false);
+      } else {
+        setNotifications((prevNotifications) => orderBy(uniqBy([...prevNotifications, ...data], 'id'), 'created_at', 'desc'));
+      }
+    } catch (error) {
+      console.error("Erro ao buscar as notificações: ", error);
+      Toast.show({
+        type: "error",
+        text1: "Ops!",
+        text2: "Aconteceu um erro ao buscar as notificações. Tente novamente mais tarde.",
+      });
+
+      router.back();
+    } finally {
+      setLoadingMore(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    setSkip(0);
+    setHasMoreNotifications(true);
+    setNotifications([]);
+    await fetchNotifications(0, limit);
+  };
+
+  useEffect(() => {
+    if (hasMoreNotifications) {
+      fetchNotifications(skip, limit);
+    }
+  }, [skip]);
+
+  const loadMoreNotifications = () => {
+    if (!loadingMore && hasMoreNotifications) {
+      setSkip((prevSkip) => prevSkip + limit);
+    }
+  };
+
+  const handlePress = (item: Notification) => {
+    if(item.type.name === 'Follow Profile') {
+      router.push({
+        pathname: '/profile/[id]',
+        params: { id: user.id },
+      });
+    } else if(item.type.name === 'Review Profile') {
+      router.push({
+        pathname: '/profile/[id]',
+        params: { id: user.id },
+      });
+    } else if (item.type.name === 'Comment Post' || item.type.name === 'Like Post') {
+      router.push({
+        pathname: '/post/[id]',
+        params: { id: item.post.id },
+      });
+    } else {
+      return;
+    }
+    
+  }
+
+  const renderNotificationItem = ({ item }: { item: Notification }) => (
+    <TouchableOpacity 
+      onPress={() => handlePress(item)}
+      key={item.id + item.sender.username} 
+      className="flex flex-row items-center justify-between h-[72px] bg-black-90 px-4 rounded-lg"
+    >
+      <View className="flex flex-row items-center gap-2">
+        <Avatar className="w-10 h-10 bg-black-80">
+          {item.sender?.image ? (
+            <AvatarImage className="rounded-full" src={item.sender.image.image} />
+          ) : (
+            <AvatarFallback>{getInitials(item.sender?.name || item.sender?.username)}</AvatarFallback>
+          )}
+        </Avatar>
+        <View className="flex flex-col justify-center gap-2">
+          <Text className="text-white text-sm text-start font-semibold" numberOfLines={1} ellipsizeMode="tail">
+            {item.sender?.name || item.sender?.username}
+            <Text className="font-regular">{` ${item.type.description}`}</Text>
+          </Text>
+          <View className="flex flex-row items-center gap-1">
+            <Text className="text-xs text-brand-grey">{formatDistance(item.created_at)}</Text>
+            {!item.is_read && <NotificationIcon width={12} heigth={12} />}
+          </View>
+        </View>
+      </View>
+      {item.type.name !== 'Report Post' && item.post && item.post.file.type === 'image' &&
+        <View>
+          <Image
+            source={{ uri: item.post.file.file }}
+            width={40}
+            height={40}
+            className="rounded-lg"
+            resizeMode="cover"
+          />
+        </View>
+      }
+    </TouchableOpacity>
+  );
+
+  const renderFooter = () => {
+    return loadingMore ? (
+      <View className="py-4">
+        <ActivityIndicator size="large" color={colors.brand.white} />
+      </View>
+    ) : null;
+  };
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -25,42 +146,21 @@ export default function NotificationsScreen() {
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft className="w-6 h-6" color={colors.brand.white} />
           </TouchableOpacity>
-          <Text className="text-white text-base font-semibold">
-            Notificações
-          </Text>
+          <Text className="text-white text-base font-semibold">Notificações</Text>
         </View>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View className="flex flex-col gap-2 py-6 px-6 pb-24">
-            {notificationsMock.map((n) => (
-              <View key={n.id + n.user_info.name} className="flex flex-row items-center h-[72px] bg-black-90 px-4 rounded-lg">
-                <View className="flex flex-row items-center gap-2">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage
-                      className="rounded-full"
-                      src={n?.user_info?.avatar!}
-                    />
-                  </Avatar>
-                  <View className="flex flex-col justify-center gap-2">
-                    <Text
-                      className="text-white text-sm text-start font-semibold"
-                      numberOfLines={1}
-                      ellipsizeMode="tail"
-                    >
-                      {n?.user_info?.name}
-                      <Text className="font-regular">
-                        {notificationMessages[n.type]}
-                      </Text>
-                    </Text>
-                    <View className="flex flex-row items-center gap-1">
-                      <Text className="text-xs text-brand-grey">10 min</Text>
-                      <NotificationIcon width={12} heigth={12} />
-                    </View>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
+        <FlatList
+          data={notifications}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderNotificationItem}
+          ListFooterComponent={renderFooter}
+          onEndReached={loadMoreNotifications}
+          onEndReachedThreshold={0.1}
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          contentContainerClassName="gap-2"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingVertical: 24, paddingHorizontal: 16 }}
+        />
       </View>
     </SafeAreaView>
   );

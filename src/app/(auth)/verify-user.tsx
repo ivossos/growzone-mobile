@@ -1,26 +1,23 @@
 import { z } from "zod";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity, Platform } from "react-native";
 import images from "@/constants/images";
 import Toast from 'react-native-toast-message';
 
 import Button from "@/components/ui/button";
-import { ArrowLeft, ArrowRight, AtSign, Lock, RefreshCw } from "lucide-react-native";
-import Divider from "@/components/ui/divider";
-import { FormField } from "@/components/ui/form-field";
-import { Checkbox } from "@/components/Checkbox";
+import { ArrowLeft, RefreshCw } from "lucide-react-native";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect, useState } from "react";
-import { storageGetLogin, storageRemoveLogin, storageSaveLogin } from "@/storage/storage-login";
+import { Fragment, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { colors } from "@/styles/colors";
 import OtpInput from "@/components/ui/input-otp";
 import axios from "axios";
 import { verifyCode } from "@/api/user";
 import { resendEmailCode } from "@/api/user/resend-email-code";
+import { FormField } from "@/components/ui/form-field";
 
 const codeSchema = z
   .object({
@@ -108,7 +105,7 @@ const VerifyUser = () => {
   }
 
   return (
-    <>
+    <Fragment>
       <SafeAreaView className="bg-black-100 h-full">
         <TouchableOpacity 
           className="flex flex-row items-center justify-between bg-black-100 w-full px-6 min-h-14 border-b-[1px] border-black-80"
@@ -142,7 +139,7 @@ const VerifyUser = () => {
             </View>
 
             <View className='flex flex-col w-full'>
-              <Controller
+            {Platform.OS === 'ios' ?  <Controller
                 control={methods.control}
                 name="code"
                 render={({ fieldState, field: { onChange, value } }) => (
@@ -155,7 +152,25 @@ const VerifyUser = () => {
                   />
                 )}
               />
+            : 
+            <Controller
+              control={methods.control}
+              name="code"
+              render={({ fieldState, field: { onChange, onBlur, value} }) => (
+                <FormField
+                  title="Código"
+                  placeholder="Digite seu código"
+                  otherStyles="mt-6"
+                  onBlur={onBlur}
+                  value={value || ''}
+                  keyboardType="decimal-pad"
+                  handleChangeText={onChange}
+                  error={fieldState.error?.message}
+                />
+              )}
+            />}
 
+        
               <TouchableOpacity
                 className='flex flex-row items-center gap-2 mt-2'
                 onPress={() => resendCodeEmail(user.email)}
@@ -178,7 +193,7 @@ const VerifyUser = () => {
         </ScrollView>
       </SafeAreaView>
       <StatusBar backgroundColor="#000000" style="light" />
-    </>
+    </Fragment>
   );
 };
 

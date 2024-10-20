@@ -18,5 +18,6 @@ export async function createUser({
     password
   });
 
+  console.log('response', response)
   return response.data;
 }

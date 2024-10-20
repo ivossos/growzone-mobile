@@ -4,7 +4,7 @@ import { FormField } from "@/components/ui/form-field";
 import Button from "@/components/ui/button";
 import { StepProps } from "@/app/(auth)/sign-up";
 import OtpInput from "@/components/ui/input-otp";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 import { RefreshCw } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { verifyCode } from "@/api/user";
@@ -96,6 +96,7 @@ export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
         </Text>
       </View>
       <View className="flex flex-col w-full">
+        {Platform.OS === 'ios' ?  
         <Controller
           control={control}
           name="code"
@@ -109,6 +110,25 @@ export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
             />
           )}
         />
+
+        :
+
+        <Controller
+          control={control}
+          name="code"
+          render={({ fieldState, field: { onChange, onBlur, value} }) => (
+            <FormField
+              title="Código"
+              placeholder="Digite seu código"
+              otherStyles="mt-6"
+              onBlur={onBlur}
+              value={value || ''}
+              keyboardType="decimal-pad"
+              handleChangeText={onChange}
+              error={fieldState.error?.message}
+            />
+          )}
+        />}
 
         <TouchableOpacity
           className="flex flex-row items-center gap-2 mt-2"

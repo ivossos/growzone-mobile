@@ -16,10 +16,11 @@ import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import Toast from "react-native-toast-message";
 import { createFollow } from "@/api/social/follow/create-follow";
 import { deleteFollow } from "@/api/social/follow/delete-follow";
-import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
+import { deleteLike } from "@/api/social/post/like/delete-like";
 import LikeIcon from "@/assets/icons/like-white.svg";
 import LikedIcon from "@/assets/icons/liked.svg";
+import { createView } from "@/api/social/post/view/create-view";
 
 type ReelsPostProps = {
   post: ReelsDetail;
@@ -34,40 +35,48 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
-  
-  const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false)
+  const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
+  const [isViewed, setIsViewed] = useState(post.is_viewed);
   const { openBottomSheet } = useBottomSheetContext();
- 
+  
   const isPlaying = status?.isLoaded && status.isPlaying;
   const isBuffering = status?.isLoaded && status.isBuffering;
 
-  const handleBottomSheet = (post: any) => {
-    openBottomSheet({ type: 'comment', id: post})
+
+  const handleBottomSheet = (postId: any) => {
+    openBottomSheet({ type: 'comment', id: postId });
   };
 
- 
-  async function handleFollower() {
+  const handleFollower = async () => {
     try {
       setIsLoadingHandleFollower(true);
       if (follow) {
         await deleteFollow(post.user.id);
         setFollow(false);
       } else {
-        await createFollow(post.user.id)
+        await createFollow(post.user.id);
         setFollow(true);
       }
-
     } catch (error) {
-      console.error("erro on handleFollower", error);
-
+      console.error("Erro ao gerenciar seguidor:", error);
       Toast.show({
         type: "error",
         text1: "Opss",
-        text2:
-          'Aconteceu um erro realizar essa açåo", "Tente novamente mais tarde.',
+        text2: 'Ocorreu um erro ao realizar essa ação. Tente novamente mais tarde.',
       });
     } finally {
       setIsLoadingHandleFollower(false);
+    }
+  };
+
+  const viewVideo = async (post: ReelsDetail)  => {
+    try {
+      if (!isViewed) {
+        await createView(post.post_id);
+        setIsViewed(true);
+      }
+    } catch (err) {
+      console.error("Erro marcar video como visto:", err);
     }
   }
 
@@ -77,18 +86,18 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
       if (liked) {
         await deleteLike(post.post_id);
         setLiked(false);
-        setLikedCount((prev) => prev - 1);
+        setLikedCount(prev => prev - 1);
       } else {
         await createLike(post.post_id);
         setLiked(true);
-        setLikedCount((prev) => prev + 1);
+        setLikedCount(prev => prev + 1);
       }
     } catch (err) {
-      console.error("Erro em handleLike", err);
+      console.error("Erro ao gerenciar like:", err);
       Toast.show({
         type: "error",
         text1: "Opss",
-        text2: `Aconteceu um erro no ${liked ? "deslike" : "like"} do post. Tente novamente mais tarde.`,
+        text2: `Ocorreu um erro ao ${liked ? "remover like" : "dar like"} no post. Tente novamente mais tarde.`,
       });
     } finally {
       setIsLoadingLiked(false);
@@ -99,7 +108,7 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
     useCallback(() => {
       return () => {
         if (video.current) {
-          video.current.stopAsync();
+          video.current.stopAsync().catch(error => console.error("Erro ao parar o vídeo:", error));
         }
       };
     }, [])
@@ -108,37 +117,41 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
   useEffect(() => {
     if (!video.current) return;
 
-    if (activePostId !== post.post_id) {
-      video.current.pauseAsync().then(() => {
-        video.current?.setStatusAsync({ shouldPlay: false });
-      });
-    } else {
-      //video.current.playAsync();
-    }
-  }, [activePostId, post.id]);
+    const managePlayback = async () => {
+      if (!video.current) return;
 
-  const onPress = () => {
+      if (activePostId !== post.post_id) {
+        await video?.current?.pauseAsync();
+        await video.current.setPositionAsync(0); 
+      } else {
+        await video?.current?.playAsync();
+        await viewVideo(post);
+      }
+    };
+
+    managePlayback().catch(error => console.error("Erro ao gerenciar a reprodução:", error));
+  }, [activePostId, post.post_id]);
+
+  const onPress = async () => {
     if (!video.current) return;
 
-    if (isPlaying) {
-      video.current.pauseAsync().then(() => {
-        video.current?.setStatusAsync({ shouldPlay: false });
-      });
-    } else {
-      video.current.playAsync().then(() => {
-        video.current?.setStatusAsync({ shouldPlay: true });
-      });
+    try {
+      if (isPlaying) {
+        await video.current.pauseAsync();
+      } else {
+        await video.current.playAsync();
+      }
+    } catch (error) {
+      console.error("Erro ao alternar reprodução:", error);
     }
   };
 
   const { height } = useWindowDimensions();
   const { top, bottom } = useSafeAreaInsets(); 
-
-  const videoHeight = height - top - bottom;
-  const additionalHeight = Platform.OS === 'ios' ? 10 : 0;
+  const videoHeight = height - top - bottom + (Platform.OS === 'ios' ? 10 : 0);
 
   return (
-    <View style={[styles.container, { height: videoHeight + additionalHeight }]}>
+    <View style={[styles.container, { height: videoHeight }]}>
       <Video
         ref={video}
         style={[StyleSheet.absoluteFill, styles.video]}
@@ -147,7 +160,7 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
         onPlaybackStatusUpdate={setStatus}
         isLooping
         isMuted={false}
-        onError={(error) => console.error("Video Error:", error)}
+        onError={(error) => console.error("Erro no vídeo:", error)}
       />
 
       <Pressable onPress={onPress} style={styles.content}>

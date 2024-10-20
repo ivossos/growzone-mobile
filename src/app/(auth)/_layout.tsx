@@ -14,6 +14,8 @@ export default function AuthLayout() {
     if (user?.id && !isLoadingUserStorage) {
       if (!user.is_verified) {
         router.replace('/verify-user');
+      } else if(!user.category_id || user.category_id === 0) {
+        router.replace('/user-category');
       } else {
         router.replace('/home');
       }

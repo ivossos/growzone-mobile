@@ -50,6 +50,8 @@
     "react-dom": "18.2.0",
     "react-hook-form": "^7.52.2",
     "react-native": "0.74.3",
+    "react-native-autocomplete-input": "^5.4.0",
+    "react-native-element-dropdown": "^2.12.2",
     "react-native-gesture-handler": "~2.16.1",
     "react-native-mime-types": "^2.5.0",
     "react-native-pager-view": "^6.3.0",

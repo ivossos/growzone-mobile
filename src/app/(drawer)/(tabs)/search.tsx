@@ -1,8 +1,7 @@
-import { GlobalSearchResponse, SocialPost, UserDTO } from "@/api/@types/models";
+import { GlobalSearchResponse, GrowPost, SocialPost, UserDTO } from "@/api/@types/models";
 import ContributorCard from "@/components/ui/contributor-card";
 import { FormField } from "@/components/ui/form-field";
 import ReelsCard from "@/components/ui/reels-card";
-import { postsMock, users } from "@/constants/mock";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { colors } from "@/styles/colors";
 import { Link, router } from "expo-router";
@@ -30,6 +29,8 @@ import { deleteFollow } from "@/api/social/follow/delete-follow";
 import { createFollow } from "@/api/social/follow/create-follow";
 import { useAuth } from "@/hooks/use-auth";
 import { getTrendingWells } from "@/api/social/wells/get-trending-wells";
+import { getTrendingGrowPosts } from "@/api/social/post/get-trending-grow-posts";
+import { TrendingGrowCard } from "@/components/ui/trending-grow-card";
 
 export default function SearchScreen() {
   const { user } = useAuth();
@@ -44,6 +45,8 @@ export default function SearchScreen() {
   const [hasMore, setHasMore] = useState(true);
   const [topContributors, setTopContributors] = useState<UserDTO[]>([]);
   const [trendingWells, setTrendingWells] = useState<SocialPost[]>([]);
+  const [trendingGrowPosts, setTrendingGrowPosts] = useState<GrowPost[]>([]);
+  const [isLoadingTrendingGrowPosts, setIsLoadingTrendingGrowPosts] = useState(false);
   const [isLoadingTrendingWells, setIsLoadingTrendingWells] = useState(false);
   const [isLoadingTopContributors, setIsLoadingTopContributors] = useState(false);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false)
@@ -131,6 +134,23 @@ export default function SearchScreen() {
     }
   };
 
+  const fetchTrendingGrowPosts = async () => {
+    try {
+      setIsLoadingTrendingGrowPosts(true);
+      const data = await getTrendingGrowPosts({});
+      setTrendingGrowPosts(data);
+    } catch (error) {
+      console.log('Erro ao buscar as GrowPosts: ', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Ops!',
+        text2: 'Aconteceu um erro ao buscar Top Buds. Tente novamente mais tarde.'
+      });
+    } finally {
+      setIsLoadingTrendingGrowPosts(false);
+    }
+  };
+
   const fetchGlobalSearch = async (skipValue: number, limitValue: number) => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
@@ -165,6 +185,7 @@ export default function SearchScreen() {
   useEffect(() => {
     fetchTopContributors();
     fetchTrendingWells();
+    fetchTrendingGrowPosts();
   }, [])
 
   useEffect(() => {
@@ -295,7 +316,7 @@ export default function SearchScreen() {
 
         
       {!query && <FlatList
-          data={[{ key: 'contributors' }, { key: 'reels' }]}
+          data={[{ key: 'contributors' }, { key: 'reels' }, { key: 'buds' }]}
           keyExtractor={(item) => item.key}
           showsVerticalScrollIndicator={false}
           contentContainerClassName="pb-6"
@@ -348,6 +369,35 @@ export default function SearchScreen() {
                     keyExtractor={(post) => post.post_id.toString()}
                     renderItem={({ item }) => (
                       <ReelsCard key={item.id} {...item} />
+                    )}
+                    contentContainerStyle={{ gap: 16 }}
+                  />
+                </View>)
+              );
+            } else if (item.key === 'buds') {
+              return (
+                (isLoadingTrendingGrowPosts ? <ActivityIndicator
+                  animating
+                  color="#fff"
+                  size="small"
+                  className="my-8"
+                /> : trendingGrowPosts?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
+                  <View className="flex flex-row justify-between items-center ">
+                    <Text className="text-lg text-white font-semibold">
+                      Top Buds
+                    </Text>
+                    {/* <TouchableOpacity className="flex items-center flex-row gap-1" onPress={() => router.navigate('/reels')}>
+                      <Text className="text-primary text-base font-medium">ver mais</Text>
+                      <ArrowRight size={18} color={colors.brand.green}/>
+                    </TouchableOpacity> */}
+                  </View>
+                  <FlatList
+                    data={trendingGrowPosts}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(post) => post.post_id.toString()}
+                    renderItem={({ item }) => (
+                      <TrendingGrowCard key={item.id} item={item} />
                     )}
                     contentContainerStyle={{ gap: 16 }}
                   />

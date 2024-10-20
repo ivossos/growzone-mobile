@@ -2,7 +2,7 @@ import { UserDTO } from "@/api/@types/models";
 import { createFollow } from "@/api/social/follow/create-follow";
 import { deleteFollow } from "@/api/social/follow/delete-follow";
 import { useAuth } from "@/hooks/use-auth";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import { ActivityIndicator, Image, Text, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
@@ -53,32 +53,39 @@ export default function ContributorCard({ user: contributor }: ContributorCardPr
         }
         <View className="flex gap-2 p-3">
           <Text className="text-sm text-white font-semibold">{contributor.name || contributor?.username}</Text>
-          {user.id !== contributor.id ? (
-            contributor.is_following ? 
-            <TouchableOpacity className="mr-auto px-3 py-1 bg-black-80 rounded-[64px]" onPress={handleFollower}>
-              {isLoadingHandleFollower && (
-                  <ActivityIndicator
-                    animating
-                    color="#fff"
-                    size="small"
-                    className="ml-2"
-                  />
-                )}
-              {!isLoadingHandleFollower && <Text className="text-base text-neutral-400">Seguindo</Text>}
-            </TouchableOpacity>
-            : 
-            <TouchableOpacity className="mr-auto px-3 py-1 border border-brand-green rounded-[64px]">
-              {isLoadingHandleFollower && (
-                  <ActivityIndicator
-                    animating
-                    color="#fff"
-                    size="small"
-                    className="ml-2"
-                  />
-                )}
-              {!isLoadingHandleFollower && <Text className="text-base text-brand-green">Seguir</Text>}
-            </TouchableOpacity>
-          ) : (<View className="h-7" />)}
+          {user.id === contributor.id ? (
+              <TouchableOpacity className="mr-auto px-3 py-1 bg-black-80 rounded-[64px]" onPress={() => router.push(`/profile/${user.id}`)}>
+                <Text className="text-base text-brand-green">Entrar</Text>
+              </TouchableOpacity>
+            ) : (
+              follow ? 
+                <TouchableOpacity className="mr-auto px-3 py-1 bg-black-80 rounded-[64px]" onPress={handleFollower}>
+                  {isLoadingHandleFollower ? (
+                    <ActivityIndicator
+                      animating
+                      color="#fff"
+                      size="small"
+                      className="ml-2"
+                    />
+                  ) : (
+                    <Text className="text-base text-neutral-400">Seguindo</Text>
+                  )}
+                </TouchableOpacity>
+              : 
+                <TouchableOpacity className="mr-auto px-3 py-1 border border-brand-green rounded-[64px]" onPress={handleFollower}>
+                  {isLoadingHandleFollower ? (
+                    <ActivityIndicator
+                      animating
+                      color="#fff"
+                      size="small"
+                      className="ml-2"
+                    />
+                  ) : (
+                    <Text className="text-base text-brand-green">Seguir</Text>
+                  )}
+                </TouchableOpacity>
+            )}
+
         </View>
       </View>
     </Link>

@@ -85,7 +85,6 @@ export default function Reels() {
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar backgroundColor={colors.black[100]} style="light" />
 
-      {/* Header */}
       <SafeAreaView style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
         <View className="flex flex-row items-center justify-between h-[72px] px-6">
           <View className="flex flex-row items-center gap-2">

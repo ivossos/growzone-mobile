@@ -5,13 +5,43 @@ import Bell from '@/assets/icons/bell.svg';
 import MenuBurger from '@/assets/icons/menu-burger.svg';
 import { router, useNavigation, useRouter } from "expo-router";
 import { DrawerActions } from "@react-navigation/native";
+import { getNotificationCount } from "@/api/social/notification/get-notification-count";
+import { useEffect, useState } from "react";
 
 
 export function Header() {
+  const [loading, setLoading] = useState(false);
+  const [notificationCount, setNotificationCount] = useState<number>(0);
   const navigation = useNavigation();
   const router = useRouter();
   const toggleMenu = () => navigation.dispatch(DrawerActions.toggleDrawer());
   const goToNotifications = () => router.push('/notifications');
+
+  const fetchNotificationCount = async () => {
+    try {
+      if (loading) return;
+
+      setLoading(true);
+      const data = await getNotificationCount();
+      setNotificationCount(data.notification_count);    
+
+    } catch (error) {
+      console.error("Erro ao buscar as notificações: ", error);
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotificationCount();
+
+    const interval = setInterval(() => {
+      fetchNotificationCount();
+    },5 * 60 * 1000);
+
+    return () => clearInterval(interval); 
+  }, []);
   
   return (
     <View className="flex flex-row justify-between items-center h-[72px] px-6 border-b-[1px] border-black-80">
@@ -22,6 +52,11 @@ export function Header() {
           <Text className="text-white font-bold text-lg">582</Text>
         </TouchableOpacity> */}
         <TouchableOpacity activeOpacity={0.7} onPress={(goToNotifications)}>
+          {notificationCount > 0 && (
+            <View className="flex items-center justify-center absolute z-10 -top-2 -right-2 bg-brand-green rounded-full w-5 h-5">
+              <Text className="text-brand-black text-[8px] font-semibold">{notificationCount > 9 ? '9+': notificationCount}</Text>
+            </View>
+          )}
           <Bell width={24} height={24} />
         </TouchableOpacity>
         <TouchableOpacity activeOpacity={0.7} onPress={toggleMenu}>

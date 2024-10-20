@@ -1,11 +1,11 @@
-import { FlatList, StyleSheet, View, Dimensions, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { FlatList, StyleSheet, View, Dimensions, Text, TouchableOpacity, ActivityIndicator, ViewToken } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { SocialPost } from "@/api/@types/models";
-import { Video } from "expo-av";
+import { ResizeMode, Video } from "expo-av";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Toast from "react-native-toast-message";
 import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 
@@ -20,18 +20,18 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
   const [refreshing, setRefreshing] = useState(false);
   const [reels, setReels] = useState<SocialPost[]>([]);
   const [skip, setSkip] = useState(0);
-  const [limit, setLimit] = useState(10);
+  const [limit] = useState(10);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const videoRefs = useRef<(Video | null)[]>([]);
+
 
   const fetchPostsData = async (skipValue: number, limitValue: number) => {
     try {
       if (!userId || loadingMore || refreshing) return;
 
       setLoadingMore(true);
-      console.log('skip ReelsGrid', skipValue);
       const data = await getUserReelsPosts({ id: userId, skip: skipValue, limit: limitValue });
-
       if (data.length < limit) {
         setHasMorePosts(false);
       }
@@ -49,6 +49,15 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
       setRefreshing(false);
     }
   };
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: {viewableItems: ViewToken[]}) => {
+    viewableItems.forEach(({ index }) => {
+      const videoRef = videoRefs.current[index as number];
+      if (videoRef) {
+        videoRef.pauseAsync();
+      }
+    });
+  }).current;
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -70,15 +79,40 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
     }
   }, [skip]);
 
-  const renderItem = ({ item }: { item: SocialPost}) => {
+  useEffect(() => {
+    return () => {
+      videoRefs.current.forEach(async (videoRef) => {
+        if (videoRef) {
+          await videoRef.pauseAsync();
+          await videoRef.unloadAsync();
+        }
+      });
+    };
+  }, []);
+
+  const renderItem = ({ item, index }: { index: number, item: SocialPost}) => {
+    
+    if(item.is_compressing) {
+      Toast.show({
+        type: 'info',
+        text1: 'Opa',
+        text2: 'Seu post esta sendo processado!'
+      });
+
+      return null;
+    }
+
     return (
-      <TouchableOpacity onPress={() => router.push(`/reels/${item.post_id}`)} className="flex flex-col gap-2 mb-4">
+      <TouchableOpacity onPress={() => router.push(`/reels/${item.post_id}`)} className="flex flex-col gap-2">
          <Video
+          ref={ref => (videoRefs.current[index] = ref)} 
           source={{ uri: item?.file?.file}}
           style={styles.image}
           shouldPlay={false}
-          isLooping
+          isLooping={false}
+          isMuted={true} 
           useNativeControls={false}
+          resizeMode={ResizeMode.COVER}
         />
         <LinearGradient
           colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
@@ -88,14 +122,14 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
           <Text className="text-white text-base font-medium">{item.view_count}</Text>
         </LinearGradient>
         <View className="flex flex-col gap-1">
-          {item.description && <Text
+          {/* {item.description && <Text
             className="text-base text-brand-grey font-normal"
             numberOfLines={1}
             ellipsizeMode="tail"
             style={styles.description}
             >
               {item.description}
-          </Text>}
+          </Text>} */}
           {/* <View className="flex flex-row items-center gap-2">
             <Avatar className="w-6 h-6 bg-black-60">
               {!!(user.image?.image) && <AvatarImage
@@ -120,18 +154,23 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
 
   return (
     <FlatList
-      nestedScrollEnabled
       data={reels.filter(r => !r.is_compressing)}
       renderItem={renderItem}
       keyExtractor={(item) => item.id.toString()}
       numColumns={numColumns}
-      columnWrapperClassName="flex gap-4 px-6 w-full"
-      scrollEnabled={false}
+      nestedScrollEnabled={false} 
+      showsVerticalScrollIndicator={false}
+      contentContainerClassName=" px-6 mt-2"
+      columnWrapperClassName="flex gap-2 w-full"
       onEndReached={loadMorePosts}
       onEndReachedThreshold={0.5} 
       initialNumToRender={10}
       maxToRenderPerBatch={10}
       windowSize={5}
+      onViewableItemsChanged={onViewableItemsChanged}
+      viewabilityConfig={{
+        itemVisiblePercentThreshold: 50,
+      }}
       // refreshControl={
       //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       // }

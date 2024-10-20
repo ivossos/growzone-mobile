@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, Redirect, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ScrollView, Dimensions, Alert, Image, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, Dimensions, Alert, Image, TouchableOpacity, ActivityIndicator } from "react-native";
 import images from "@/constants/images";
 
 import Button from "@/components/ui/button";
-import { ArrowRight, AtSign, Lock, Mail, Phone } from "lucide-react-native";
+import { ArrowRight, AtSign, Lock, Mail, Phone, User2Icon } from "lucide-react-native";
 import Divider from "@/components/ui/divider";
 import { FormField } from "@/components/ui/form-field";
 import { Checkbox } from "@/components/Checkbox";
@@ -13,11 +13,37 @@ import { colors } from "@/styles/colors";
 import { useAuth } from "@/hooks/use-auth";
 import Loader from "@/components/ui/loader";
 import { StatusBar } from "expo-status-bar";
+import Toast from "react-native-toast-message";
 
 const Welcome = () => {
-  const { user, isLoadingUserStorage } = useAuth();
+  const { user, signIn, isLoadingUserStorage } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   
   if (user?.id && !isLoadingUserStorage) return <Redirect href="/home" />;
+
+  async function submit() {
+    try {
+      setIsLoading(true);
+      await signIn(
+        'anonimo', 
+        'Growzone10@'
+      );
+      
+    } catch(err) {
+     
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Não foi possivel entrar...'
+      });
+      return;
+    } finally {
+      setIsLoading(false);
+    }
+
+    router.replace("/home");
+  };
+
 
   return (
     <>
@@ -48,18 +74,28 @@ const Welcome = () => {
             </View>
 
             <TouchableOpacity
-              onPress={() => router.push('/sign-in')}
+              onPress={() => submit()}
               activeOpacity={0.7}
               className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4"
+              disabled={isLoading}
             >
-              <Phone width={24} height={24} color={colors.primary} />
-              <Text className="text-white text-lg font-medium text-center">Continuar com o Google</Text>
+              <User2Icon width={24} height={24} color={colors.primary} />
+              <Text className="text-white text-lg font-medium text-center">Continuar sem Login</Text>
+              {isLoading && (
+                <ActivityIndicator
+                  animating={isLoading}
+                  color="#fff"
+                  size="small"
+                  className="ml-2"
+                />
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => router.push('/sign-in')}
               activeOpacity={0.7}
               className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4 mt-6"
+              disabled={isLoading}
             >
               <Mail width={24} height={24} color={colors.primary} />
               <Text className="text-white text-lg font-medium text-center">Continuar com o Email</Text>
@@ -77,6 +113,7 @@ const Welcome = () => {
                 containerStyles="mt-6"
                 title="Crie agora"
                 rightIcon={ArrowRight}
+                isDisabled={isLoading}
               />
             </View>
           </View>

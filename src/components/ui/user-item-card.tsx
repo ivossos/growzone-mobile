@@ -5,7 +5,7 @@ import { useState } from "react";
 import { deleteFollow } from "@/api/social/follow/delete-follow";
 import { createFollow } from "@/api/social/follow/create-follow";
 import Toast from "react-native-toast-message";
-import { PostLike, UserDTO } from "@/api/@types/models";
+import { UserDTO } from "@/api/@types/models";
 import { useAuth } from "@/hooks/use-auth";
 import { Link } from "expo-router";
 

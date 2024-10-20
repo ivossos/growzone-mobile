@@ -30,7 +30,7 @@ export const EditProfileValidation = z.object({
     .regex(/^(?![.])(?!.*[.]{2})(?!.*[.]$)[A-Za-z\d._]+$/, {
       message: "Nome de usuário inválido.",
     }),
-  biography: z.string().max(150, 'A biografia pode ter no máximo 150 caracteres'),
+  biography: z.string().min(1, 'Campo obrigatório').max(150, 'A biografia pode ter no máximo 150 caracteres'),
   email: z.string().email("Digite um e-mail válido").optional(),
   date_of_birth: z.string().optional().refine((value = '') => {
     if (!value) return true;

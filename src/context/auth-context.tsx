@@ -1,5 +1,6 @@
 import { UserSocial } from "@/api/@types/models";
 import { accessToken } from "@/api/auth/access-token";
+import { getCurrentAuthUser } from "@/api/auth/get-current-user";
 import { getCurrentUser } from "@/api/social/user/get-current-user";
 import { authApi, compressApi, socialApi } from "@/lib/axios";
 import { storageGetAuthToken, storageRemoveAuthToken, storageSaveAuthToken } from "@/storage/storage-auth-token";
@@ -50,10 +51,19 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       socialApi.defaults.headers.common['Authorization'] = `Bearer ${res.access_token}`;
       compressApi.defaults.headers.common['Authorization'] = `Bearer ${res.access_token}`;
 
-      const userData = await getCurrentUser();
+      const authUser = await getCurrentAuthUser();
+      if(authUser.is_verified) {
+        const userData = await getCurrentUser();
+        await storageSaveUserAndToken(userData, res.access_token, res.refresh_token);
+        updateUserAndToken(userData, res.access_token)
+      } else {
+        const userSocial: UserSocial = {
+          ...authUser,
+        }
+        await storageSaveUserAndToken(userSocial, res.access_token, res.refresh_token);
+        updateUserAndToken(userSocial, res.access_token)
+      }
 
-      await storageSaveUserAndToken(userData, res.access_token, res.refresh_token);
-      updateUserAndToken(userData, res.access_token)
     } catch(err) {
       throw err;
     } finally {

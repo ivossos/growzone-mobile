@@ -20,6 +20,7 @@ import AnimatedSuccess from './animated-success';
 import { DotIcon } from 'lucide-react-native';
 import { readUserReview } from '@/api/social/review/read-user-review';
 import { useAuth } from '@/hooks/use-auth';
+import { FormFieldBottomSheetText } from './form-field-bottom-sheet';
 
 interface RateProfileBottomSheetProps {
   onClose: () => void;
@@ -321,7 +322,7 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
                 control={form.control}
                 name="description"
                 render={({ field, fieldState }) => (
-                  <FormField
+                  <FormFieldBottomSheetText
                     title="Sua avaliação"
                     placeholder="Descreva como foi sua experiência, a entrega, a qualidade do produto, entre outras coisas."
                     value={field.value}

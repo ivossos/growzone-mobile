@@ -58,9 +58,9 @@ export default function Reels() {
           </TouchableOpacity>
           <LogoIcon width={107} heigth={11} />
         </View>
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Camera className="w-8 h-8" color={colors.brand.white} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       
     </SafeAreaView>

@@ -1,9 +1,10 @@
-import React from 'react';
-import { View, TextInput, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { memo } from 'react';
+import { View, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import SendIcon from '@/assets/icons/send.svg';
 import { Avatar, AvatarFallback, AvatarImage } from '../Avatar';
 import { colors } from '@/styles/colors';
 import { getInitials } from '@/lib/utils';
+import { BottomSheetTextInput } from '@gorhom/bottom-sheet';
 
 interface CommentInputProps {
   user: {
@@ -12,15 +13,15 @@ interface CommentInputProps {
     username?: string;
   };
   newComment: string;
-  setNewComment: React.Dispatch<React.SetStateAction<string>>;
+  setNewComment: (e: string) => void;
   handleCommentSubmit: () => Promise<void>;
   isLoadingAddComment: boolean;
 }
 
 const CommentInput: React.FC<CommentInputProps> = ({ user, newComment, setNewComment, handleCommentSubmit, isLoadingAddComment }) => {
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={{ width: '100%', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 24, backgroundColor: colors.black[100] }}>
+   
+      <View style={{ width: '100%', paddingTop: 16, paddingBottom: 24, backgroundColor: colors.black[100] }}>
         <View className="flex flex-row gap-2 items-center">
           <Avatar className="w-10 h-10 border border-black-90 bg-black-70">
             {user?.image?.image && <AvatarImage className="rounded-full" source={{ uri: user.image.image }} />}
@@ -28,7 +29,7 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, newComment, setNewCom
           </Avatar>
 
           <View className="flex flex-row flex-1 items-center h-12 justify-between border border-black-80 rounded-lg px-4">
-            <TextInput
+            <BottomSheetTextInput
               className="text-white text-start font-medium text-base w-max"
               style={{ color: colors.brand.white }}
               placeholder="Escreva um comentário..."
@@ -46,7 +47,7 @@ const CommentInput: React.FC<CommentInputProps> = ({ user, newComment, setNewCom
           </View>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    // </KeyboardAvoidingView>
   );
 };
 

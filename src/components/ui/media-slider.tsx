@@ -1,4 +1,4 @@
-import { View, StyleSheet, Dimensions, Text, Image } from 'react-native';
+import {StyleSheet, Image } from 'react-native';
 import React, { memo } from 'react';
 import Carousel from 'pinar';
 
@@ -18,7 +18,7 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) =>
         <Image
           source={{ uri: items[0].file  }}
           style={{ width: '100%', height: 350, borderRadius: 16}}
-          resizeMode="contain"
+          resizeMode="cover"
         />
       );
     }  
@@ -38,7 +38,7 @@ const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) =>
       );
     }
     
-    return <VideoPlayer source={item.file}/>
+    return <VideoPlayer source={item.file} />
   };
 
   return (
@@ -68,5 +68,6 @@ const styles = StyleSheet.create({
     height: 350,
     minHeight: 350,
     width: '100%',
+    borderRadius: 16,
   },
 });

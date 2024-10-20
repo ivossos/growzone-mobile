@@ -1,5 +1,5 @@
 import { socialApi } from '@/lib/axios';
-import { PostDetail } from '@/api/@types/models';
+import { FeedAllPost } from '@/api/@types/models';
 
 interface GetPostsProps {
   skip?: number;
@@ -7,7 +7,7 @@ interface GetPostsProps {
 }
 
 export async function getPosts({ skip = 0, limit = 20 }: GetPostsProps) {
-  const response = await socialApi.get<PostDetail[]>(`/feed-social-post/`, {
+  const response = await socialApi.get<FeedAllPost[]>(`/feed-post/`, {
     params: { 
       skip, 
       limit 

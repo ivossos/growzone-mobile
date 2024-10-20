@@ -32,13 +32,13 @@ const signUpSchema = z
       .regex(/^(?![.])(?!.*[.]{2})(?!.*[.]$)[A-Za-z\d._]+$/, {
         message: "Nome de usuário inválido.",
       }),
-    fieldType: z.enum(['email', 'phone']),
+    // fieldType: z.enum(['email', 'phone']),
     email: z
       .string()
       .email("Digite um e-mail válido"),
-    phone: z
-      .string()
-      .optional(),
+    // phone: z
+    //   .string()
+    //   .optional(),
     code: z.string(),
     password: z
       .string()
@@ -53,14 +53,15 @@ const signUpSchema = z
     message: "As senhas estão diferentes",
     path: ["confirmPassword"],
   })
-  .refine(data => {
-    if (data.fieldType === 'email') return data.email !== undefined;
-    if (data.fieldType === 'phone') return data.phone !== undefined;
-    return true;
-  }, {
-    message: 'Campo obrigatório.',
-    path: ['email', 'phone'],
-  });
+//   .refine(data => {
+//     if (data.fieldType === 'email') return data.email !== undefined;
+//     if (data.fieldType === 'phone') return data.phone !== undefined;
+//     return true;
+//   }, {
+//     message: 'Campo obrigatório.',
+//     path: ['email', 'phone'],
+//   }
+// );
 
 type SignUpSchema = z.infer<typeof signUpSchema>;
 type FieldKeys = keyof SignUpSchema;
@@ -82,10 +83,15 @@ const initialSteps = [
     Component: UsernameStep,
     fields: ["username"] as FieldKeys[]
   },
+  // {
+  //   progress: 30,
+  //   Component: ChannelStep,
+  //   fields: [] as FieldKeys[]
+  // },
   {
     progress: 30,
-    Component: ChannelStep,
-    fields: [] as FieldKeys[]
+    Component: EmailStep,
+    fields: ["email"] as FieldKeys[]
   },
   {
     progress: 70,
@@ -100,16 +106,16 @@ const initialSteps = [
 ];
 
 const emailStep = {
-  progress: 50,
+  progress: 40,
   Component: EmailStep,
   fields: ["email"] as FieldKeys[]
 };
 
-const phoneStep = {
-  progress: 50,
-  Component: PhoneStep,
-  fields: ["phone"] as FieldKeys[]
-};
+// const phoneStep = {
+//   progress: 40,
+//   Component: PhoneStep,
+//   fields: ["phone"] as FieldKeys[]
+// };
 
 const SignUp = () => {
   const methods = useForm<SignUpSchema>({
@@ -118,7 +124,6 @@ const SignUp = () => {
     defaultValues: {
       username: "",
       email: "",
-      phone: "",
       code: "",
       password: "",
       confirmPassword: "",
@@ -140,24 +145,26 @@ const SignUp = () => {
       if (!isValid) return;
     }
 
-    if (steps[currentStep].Component === ChannelStep && nextStep) {
-      const nextSteps = [...initialSteps];
-      const index = nextSteps.findIndex(step => step.Component === ChannelStep);
-      nextSteps.splice(index + 1, 0, nextStep === 'email' ? emailStep : phoneStep);
-      setSteps(nextSteps);
-      setCurrentStep(index + 1);
-      setProgress(nextSteps[index + 1]?.progress || 100);
-    } else {
-      setCurrentStep((prev) => prev + 1);
-      setProgress(steps[currentStep + 1]?.progress || 100);
-    }
+    setCurrentStep((prev) => prev + 1);
+    setProgress(steps[currentStep + 1]?.progress || 100);
 
-    console.log('step -> ', currentStep)
+    // if (steps[currentStep].Component === ChannelStep && nextStep) {
+    //   const nextSteps = [...initialSteps];
+    //   const index = nextSteps.findIndex(step => step.Component === ChannelStep);
+    //   nextSteps.splice(index + 1, 0, nextStep === 'email' ? emailStep : phoneStep);
+    //   setSteps(nextSteps);
+    //   setCurrentStep(index + 1);
+    //   setProgress(nextSteps[index + 1]?.progress || 100);
+    // } else {
+    //   setCurrentStep((prev) => prev + 1);
+    //   setProgress(steps[currentStep + 1]?.progress || 100);
+    // }
     
   };
 
   const onPrev = () => {
-    if(currentStep === 4) {
+
+    if(currentStep === 3) {
       router.back()
     } 
     if (currentStep > 0) {
