@@ -103,7 +103,7 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
     }
 
     return (
-      <TouchableOpacity onPress={() => router.push(`/reels/${item.post_id}`)} className="flex flex-col gap-2">
+      <TouchableOpacity onPress={() => router.push({ pathname: '/reels/[id]', params: { id: item.post_id} })} className="flex flex-col gap-2">
          <Video
           ref={ref => (videoRefs.current[index] = ref)} 
           source={{ uri: item?.file?.file}}

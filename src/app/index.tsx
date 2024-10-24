@@ -9,10 +9,8 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 
-import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { colors } from "@/styles/colors";
 
 export default function Splash() {
   const logoScale = useSharedValue(1);
@@ -59,7 +57,7 @@ export default function Splash() {
     logoAnimation();
   }, []);
   return (
-    <View className="flex justify-center items-center bg-black-100 h-full">
+    <View className="flex justify-center items-center bg-brand-black h-full">
       <Animated.Image
           className="w-[214px] h-[30px]"
           resizeMode="contain"

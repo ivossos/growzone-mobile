@@ -1,0 +1,17 @@
+{
+  "cli": {
+    "version": ">= 12.5.4",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "preview": {
+      "android": {
+        "distribution": "internal"
+      },
+      "ios": {
+        "simulator": true
+      }
+    }, 
+    "production": {}
+  }
+}

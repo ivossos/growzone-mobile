@@ -25,7 +25,7 @@ const Welcome = () => {
     try {
       setIsLoading(true);
       await signIn(
-        'anonimo', 
+        'edugrower', 
         'Growzone10@'
       );
       

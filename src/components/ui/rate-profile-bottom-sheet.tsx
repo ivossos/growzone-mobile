@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Button from './button';
 import Toast from 'react-native-toast-message';
-import { Avatar, AvatarFallback } from '../Avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../Avatar';
 import { formatDateIso, getInitials } from '@/lib/utils';
 import { ReadReview, Review } from '@/api/@types/models';
 import { getUserReviews } from '@/api/social/review/get-user-reviews';
@@ -73,6 +73,11 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
       }
 
       if(callback) await callback();
+
+      setHasMore(true);
+      setSkip(0);
+      setReviews([]);
+      await fetchReviews();
 
       setReportSubmitted(true);
       // Toast.show({
@@ -214,6 +219,12 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
     <BottomSheetView key={item.id} className="flex flex-col gap-3 bg-black-100 mb-4 px-6">
       <BottomSheetView className="flex flex-row items-center gap-2">
         <Avatar className="bg-black-80 w-10 h-10">
+        {item.reviewer?.image?.image && (
+            <AvatarImage
+              className="rounded-full"
+              source={{ uri: item.reviewer?.image?.image }}
+            />
+          )}
           <AvatarFallback>{getInitials(item.reviewer.name || item.reviewer.username)}</AvatarFallback>
         </Avatar>
         <BottomSheetView className="flex flex-row items-center gap-1">

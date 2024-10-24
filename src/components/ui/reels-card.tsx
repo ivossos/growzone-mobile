@@ -5,7 +5,7 @@ import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { SocialPost } from "@/api/@types/models";
 import { useEffect, useRef } from "react";
-import { Video } from "expo-av";
+import { ResizeMode, Video } from "expo-av";
 import { Link } from "expo-router";
 
 export default function ReelsCard( item: SocialPost) {
@@ -36,6 +36,7 @@ export default function ReelsCard( item: SocialPost) {
               height: 224, 
               width: 155
             }}
+            resizeMode={ResizeMode.COVER}
             shouldPlay={false}
             isLooping
             useNativeControls={false}

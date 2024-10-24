@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator, FlatList, RefreshControl, TouchableOpacity, View, ViewabilityConfigCallbackPair } from "react-native";
-import { Stack, useNavigation } from "expo-router";
+import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { colors } from "@/styles/colors";
 
@@ -9,19 +9,19 @@ import ReelsPost from "@/components/ui/reels-post";
 import { Camera, ChevronLeft } from "lucide-react-native";
 import LogoIcon from "@/assets/icons/logo-small-white.svg";
 import Toast from "react-native-toast-message";
-import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { getReels } from "@/api/social/post/get-reels";
 import { ReelsDetail } from "@/api/@types/models";
+import { ResizeMode } from "expo-av";
+import { uniqBy } from "lodash";
 
 export default function Reels() {
   const [refreshing, setRefreshing] = useState(false);
   const [activePostId, setActivePostId] = useState<number>();
   const [posts, setPosts] = useState<ReelsDetail[]>([]);
   const [skip, setSkip] = useState(0);
-  const [limit, setLimit] = useState(10);
+  const [limit] = useState(10);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const navigation = useNavigation();
 
 
   const fetchPostsData = async (skipValue: number, limitValue: number) => {
@@ -30,11 +30,12 @@ export default function Reels() {
 
       setLoadingMore(true);
       const data = await getReels({ skip: skipValue, limit: limitValue });
+      console.log('------->', { data })
 
       if (data.length === 0) {
         setHasMorePosts(false);
       } else {
-        setPosts((prevPosts) => [...prevPosts, ...data]);
+        setPosts((prevPosts) => uniqBy([...prevPosts, ...data], 'post_id'));
       }
     } catch (error) {
       console.error('Erro ao buscar os reels:', error);
@@ -91,7 +92,7 @@ export default function Reels() {
             <TouchableOpacity
               className="p-2 rounded-lg border border-brand-white"
               style={{ borderColor: 'rgba(255, 255, 255, 0.16)' }}
-              onPress={() => navigation.goBack()}
+              onPress={() => router.back()}
             >
               <ChevronLeft className="w-8 h-8" color={colors.brand.white} />
             </TouchableOpacity>
@@ -106,7 +107,7 @@ export default function Reels() {
       <FlatList
         data={posts}
         renderItem={({ item }) => (
-          <ReelsPost post={item} activePostId={activePostId!} />
+          <ReelsPost post={item} activePostId={activePostId!} resizeMode={ResizeMode.COVER}/>
         )}
         keyExtractor={(item, index) => `${item.id}-${index}`}
         pagingEnabled

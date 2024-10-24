@@ -1,7 +1,7 @@
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronLeft, Search } from "lucide-react-native";
-import { router, useNavigation } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { colors } from "@/styles/colors";
 import LogoIcon from "@/assets/icons/logo-small.svg";
 import LikeIcon from "@/assets/icons/like-green.svg";
@@ -25,8 +25,8 @@ export default function PostLikes() {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const navigation = useNavigation();
-  const route = useRoute();
-  const id = (route.params as { id: number })?.id;
+  const globalParams = useLocalSearchParams();
+  const { id } = (globalParams  as { id: number }) || {};
 
   const fetchPostLikesData = async (skipValue: number, limitValue: number) => {
     try {

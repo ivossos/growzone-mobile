@@ -4,12 +4,12 @@ import { FormField } from "@/components/ui/form-field";
 import ReelsCard from "@/components/ui/reels-card";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { colors } from "@/styles/colors";
-import { Link, router } from "expo-router";
+import { Link, router, useFocusEffect } from "expo-router";
 import {
   ArrowRight,
   Search,
 } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   View,
   ScrollView,
@@ -193,6 +193,14 @@ export default function SearchScreen() {
       fetchGlobalSearch(skip, limit);
     }
   }, [skip]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTopContributors();
+      fetchTrendingWells();
+      fetchTrendingGrowPosts();
+    }, [])
+  );
 
    const loadMorePosts = () => {
     if (!loadingMore && hasMore) {

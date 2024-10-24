@@ -7,7 +7,7 @@ import GrowPostCard from "@/components/ui/grow-post-card";
 import PostCard from "@/components/ui/post-card";
 import { colors } from "@/styles/colors";
 import { useRoute } from "@react-navigation/native";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -16,8 +16,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 export default function Post() {
-  const route = useRoute();
-  const id = (route.params as { id: number })?.id;
+  const params = useLocalSearchParams();
+  const { id } = (params  as { id: number }) || {};
   const [isLoadingPost, setIsLoadingPost] = useState(false);
   const [isLoadingPostComments, setIsLoadingPostComments] = useState(false);
   const [isLoadingPostLikes, setIsLoadingPostLikes] = useState(false);

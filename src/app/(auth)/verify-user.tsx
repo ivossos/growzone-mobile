@@ -132,9 +132,14 @@ const VerifyUser = () => {
                   Digite o código de verificação
                 </Text>
 
-                <Text className="text-lg font-regular text-black-30 text-center">
-                  Digite o código que você recebeu via email ou celular
-                </Text>
+                <View>
+                  <Text className="text-lg font-regular text-black-30 text-center ">
+                    Digite o código que você recebeu via email.
+                  </Text>
+                  <Text className="text-lg font-regular text-black-30 text-center ">
+                    Esse código expira em 10 minutos.
+                  </Text>
+                </View>
               </View>
             </View>
 

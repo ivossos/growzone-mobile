@@ -157,7 +157,6 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
       keyboardBehavior={Platform.OS === 'ios' ? 'extend' : 'interactive'}
       keyboardBlurBehavior="restore"
       android_keyboardInputMode='adjustResize' 
-      onChange={handleSheetChanges}
       >
       <BottomSheetFlatList
         data={comments}

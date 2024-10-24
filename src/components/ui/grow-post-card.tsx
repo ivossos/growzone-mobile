@@ -60,7 +60,7 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
       <View className="flex flex-row items-center justify-between gap-2 w-full">
         <TouchableOpacity
           className="flex flex-row items-center gap-2"
-          onPress={() => router.push(`/profile/${post.user.id}`)}
+          onPress={() => router.push({ pathname: '/profile/[id]', params: { id: post.user.id }})}
         >
           <Avatar className="w-10 h-10 bg-black-80">
             {post?.user?.image?.image && (

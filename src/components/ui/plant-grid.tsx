@@ -102,7 +102,7 @@ export default function PlantGrid({ userId }: PlantGridProps) {
     }
 
     return (
-      <TouchableOpacity onPress={() => router.push(`/post/${item.post_id}/grow`)} className="flex flex-col gap-2 mb-6">
+      <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]/grow', params: { id: item.post_id }})} className="flex flex-col gap-2 mb-6">
          
          <View className="relative">
           {item.file.type === 'image' ? (
@@ -134,7 +134,7 @@ export default function PlantGrid({ userId }: PlantGridProps) {
             ellipsizeMode="tail"
             style={styles.description}
             >
-              Teste fdsfdsf ds terer df
+              {item.strain.name}
           </Text>}
 
           <View className="flex flex-row item-center gap-1 border border-black-80 bg-black-100 px-2 py-1 rounded-full">

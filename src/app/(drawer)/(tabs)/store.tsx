@@ -1,5 +1,5 @@
 import ImageCarousel from '@/components/ui/image-carousel';
-import { View, Text, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Image } from 'react-native';
 import Banner1 from '@/assets/images/banner-1.png'
 import Banner2 from '@/assets/images/banner-2.png'
 import Banner3 from '@/assets/images/banner-3.png'
@@ -60,10 +60,10 @@ export default function StoreScreen() {
           showsHorizontalScrollIndicator={false}
           keyExtractor={(user) => user.id.toString()}
           renderItem={({ item }) => {
-            const { title, Icon} = item;
+            const { title, Icon } = item;
             return (
-              <TouchableOpacity className="flex flex-col gap-2 py-3 px-3 bg-black-90 rounded-lg">
-                <Icon width={48} height={48} />
+              <TouchableOpacity className="flex flex-col items-center justify-center gap-2 py-3 px-3 bg-black-90 rounded-lg">
+                <Icon width={48} height={48}  />
                 <Text className="text-base text-brand-grey">{title}</Text>
               </TouchableOpacity>
             )

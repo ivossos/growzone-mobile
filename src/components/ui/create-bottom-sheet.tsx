@@ -6,9 +6,14 @@ import {
   TextInput,
   Keyboard,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
 } from "react-native";
 import BottomSheet, {
   BottomSheetBackdrop,
+  BottomSheetScrollView,
+  BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { colors } from "@/styles/colors";
@@ -37,9 +42,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormField } from "./form-field";
 import SelectGeneticDropdown from "./select-genetic-dropdown";
 import SelectPhaseDropdown from "./select-phase-dropdown";
+import { FormFieldBottomSheetText } from "./form-field-bottom-sheet";
 
 export const GrowPostValidation = z.object({
-  day: z.string(),
+  day: z.number(),
   genetic: z.object({
     id: z.number().nullable(),
   }).refine(data => {
@@ -321,7 +327,6 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
               <View className="flex flex-row flex-1 items-center justify-between">
                 <Text
                   className="text-white text-base text-center font-semibold"
-                  onPress={() => Keyboard.dismiss()}
                 >
                   {user.name || user.username}
                 </Text>
@@ -330,7 +335,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                 </TouchableOpacity>
               </View>
             </BottomSheetView>
-            <BottomSheetView className="flex flex-row flex-1 items-start justify-start">
+            <BottomSheetView className="flex flex-row items-start justify-start">
               <TextInput
                 numberOfLines={3}
                 multiline
@@ -345,23 +350,26 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                 style={{ flex: 1, borderBottomWidth: 0 }}
               />
             </BottomSheetView>
-            <BottomSheetView className="flex flex-col gap-6">
-              <MediaPicker
-                onMediaSelected={(media) => {
-                  if (media?.type?.includes('video')) {
-                    setSelectedVideos((prev) => [...prev, media]);
-                  } else {
-                    setSelectedImages((prev) => [...prev, media]);
-                  }
-                }}
-              />
-              <Button
-                containerStyles="w-full"
-                title="Publicar"
-                handlePress={handleCreateSocialPost}
-                isLoading={isLoadingCreatePost}
-              />
-            </BottomSheetView>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <BottomSheetView className="flex flex-col flex-1 justify-end gap-6">
+                <MediaPicker
+                  onMediaSelected={(media) => {
+                    if (media?.type?.includes('video')) {
+                      setSelectedVideos((prev) => [...prev, media]);
+                    } else {
+                      setSelectedImages((prev) => [...prev, media]);
+                    }
+                  }}
+                />
+                <Button
+                  containerStyles="w-full"
+                  title="Publicar"
+                  handlePress={handleCreateSocialPost}
+                  isLoading={isLoadingCreatePost}
+                />
+              </BottomSheetView>
+
+            </TouchableWithoutFeedback>
           </BottomSheetView>
         )}
 
@@ -370,8 +378,8 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
           //   behavior={Platform.OS === "ios" ? "padding" : "height"}
           //   style={{ flex: 1 }}
           // >
-          //   <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <BottomSheetScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
                 <BottomSheetView className="flex flex-col gap-6 flex-1 px-6 pb-10 mb-20">
                   <BottomSheetView className="flex flex-row items-center gap-2">
                     <Avatar className="w-10 h-10 bg-black-80">
@@ -402,7 +410,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                     <TextInput
                       numberOfLines={3}
                       multiline
-                      placeholder="Como está seu cultivo"
+                      placeholder="Como está seu cultivo?"
                       placeholderTextColor={colors.black[30]}
                       selectionColor={colors.brand.green}
                       value={postDescription}
@@ -453,7 +461,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                       control={form.control}
                       name="day"
                       render={({ fieldState, field: { onChange, onBlur, value } }) => (
-                        <FormField
+                        <FormFieldBottomSheetText
                           title="Dias"
                           placeholder="Ex: 120"
                           keyboardType="numeric"
@@ -475,9 +483,9 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                     />
                   </BottomSheetView>
                 </BottomSheetView>
-              </ScrollView>
-          //   </TouchableWithoutFeedback>
-          // </KeyboardAvoidingView>
+              </BottomSheetScrollView>
+             </TouchableWithoutFeedback>
+          //  </KeyboardAvoidingView>
         )}
 
 
@@ -507,7 +515,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                 </TouchableOpacity>
               </View>
             </BottomSheetView>
-            <BottomSheetView className="flex flex-row flex-1 items-start justify-start">
+            <BottomSheetView className="flex flex-row items-start justify-start">
               <TextInput
                 numberOfLines={3}
                 multiline
@@ -522,18 +530,21 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                 style={{ flex: 1, borderBottomWidth: 0 }}
               />
             </BottomSheetView>
-            <BottomSheetView className="flex flex-col gap-6">
-              <VideoPicker
-                onMediaSelected={(media) => setSelectedVideos((prev) => [...prev, media])}
-              />
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <BottomSheetView className="flex flex-col flex-1 justify-end gap-6">
+                <VideoPicker
+                  onMediaSelected={(media) => setSelectedVideos((prev) => [...prev, media])}
+                />
 
-              <Button
-                containerStyles="w-full"
-                title="Publicar"
-                handlePress={handleCreateSocialReels}
-                isLoading={isLoadingCreateReels}
-              />
-            </BottomSheetView>
+                <Button
+                  containerStyles="w-full"
+                  title="Publicar"
+                  handlePress={handleCreateSocialReels}
+                  isLoading={isLoadingCreateReels}
+                />
+              </BottomSheetView>
+
+            </TouchableWithoutFeedback>
           </BottomSheetView>
         )}
       </BottomSheet>

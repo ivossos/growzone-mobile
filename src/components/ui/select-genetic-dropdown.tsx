@@ -4,6 +4,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { colors } from '@/styles/colors';
 import debounce from 'lodash/debounce';
 import { getGenetics } from '@/api/social/genetic';
+import { find } from 'lodash';
 
 interface Genetic {
   name: string;
@@ -32,11 +33,20 @@ const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, on
   const fetchSuggestions = debounce(async (query: string = '', skip: number = 0) => {
     setIsLoading(true);
     try {
+      const geneticSelected = find(data, d => d.id === value);
+      
       const genetics = await getGenetics({ query, skip, limit });
+      const updatedData = [...genetics];
+      if (geneticSelected && !updatedData.some(d => d.id === geneticSelected.id)) {
+        updatedData.unshift(geneticSelected); 
+      }
+
       if (genetics.length < limit) {
         setHasMore(false); 
       }
-      setData(prev => (skip === 0 ? genetics : [...prev, ...genetics]));
+
+      setData(prev => (skip === 0 ? updatedData : [...prev, ...updatedData]));
+
     } catch (error) {
       console.error('Erro ao buscar sugestões:', error);
     } finally {
@@ -55,11 +65,7 @@ const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, on
       setSkip(nextSkip);
       fetchSuggestions(searchQuery, nextSkip);
     }
-  };
-
-  useEffect(() => {
-    console.log('genetic')
-   }, []);
+  }
  
 
   return (
@@ -83,7 +89,8 @@ const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, on
         labelField="label"
         valueField="value"
         placeholder={!isFocus ? placeholder : '...'}
-        
+        keyboardAvoiding
+        mode='auto'
         searchPlaceholder="Pesquisar.."
         value={value}
         onFocus={() => {

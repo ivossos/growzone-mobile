@@ -3,8 +3,10 @@ import PostGreenIcon from "@/assets/icons/post-green.svg";
 import ReelsGreenIcon from "@/assets/icons/reels-green.svg";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors } from "@/styles/colors";
+import { router } from "expo-router";
 
 type MetricsProps = {
+  userId: number;
   followers: number;
   following: number;
   memberSince: string;
@@ -15,22 +17,23 @@ type MetricsProps = {
 };
 
 export function Metrics({
+  userId,
   followers = 0,
   following = 0,
   memberSince = '',
   socialCount = 0,
   reelCount = 0,
   averageReview = 0,
-  onReviewsPress = 0,
+  onReviewsPress = () => {},
 }: MetricsProps) {
   return (
     <View className="flex flex-col gap-1 px-6 mt-1">
       <View className="flex flex-row justify-between px-6 py-4">
-        <TouchableOpacity className="flex flex-col items-center gap-1">
+        <TouchableOpacity className="flex flex-col items-center gap-1" onPress={() => router.push({ pathname: '/profile/[id]/followers', params: { id: userId}})}>
           <Text className="text-lg text-white font-medium">{followers}</Text>
           <Text className="text-sm text-brand-grey font-regular">Seguidores</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="flex flex-col items-center gap-1">
+        <TouchableOpacity className="flex flex-col items-center gap-1" onPress={() => router.push({ pathname: '/profile/[id]/following', params: { id: userId}})}>
           <Text className="text-lg text-white font-medium">{following}</Text>
           <Text className="text-sm text-brand-grey font-regular">Seguindo</Text>
         </TouchableOpacity>

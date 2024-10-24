@@ -54,7 +54,7 @@ export default function ContributorCard({ user: contributor }: ContributorCardPr
         <View className="flex gap-2 p-3">
           <Text className="text-sm text-white font-semibold">{contributor.name || contributor?.username}</Text>
           {user.id === contributor.id ? (
-              <TouchableOpacity className="mr-auto px-3 py-1 bg-black-80 rounded-[64px]" onPress={() => router.push(`/profile/${user.id}`)}>
+              <TouchableOpacity className="mr-auto px-3 py-1 bg-black-80 rounded-[64px]" onPress={() => router.push({ pathname: '/profile/[id]', params: { id: user.id } })}>
                 <Text className="text-base text-brand-green">Entrar</Text>
               </TouchableOpacity>
             ) : (

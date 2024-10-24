@@ -1,13 +1,20 @@
-import MedidoresIcon from '@/assets/images/medidores.svg'
-import HeadShopIcon from '@/assets/images/head-shop.svg'
-import VestuarioIcon from '@/assets/images/vestuario.svg'
-import NutrientesIcon from '@/assets/images/nutrientes.svg'
-import EstufaIcon from '@/assets/images/estufas.svg'
-import IluminacaoIcon from '@/assets/images/iluminacao.svg'
-import VasosIcon from '@/assets/images/vasos.svg'
-import SubstratoIcon from '@/assets/images/substrato.svg'
-import VentilacaoIcon from '@/assets/images/ventilacao.svg'
-import IrrigacaoIcon from '@/assets/images/irrigacao.svg'
+import MedidoresIcon from '@/assets/images/categories/medidores.svg'
+import HeadShopIcon from '@/assets/images/categories/head-shop.svg'
+import VestuarioIcon from '@/assets/images/categories/vestuario.svg'
+import NutrientesIcon from '@/assets/images/categories/nutrientes.svg'
+import EstufaIcon from '@/assets/images/categories/estufas.svg'
+import IluminacaoIcon from '@/assets/images/categories/iluminacao.svg'
+import VasosIcon from '@/assets/images/categories/vasos.svg'
+import SubstratoIcon from '@/assets/images/categories/substrato.svg'
+import VentilacaoIcon from '@/assets/images/categories/ventilacao.svg'
+import IrrigacaoIcon from '@/assets/images/categories/irrigacao.svg'
+import AutomationIcon from '@/assets/images/categories/automation.svg'
+import BelezaIcon from '@/assets/images/categories/beleza.svg'
+import LaricaIcon from '@/assets/images/categories/larica.svg'
+import OleoIcon from '@/assets/images/categories/oleo.svg'
+import SoproIcon from '@/assets/images/categories/sobro.svg'
+import RoboIcon from '@/assets/images/categories/robo.svg'
+import { Connection } from '@/components/ui/perfil/types'
 
 export const stories = [
   {
@@ -222,6 +229,85 @@ export const categoriesMock = [
   { id: 6, title: "Iluminação", Icon: IluminacaoIcon },
   { id: 7, title: "Vasos", Icon: VasosIcon },
   { id: 8, title: "Substrato", Icon: SubstratoIcon },
-  { id: 9, title: "Ventilação", Icon: VentilacaoIcon },
+  { id: 9, title: "Ventilação", Icon: VentilacaoIcon, },
   { id: 10, title: "Irrigação", Icon: IrrigacaoIcon },
+  // { id: 11, title: "Automação", Icon: AutomationIcon },
+  { id: 12, title: "Beleza", Icon: BelezaIcon },
+  // { id: 13, title: "Larica", Icon: LaricaIcon },
+  { id: 14, title: "Óleo", Icon: OleoIcon },
+  { id: 15, title: "Sopro", Icon: SoproIcon },
+];
+
+
+
+
+
+export const FRIENDS: Connection[] = [
+  {
+    name: "Sophie Brown",
+    photo: "https://randomuser.me/api/portraits/women/1.jpg",
+  },
+  {
+    name: "William Garcia",
+    photo: "https://randomuser.me/api/portraits/men/1.jpg",
+  },
+];
+
+export const SUGGESTIONS: Connection[] = [
+  {
+    name: "Charlotte Jones",
+    photo: "https://randomuser.me/api/portraits/women/2.jpg",
+  },
+  {
+    name: "Oliver Brown",
+    photo: "https://randomuser.me/api/portraits/men/2.jpg",
+  },
+  {
+    name: "Jessica Miller",
+    photo: "https://randomuser.me/api/portraits/women/3.jpg",
+  },
+  {
+    name: "Samuel Johnson",
+    photo: "https://randomuser.me/api/portraits/men/3.jpg",
+  },
+  {
+    name: "Olivia Martinez",
+    photo: "https://randomuser.me/api/portraits/women/4.jpg",
+  },
+  {
+    name: "Joshua Miller",
+    photo: "https://randomuser.me/api/portraits/men/4.jpg",
+  },
+  {
+    name: "Katie Williams",
+    photo: "https://randomuser.me/api/portraits/women/5.jpg",
+  },
+  {
+    name: "Jack Jones",
+    photo: "https://randomuser.me/api/portraits/men/5.jpg",
+  },
+  {
+    name: "Amy Johnson",
+    photo: "https://randomuser.me/api/portraits/women/6.jpg",
+  },
+  {
+    name: "Thomas Williams",
+    photo: "https://randomuser.me/api/portraits/men/6.jpg",
+  },
+  {
+    name: "Abigail Hernandez",
+    photo: "https://randomuser.me/api/portraits/women/7.jpg",
+  },
+  {
+    name: "Matthew Taylor",
+    photo: "https://randomuser.me/api/portraits/men/7.jpg",
+  },
+  {
+    name: "Poppy Jackson",
+    photo: "https://randomuser.me/api/portraits/women/8.jpg",
+  },
+  {
+    name: "Mohammed Lopez",
+    photo: "https://randomuser.me/api/portraits/men/8.jpg",
+  },
 ];

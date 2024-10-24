@@ -7,7 +7,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { Heart, MessageCircleMore } from "lucide-react-native";
 import { colors } from "@/styles/colors";
-import { Link, useFocusEffect } from "expo-router";
+import { Link, router, useFocusEffect } from "expo-router";
 import ExpandableText from "./expandable-text";
 import { ReelsDetail } from "@/api/@types/models";
 import { getInitials } from "@/lib/utils";
@@ -25,9 +25,10 @@ import { createView } from "@/api/social/post/view/create-view";
 type ReelsPostProps = {
   post: ReelsDetail;
   activePostId: number;
+  resizeMode?: ResizeMode
 };
 
-const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
+const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: ReelsPostProps) => {
   const { user } = useAuth();
   const video = useRef<Video>(null);
   const [status, setStatus] = useState<AVPlaybackStatus>();
@@ -70,6 +71,7 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
   };
 
   const viewVideo = async (post: ReelsDetail)  => {
+    console.log(post)
     try {
       if (!isViewed) {
         await createView(post.post_id);
@@ -156,7 +158,7 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
         ref={video}
         style={[StyleSheet.absoluteFill, styles.video]}
         source={{ uri: post.file.file }}
-        resizeMode={ResizeMode.CONTAIN}
+        resizeMode={resizeMode}
         onPlaybackStatusUpdate={setStatus}
         isLooping
         isMuted={false}
@@ -190,7 +192,7 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
                 key={post.user.id}
                 className="flex flex-row items-center justify-start w-full"
               >
-                <View className="flex flex-row items-center gap-2 mr-2">
+                <TouchableOpacity className="flex flex-row items-center gap-2 mr-2" onPress={() => router.push({ pathname: '/profile/[id]', params: { id: post.user.id }})}>
                   <Avatar className="w-12 h-12 bg-black-80">
                   {!!(post.user.image?.image) &&
                     <AvatarImage
@@ -204,7 +206,7 @@ const ReelsPost = ({ post, activePostId }: ReelsPostProps) => {
                       {post.user.name || post.user.username}
                     </Text>
                   </View>
-                </View>
+                </TouchableOpacity>
 
                 {(user.id !== post.user.id) && (post.user.is_following ? (
                   <TouchableOpacity className="px-3 py-1 bg-black-80 rounded-[64px]" onPress={handleFollower}>

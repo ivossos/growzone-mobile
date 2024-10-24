@@ -169,7 +169,7 @@ export default function ProfileDetails({
               <TouchableOpacity
                 onPress={() =>
                   router.push({
-                    pathname: "/profile/[id]/followers",
+                    pathname: "/[id]/followers",
                     params: { id: profile.info.id },
                   })
                 }
@@ -185,7 +185,7 @@ export default function ProfileDetails({
               <TouchableOpacity
                 onPress={() =>
                   router.push({
-                    pathname: "/profile/[id]/following",
+                    pathname: "/[id]/following",
                     params: { id: profile.info.id },
                   })
                 }

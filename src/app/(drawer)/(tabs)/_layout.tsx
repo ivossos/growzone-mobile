@@ -1,4 +1,4 @@
-import { Stack, Tabs } from 'expo-router';
+import { Tabs } from 'expo-router';
 import React, { useRef } from 'react';
 import icons from '@/constants/icons';
 import { Image, ImageSourcePropType, View } from 'react-native';

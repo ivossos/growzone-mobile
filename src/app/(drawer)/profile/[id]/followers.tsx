@@ -1,21 +1,21 @@
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ChevronLeft, Search } from "lucide-react-native";
-import { useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation } from "expo-router";
 import { colors } from "@/styles/colors";
 import LogoIcon from "@/assets/icons/logo-small.svg";
 import UserIcon from "@/assets/icons/user-check.svg";
 import { FormField } from "@/components/ui/form-field";
 import { useEffect, useState } from "react";
 import Toast from "react-native-toast-message";
-import { Following } from "@/api/@types/models";
-import { readFollowing } from "@/api/social/follow/read-following";
+import { Follower } from "@/api/@types/models";
 import { debounce } from 'lodash';
 import { useRoute } from "@react-navigation/native";
 import UserItemCard from "@/components/ui/user-item-card";
+import { readFollowers } from "@/api/social/follow/read-followers";
 
 export default function FollowingPage() {
-  const [following, setFollowing] = useState<Following[]>([]);
+  const [following, setFollowing] = useState<Follower[]>([]);
   const [skip, setSkip] = useState(0);
   const [limit] = useState(50);
   const [query, setQuery] = useState('');
@@ -23,8 +23,8 @@ export default function FollowingPage() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const navigation = useNavigation();
-  const route = useRoute();
-  const id = (route.params as { id: number })?.id;
+  const globalParams = useLocalSearchParams();
+  const { id } = (globalParams  as { id: number }) || {};
   const normalizedId = Array.isArray(id) ? id[0] : id;
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function FollowingPage() {
     setLoading(true);
     
     try {
-      const res = await readFollowing({
+      const res = await readFollowers({
         id: parseInt(normalizedId),
         skip,
         limit,
@@ -114,7 +114,7 @@ export default function FollowingPage() {
             onMomentumScrollEnd={handleLoadMore}
           >
             <View className="flex flex-col gap-4 pb-[400px]">
-              {following.map(user => <UserItemCard key={user.id + user.created_at} item={user.followed}/> )}
+              {following.map(user => <UserItemCard key={user.id + user.created_at} item={user.follower}/> )}
               {loading && (
                 <View className="flex items-center justify-center">
                   <ActivityIndicator
