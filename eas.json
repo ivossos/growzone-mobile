@@ -12,6 +12,16 @@
         "simulator": true
       }
     }, 
-    "production": {}
+    "production": {
+      "autoIncrement": true,
+      "android": {
+        "autoIncrement": "versionCode"
+      },
+      "ios": {
+        "image": "latest",
+        "autoIncrement": "buildNumber"
+      },
+      "channel": "production"
+    }
   }
 }
