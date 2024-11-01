@@ -30,7 +30,6 @@ export default function Reels() {
 
       setLoadingMore(true);
       const data = await getReels({ skip: skipValue, limit: limitValue });
-      console.log('------->', { data })
 
       if (data.length === 0) {
         setHasMorePosts(false);
@@ -98,9 +97,9 @@ export default function Reels() {
             </TouchableOpacity>
             <LogoIcon width={107} height={30} />
           </View>
-          <TouchableOpacity>
+          {/* <TouchableOpacity>
             <Camera className="w-8 h-8" color={colors.brand.white} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </SafeAreaView>
 

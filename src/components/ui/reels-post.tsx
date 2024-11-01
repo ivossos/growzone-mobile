@@ -1,11 +1,11 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions, TouchableOpacity, Platform } from "react-native";
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions, TouchableOpacity, Platform, Dimensions } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
-import { Heart, MessageCircleMore } from "lucide-react-native";
+import { MessageCircleMore } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Link, router, useFocusEffect } from "expo-router";
 import ExpandableText from "./expandable-text";
@@ -21,12 +21,16 @@ import { deleteLike } from "@/api/social/post/like/delete-like";
 import LikeIcon from "@/assets/icons/like-white.svg";
 import LikedIcon from "@/assets/icons/liked.svg";
 import { createView } from "@/api/social/post/view/create-view";
+import { debounce } from "lodash";
 
 type ReelsPostProps = {
   post: ReelsDetail;
   activePostId: number;
   resizeMode?: ResizeMode
 };
+
+const ScreenWidth = Dimensions.get('window').width;
+const ScreenHeight = Dimensions.get('window').height;
 
 const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: ReelsPostProps) => {
   const { user } = useAuth();
@@ -35,6 +39,7 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
   const [follow, setFollow] = useState<boolean>(post.user.is_following);
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
+  const [commentCount, setCommentCount] = useState(post.comment_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
   const [isViewed, setIsViewed] = useState(post.is_viewed);
@@ -45,7 +50,11 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
 
 
   const handleBottomSheet = (postId: any) => {
-    openBottomSheet({ type: 'comment', id: postId });
+    openBottomSheet({ type: 'comment', id: postId, callbackFn: async (increment) => {
+      if(typeof increment === 'boolean') {
+        setCommentCount(prev => prev += 1);
+      }
+    }});
   };
 
   const handleFollower = async () => {
@@ -71,7 +80,6 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
   };
 
   const viewVideo = async (post: ReelsDetail)  => {
-    console.log(post)
     try {
       if (!isViewed) {
         await createView(post.post_id);
@@ -106,11 +114,47 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
     }
   };
 
+  const restartPlayback = useCallback(async () => {
+    if (video.current) {
+      await video.current.unloadAsync();
+      await video.current.loadAsync({ uri: post.file.file }, { shouldPlay: true });
+    }
+  }, [post.file.file]);
+
+  const handlePlaybackError = (error: any) => {
+    console.log('error', error)
+    if (error?.domain === 'AVFoundationErrorDomain' && error?.code === -11819) {
+      console.log('error if')
+      restartPlayback();
+    }
+  };
+
+  const managePlayback = async () => {
+    if (video.current) {
+      try {
+        if (activePostId === post.post_id) {
+          await video.current.loadAsync({ uri: post.file.file }, { shouldPlay: true });
+          await viewVideo(post);
+        } else {
+          await video.current.pauseAsync();
+          await video.current.unloadAsync();
+        }
+      } catch (error) {
+        console.error("Erro ao gerenciar a reprodução:", error);
+      }
+    }
+  };
+  
+  const debouncedManagePlayback = useCallback(
+    debounce(managePlayback, 300),
+    [activePostId, post.post_id]
+  );
+
   useFocusEffect(
     useCallback(() => {
       return () => {
         if (video.current) {
-          video.current.stopAsync().catch(error => console.error("Erro ao parar o vídeo:", error));
+          video.current.pauseAsync().catch(error => console.error("Erro ao parar o vídeo:", error));
         }
       };
     }, [])
@@ -118,20 +162,12 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
 
   useEffect(() => {
     if (!video.current) return;
-
-    const managePlayback = async () => {
-      if (!video.current) return;
-
-      if (activePostId !== post.post_id) {
-        await video?.current?.pauseAsync();
-        await video.current.setPositionAsync(0); 
-      } else {
-        await video?.current?.playAsync();
-        await viewVideo(post);
-      }
+  
+    debouncedManagePlayback();
+  
+    return () => {
+      debouncedManagePlayback.cancel();
     };
-
-    managePlayback().catch(error => console.error("Erro ao gerenciar a reprodução:", error));
   }, [activePostId, post.post_id]);
 
   const onPress = async () => {
@@ -150,7 +186,7 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
 
   const { height } = useWindowDimensions();
   const { top, bottom } = useSafeAreaInsets(); 
-  const videoHeight = height - top - bottom + (Platform.OS === 'ios' ? 10 : 0);
+  const videoHeight = height - top - bottom;
 
   return (
     <View style={[styles.container, { height: videoHeight }]}>
@@ -162,7 +198,7 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
         onPlaybackStatusUpdate={setStatus}
         isLooping
         isMuted={false}
-        onError={(error) => console.error("Erro no vídeo:", error)}
+        onError={handlePlaybackError}
       />
 
       <Pressable onPress={onPress} style={styles.content}>
@@ -268,8 +304,8 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
                     <MessageCircleMore size={20} color={colors.brand.white} />
                   </TouchableOpacity>
                 </LinearGradient>
-                {post.comment_count > 0 && (
-                  <Text className="text-white font-medium">{post.comment_count}</Text>
+                {commentCount > 0 && (
+                  <Text className="text-white font-medium">{commentCount}</Text>
                 )}
               </View>
             </View>
