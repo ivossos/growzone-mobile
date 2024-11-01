@@ -53,11 +53,21 @@ const SignIn = () => {
       
     } catch(err) {
       console.log('error login', err)
-      Toast.show({
-        type: 'error',
-        text1: 'Opss',
-        text2: 'Seu usuario ou senha estão incorretos 👋'
-      });
+
+      if(err === 'Inactive user') {
+        Toast.show({
+          type: 'error',
+          text1: 'Opss',
+          text2: 'Seu usuário foi desativado por infringir as regras da plataforma.'
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Opss',
+          text2: 'Seu usuario ou senha estão incorretos 👋'
+        });
+      }
+
       return;
     } finally {
       setIsLoading(false);

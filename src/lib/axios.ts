@@ -25,12 +25,16 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 
   api.registerInterceptTokenManager = signOut => {
     const interceptTokenManager = api.interceptors.response.use(res => res, async (requestError) => {
-      console.log('error', requestError?.response)
       if (requestError?.response?.status === 502) {
         await signOut();
         return Promise.reject(requestError);
       }
       
+      if(requestError?.response?.status === 401 && requestError?.response?.data?.detail === "Inactive user") {
+        await signOut();
+        return Promise.reject(requestError?.response?.data?.detail);
+      }
+
       if (requestError?.response?.status === 401 && requestError?.response?.data?.detail === "Invalid token") {
         
         const { refresh_token } = await storageGetAuthToken();
