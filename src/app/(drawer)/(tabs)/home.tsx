@@ -92,7 +92,7 @@ export default function HomeScreen() {
   }, [posts, loadingMore]);
 
   useEffect(() => {
-    if (refresh === '1') {
+    if (refresh) {
       onRefresh()
     }
   }, [refresh]);

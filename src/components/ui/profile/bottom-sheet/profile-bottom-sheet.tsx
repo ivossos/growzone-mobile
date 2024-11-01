@@ -43,7 +43,7 @@ const ProfileBottomSheet = React.forwardRef<BottomSheet, ProfileBottomSheetProps
       openBottomSheet({
         type: "block-user",
         userId: userId!,
-        callbackFn: async () => router.push({ pathname: '/home', params: { refresh: 1 }})
+        callbackFn: async () => router.push({ pathname: '/home', params: { refresh: Date.now().toString() }})
       });
     }
 

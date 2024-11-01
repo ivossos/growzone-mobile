@@ -51,7 +51,9 @@ const BlockUserBottomSheet = React.forwardRef<BottomSheet, Props>(({ onClose }, 
     setReportSuccess(false);
     setProfile(undefined);
     if(submitted) {
-      if(callback) callback()
+      if(callback) {
+        callback()
+      }
     }
     onClose();
     closeBottomSheet();
@@ -168,7 +170,7 @@ const BlockUserBottomSheet = React.forwardRef<BottomSheet, Props>(({ onClose }, 
       ref={ref}
       index={1}
       snapPoints={snapPoints}
-      enablePanDownToClose
+      enablePanDownToClose={!reportSubmitted}
       handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
       backgroundStyle={{ backgroundColor: colors.black[100]}}
       backdropComponent={renderBackdrop}
