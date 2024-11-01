@@ -11,7 +11,7 @@ interface CreateReportResponse {
 }
 
 export async function createReport(postId: number, reasonId: number) {
-  const response = await socialApi.post<CreateReportResponse>(`/report/`, {
+  const response = await socialApi.post<CreateReportResponse>(`/report-post/`, {
     post_id: postId,
     reason_id: reasonId
   });

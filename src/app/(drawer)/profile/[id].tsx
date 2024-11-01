@@ -314,8 +314,14 @@ const Profile: React.FC = () => {
   };
 
   const handleRateProfilePress = () => {
+    // openBottomSheet({
+    //   type: "rate-profile",
+    //   userId: profile.info.id,
+    //   callbackFn: fetchProfileData,
+    // });
+
     openBottomSheet({
-      type: "rate-profile",
+      type: "profile",
       userId: profile.info.id,
       callbackFn: fetchProfileData,
     });

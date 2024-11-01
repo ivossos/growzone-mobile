@@ -10,6 +10,7 @@ import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
 import { BottomSheetProvider } from '@/context/bottom-sheet-context';
 import ReportBottomSheet from '@/components/ui/report-bottom-sheet';;
 import GlobalSearchBottomSheet from '@/components/ui/global-search-bottom-sheet';
+import { useScrollToTop } from '@/context/scroll-top-context';
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -56,6 +57,7 @@ export default function TabLayout() {
   const reportSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
   const createPostSheetRef = useRef<BottomSheet>(null);
+  const { scrollToTop } = useScrollToTop();
 
   const openBottomSheet = () => {
     bottomSheetRef.current?.snapToIndex(1)
@@ -80,100 +82,113 @@ export default function TabLayout() {
   return (
     <>
       <BottomSheetProvider>
-        <Tabs
-          screenOptions={{
-            tabBarActiveTintColor: "#2CC420",
-            tabBarInactiveTintColor: "#565656",
-            tabBarShowLabel: false,
-            tabBarStyle: {
-              height: 72,
-              backgroundColor: "#161616",
-              borderTopColor: "#161616",
-            },
-          }}
-        >
-          <Tabs.Screen
-            name="home"
-            options={{
-              title: 'Home',
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon 
-                  name={focused ? 'home' : 'home-outline'} 
-                  color={color} 
-                  focused={focused}
-                  icon={icons.home}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="search"
-            options={{
-              title: 'Pesquisa Global',
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon 
-                  name={focused ? 'community' : 'community-outline'} 
-                  color={color} 
-                  focused={focused}
-                  icon={icons.community}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="create"
-            listeners={{
-              tabPress: (e) => {
-                e.preventDefault();
-                openBottomSheet();
+          <Tabs
+            screenOptions={{
+              tabBarActiveTintColor: "#2CC420",
+              tabBarInactiveTintColor: "#565656",
+              tabBarShowLabel: false,
+              tabBarStyle: {
+                height: 72,
+                backgroundColor: "#161616",
+                borderTopColor: "#161616",
               },
             }}
-            options={{
-              title: 'Create',
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon 
-                  name={focused ? 'create' : 'create-outline'} 
-                  color={color} 
-                  focused={focused}
-                  icon={icons.create}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="reels"
-            options={{
-              title: 'Reels',
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon 
-                  name={focused ? 'reels' : 'reels-outline'} 
-                  color={color} 
-                  focused={focused}
-                  icon={icons.reels}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="store"
-            options={{
-              title: 'Store',
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon 
-                  name={focused ? 'store' : 'store-outline'} 
-                  color={color} 
-                  focused={focused}
-                  icon={icons.store}
-                />
-              ),
-            }}
-          />
-        </Tabs>
+          >
+            <Tabs.Screen
+              name="home"
+              listeners={({ navigation, route }) => ({
+                tabPress: (e) => {
+                  const state = navigation.getState();
+                  const isHomeFocused = state?.routes[state.index]?.name === 'home';
+
+                  if (isHomeFocused) {
+                    e.preventDefault();
+                    scrollToTop();
+                  } else {
+                    navigation.navigate(route.name);
+                  }
+                },
+              })}
+              options={{
+                title: 'Home',
+                headerShown: false,
+                tabBarIcon: ({ color, focused }) => (
+                  <TabIcon 
+                    name={focused ? 'home' : 'home-outline'} 
+                    color={color} 
+                    focused={focused}
+                    icon={icons.home}
+                  />
+                ),
+              }}
+            />
+            <Tabs.Screen
+              name="search"
+              options={{
+                title: 'Pesquisa Global',
+                headerShown: false,
+                tabBarIcon: ({ color, focused }) => (
+                  <TabIcon 
+                    name={focused ? 'community' : 'community-outline'} 
+                    color={color} 
+                    focused={focused}
+                    icon={icons.community}
+                  />
+                ),
+              }}
+            />
+            <Tabs.Screen
+              name="create"
+              listeners={{
+                tabPress: (e) => {
+                  e.preventDefault();
+                  openBottomSheet();
+                },
+              }}
+              options={{
+                title: 'Create',
+                headerShown: false,
+                tabBarIcon: ({ color, focused }) => (
+                  <TabIcon 
+                    name={focused ? 'create' : 'create-outline'} 
+                    color={color} 
+                    focused={focused}
+                    icon={icons.create}
+                  />
+                ),
+              }}
+            />
+            <Tabs.Screen
+              name="reels"
+              options={{
+                title: 'Reels',
+                headerShown: false,
+                tabBarIcon: ({ color, focused }) => (
+                  <TabIcon 
+                    name={focused ? 'reels' : 'reels-outline'} 
+                    color={color} 
+                    focused={focused}
+                    icon={icons.reels}
+                  />
+                ),
+              }}
+            />
+            <Tabs.Screen
+              name="store"
+              options={{
+                title: 'Store',
+                headerShown: false,
+                tabBarIcon: ({ color, focused }) => (
+                  <TabIcon 
+                    name={focused ? 'store' : 'store-outline'} 
+                    color={color} 
+                    focused={focused}
+                    icon={icons.store}
+                  />
+                ),
+              }}
+            />
+          </Tabs>
         <CreateBottomSheet ref={bottomSheetRef} onClose={closeCreateBottomSheet} />
         <CommentBottomSheet ref={commentSheetRef} />
         <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>

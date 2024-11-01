@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react';
+import { useState, useEffect, Fragment, useRef } from 'react';
 import { View, RefreshControl, FlatList, ActivityIndicator, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,6 +13,8 @@ import { getPosts } from '@/api/social/post/get-posts';
 import GrowPostCard from '@/components/ui/grow-post-card';
 import { getTopContributors } from '@/api/social/contributor /get-top-contributors';
 import ContributorCard from '@/components/ui/contributor-card';
+import { useLocalSearchParams } from 'expo-router';
+import { useScrollToTop } from '@/context/scroll-top-context';
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -23,6 +25,9 @@ export default function HomeScreen() {
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [isLoadingTopContributors, setIsLoadingTopContributors] = useState(false);
+  const { setFlatListRef } = useScrollToTop();
+
+  const { refresh } = useLocalSearchParams();
 
   const fetchPostsData = async (skipValue: number, limitValue: number) => {
     try {
@@ -86,12 +91,17 @@ export default function HomeScreen() {
     }
   }, [posts, loadingMore]);
 
+  useEffect(() => {
+    if (refresh === '1') {
+      onRefresh()
+    }
+  }, [refresh]);
+
   const loadMorePosts = () => {
     if (!loadingMore && hasMorePosts) {
       setSkip((prevSkip) => prevSkip + limit);
     }
   };
-
 
   const renderHeader = () => (
     <Fragment>
@@ -142,6 +152,7 @@ export default function HomeScreen() {
     <Fragment>
       <SafeAreaView style={{ flex: 1 }} className="bg-black-100" edges={['top']}>
         <FlatList
+          ref={setFlatListRef}
           className="bg-black-100"
           data={posts}
           showsVerticalScrollIndicator={false}

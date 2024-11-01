@@ -12,6 +12,7 @@ import { formatDistance, getInitials } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { orderBy, uniqBy } from "lodash";
 import { useAuth } from "@/hooks/use-auth";
+import { ResizeMode, Video } from "expo-av";
 
 
 export default function NotificationsScreen() {
@@ -74,7 +75,7 @@ export default function NotificationsScreen() {
     if(item.type.name === 'Follow Profile') {
       router.push({
         pathname: '/profile/[id]',
-        params: { id: user.id },
+        params: { id: item.sender.id },
       });
     } else if(item.type.name === 'Review Profile') {
       router.push({
@@ -117,16 +118,33 @@ export default function NotificationsScreen() {
           </View>
         </View>
       </View>
-      {item.type.name !== 'Report Post' && item.post && item.post.file.type === 'image' &&
+      {item.type.name !== 'Report Post' && item.post &&(
         <View>
-          <Image
-            source={{ uri: item.post.file.file }}
-            width={40}
-            height={40}
-            className="rounded-lg"
-            resizeMode="cover"
-          />
+          {item.post.file.type === 'image'  && (
+            <Image
+              source={{ uri: item.post.file.file }}
+              width={40}
+              height={40}
+              className="rounded-lg"
+              resizeMode="cover"
+            />
+          )}
+          {item.post.file.type === 'video'  && (
+          <Video
+            source={{ uri: item.post.file.file}}
+            style={{
+              height: 40, 
+              width: 40,
+              borderRadius: 8
+            }}
+            resizeMode={ResizeMode.COVER}
+            shouldPlay={false}
+            isLooping
+            useNativeControls={false}
+            />
+          )}
         </View>
+      )
       }
     </TouchableOpacity>
   );

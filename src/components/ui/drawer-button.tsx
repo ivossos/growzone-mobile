@@ -19,7 +19,7 @@ export function DrawerButton({title, isDivider, Icon, ...props}: DrawerButtonPro
         {...props}
       >
         <View className="flex flex-row items-center gap-2">
-          <Icon width={24} height={24} />
+          <Icon width={24} height={24} color={colors.brand.green}/>
           <Text className="text-white text-base font-semibold">
             {title}
           </Text>

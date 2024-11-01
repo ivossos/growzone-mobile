@@ -234,7 +234,7 @@ export const categoriesMock = [
   // { id: 11, title: "Automação", Icon: AutomationIcon },
   { id: 12, title: "Beleza", Icon: BelezaIcon },
   // { id: 13, title: "Larica", Icon: LaricaIcon },
-  { id: 14, title: "Óleo", Icon: OleoIcon },
+  // { id: 14, title: "Óleo", Icon: OleoIcon },
   { id: 15, title: "Sopro", Icon: SoproIcon },
 ];
 

@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList, BottomSheetFooter, BottomSheetTextInput } from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop, BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { colors } from '@/styles/colors';
 import { useBottomSheetContext } from '@/context/bottom-sheet-context';
 import { getPostComments } from '@/api/social/post/comment/get-comments';
@@ -7,12 +7,10 @@ import Toast from 'react-native-toast-message';
 import { Comment } from '@/api/@types/models';
 import CommentCard from './comment-card';
 import Loader from './loader';
-import { KeyboardAvoidingView, Platform, Text, TextInput, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import { useAuth } from '@/hooks/use-auth';
 import createComment from '@/api/social/post/comment/create-comment';
-import { BottomSheetDefaultFooterProps } from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheetFooter/types';
 import CommentInput from './comment-input';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { orderBy, uniqBy } from 'lodash';
 
 const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
@@ -24,8 +22,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const [hasMore, setHasMore] = useState(true);
   const [newComment, setNewComment] = useState('');
 
-  const { postId, isVisible, currentType, closeBottomSheet } = useBottomSheetContext();
-  const { bottom: bottomSafeArea } = useSafeAreaInsets();
+  const { postId, isVisible, currentType, closeBottomSheet, callback } = useBottomSheetContext();  
 
 
   const snapPoints = useMemo(() => ['60%', '70%', '90%'], []);
@@ -56,13 +53,12 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
     }
   };
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setComments([]);
     setSkip(0);
-    setHasMore(true);
     setNewComment('');
     closeBottomSheet();
-  };
+  }, [closeBottomSheet]);
 
   const handleCommentSubmit = useCallback(async () => {
     if (newComment.trim()) {
@@ -80,6 +76,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         } as Comment
         setComments((prev) => [...[comment], ...prev])
         setNewComment('');
+        if(callback) callback(true);
       } catch (error) {
         Toast.show({
           type: 'error',
@@ -136,10 +133,8 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
 
   useEffect(() => {
     if (postId && isVisible) {
-      setSkip(0);
-      setComments([]);
       setHasMore(true);
-      loadPostComments();
+      loadPostComments(true);
     }
   }, [postId, isVisible]);
 

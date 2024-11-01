@@ -120,7 +120,7 @@ export interface Follow {
 
 export interface UserDTO {
   id: number;
-  name: string;
+  name?: string;
   username: string;
   created_at: string;
   is_active: boolean;
@@ -413,4 +413,10 @@ export interface Lead {
   created_at: Date;
   updated_at: Date;
   is_active: boolean;
+}
+
+export interface Blocked {
+  id: number;
+  blocked: UserDTO;
+  created_at: string;
 }

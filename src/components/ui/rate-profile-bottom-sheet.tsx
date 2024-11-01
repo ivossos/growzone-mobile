@@ -21,6 +21,7 @@ import { DotIcon } from 'lucide-react-native';
 import { readUserReview } from '@/api/social/review/read-user-review';
 import { useAuth } from '@/hooks/use-auth';
 import { FormFieldBottomSheetText } from './form-field-bottom-sheet';
+import { router } from 'expo-router';
 
 interface RateProfileBottomSheetProps {
   onClose: () => void;
@@ -138,6 +139,7 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
         id: user.id,
         username: user.username,
         name: user.name,
+        image: user.image,
         created_at: user.created_at,
         is_active: user.is_active,
         is_following: false,
@@ -149,7 +151,12 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
     if(userId) {
       openBottomSheet({ type: 'rate-profile', userId: userId})
     }
-  } 
+  }
+
+  const navigateToProfile = (userId: number) => {
+    onClose();
+    router.push({ pathname: '/profile/[id]', params: { id: userId } });
+  }
 
   const fetchReviews = useCallback(async () => {
     if (!userId || !hasMore || isLoadingFetchReviews) return;
@@ -202,6 +209,9 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
 
   useEffect(() => {
     if (currentType === 'reviews-profile' || currentType === 'rate-profile') { 
+      setHasMore(true);
+      setSkip(0);
+      setReviews([]);
       if (!isLoadingFetchReviews && userId) {
         fetchReview();
         fetchReviews();
@@ -218,17 +228,21 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
   const renderReview = (item: Review) => (
     <BottomSheetView key={item.id} className="flex flex-col gap-3 bg-black-100 mb-4 px-6">
       <BottomSheetView className="flex flex-row items-center gap-2">
-        <Avatar className="bg-black-80 w-10 h-10">
-        {item.reviewer?.image?.image && (
-            <AvatarImage
-              className="rounded-full"
-              source={{ uri: item.reviewer?.image?.image }}
-            />
-          )}
-          <AvatarFallback>{getInitials(item.reviewer.name || item.reviewer.username)}</AvatarFallback>
-        </Avatar>
+        <TouchableOpacity onPress={() => navigateToProfile(item.reviewer.id)}>
+          <Avatar className="bg-black-80 w-10 h-10">
+          {item.reviewer?.image?.image && (
+              <AvatarImage
+                className="rounded-full"
+                source={{ uri: item.reviewer?.image?.image }}
+              />
+            )}
+            <AvatarFallback>{getInitials(item.reviewer.name || item.reviewer.username)}</AvatarFallback>
+          </Avatar>
+        </TouchableOpacity>
         <BottomSheetView className="flex flex-row items-center gap-1">
-          <Text className="text-white text-base font-semibold">{item.reviewer.name || item.reviewer.username}</Text>
+          <TouchableOpacity onPress={() => navigateToProfile(item.reviewer.id)}>
+            <Text className="text-white text-base font-semibold">{item.reviewer.name || item.reviewer.username}</Text>
+          </TouchableOpacity>
           <DotIcon className="w-3 h-3" color={colors.black[80]} />
           <Text className="text-brand-grey text-sm">{formatDateIso(item.created_at)}</Text>
         </BottomSheetView>

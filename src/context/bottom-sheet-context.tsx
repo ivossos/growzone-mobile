@@ -1,16 +1,16 @@
-import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 
-type BottomSheetType = 'comment' | 'report' | 'search' | 'rate-profile' | 'reviews-profile' | 'create-post';
+type BottomSheetType = 'comment' | 'report' | 'search' | 'rate-profile' | 'reviews-profile' | 'create-post' | 'profile' | 'report-user' | 'block-user' | 'unlock-user';
 
 type BottomSheetContextType = {
   postId: number | null;
   userId: number | null;
   setPostId: (id: number | null) => void;
   isVisible: boolean;
-  openBottomSheet: (data: { type: BottomSheetType; id?: number; userId?: number, callbackFn?: (() => Promise<void>) | null}) => void;
+  openBottomSheet: (data: { type: BottomSheetType; id?: number; userId?: number, callbackFn?: ((prop?: any) => Promise<void>) | null}) => void;
   closeBottomSheet: () => void;
   currentType: BottomSheetType | null;
-  callback: (() => Promise<void>) | null;
+  callback: ((prop?: any) => Promise<void>) | null;
 };
 
 const BottomSheetContext = createContext<BottomSheetContextType | undefined>(undefined);
@@ -34,6 +34,7 @@ export const BottomSheetProvider = ({ children }: { children: ReactNode }) => {
     { type, id, userId, callbackFn }: { type: BottomSheetType; id?: number; userId?: number, callbackFn?: (() => Promise<void>) | null}) => {
     if (id) setPostId(id);
     if (userId) setUserId(userId);
+    
     setCurrentType(type);
     setIsVisible(true);
     if (callbackFn) {
@@ -50,7 +51,7 @@ export const BottomSheetProvider = ({ children }: { children: ReactNode }) => {
       if (callback) {
         setCallback(null);
       }
-    }, 200);
+    }, 100);
   };
 
   return (
