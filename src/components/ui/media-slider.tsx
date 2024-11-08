@@ -11,35 +11,25 @@ interface MediaSliderProps {
 }
 
 const MediaSlider: React.FC<MediaSliderProps> = ({ items }: MediaSliderProps) => {
-  
-  if(items.length === 1) {
-    if (items[0].type === 'image') {
-      return (
-        <Image
-          source={{ uri: items[0].file  }}
-          style={{ width: '100%', height: 350, borderRadius: 16}}
-          resizeMode="cover"
-        />
-      );
-    }  
-    
-    return <VideoPlayer source={items[0].file}/>
-  }
-
 
   const RenderItem = ({ item }: { item: SocialPostFile }) => {
+
     if (item.type === 'image') {
       return (
         <Image
           source={{ uri: item.file }}
-          style={{ width: '100%', height: '100%', borderRadius: 16 }}
-          resizeMode="contain"
+          style={{ width: '100%', height: 350, borderRadius: 16 }}
+          resizeMode="cover"
         />
       );
     }
     
     return <VideoPlayer source={item.file} />
   };
+
+  if(items.length === 1) {
+    return <RenderItem item={items[0]}/>
+   }
 
   return (
     <Carousel

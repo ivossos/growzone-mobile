@@ -44,7 +44,7 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true); 
 
-  const snapPoints = useMemo(() => ['30%', '60%', '90%'], []);
+  const snapPoints = useMemo(() => ['30%', '40%', '70%', '90%'], []);
 
   const form = useForm({
     resolver: zodResolver(validationSchema),
@@ -72,6 +72,8 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
           description: values.description,
         })
       }
+
+      ref?.current?.snapToIndex(2);
 
       if(callback) await callback();
 
@@ -149,6 +151,7 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
 
   const onChangeTypeBottomSheet = () => {
     if(userId) {
+      ref?.current?.snapToIndex(2);
       openBottomSheet({ type: 'rate-profile', userId: userId})
     }
   }
@@ -167,6 +170,11 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
       const data = await getUserReviews({ id: userId, skip, limit: 10 });
       
       setReviews(prevReviews => [...prevReviews, ...data]);
+
+      if(data && data.length === 0 && reviews.length === 0) {
+        console.log('entrou')
+        ref?.current?.snapToIndex(1);
+      }
     
       setSkip(prevSkip => prevSkip + 10);
       
@@ -252,15 +260,17 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
     </BottomSheetView>
   );
 
-  const renderEmptyReview = () => (
-    <BottomSheetView className="flex flex-col justify-center flex-1 gap-4 bg-black-100 mb-4 px-6">
-      <Text className="text-center text-2xl text-brand-grey">{`${user.id === userId ? 'Você' : 'Esse perfil'} ainda não tem nenhuma avaliação.`}</Text>
-      {user.id !== userId && <Button
-        title="Fazer uma avaliação agora"
-        handlePress={onChangeTypeBottomSheet}
-      />}
-    </BottomSheetView>
-  );
+  const renderEmptyReview = () => {
+    return (
+      <BottomSheetView className="flex flex-col justify-center gap-4 bg-black-100 mb-4 px-6 mt-16">
+        <Text className="text-center text-2xl text-brand-grey">{`${user.id === userId ? 'Você' : 'Esse perfil'} ainda não tem nenhuma avaliação.`}</Text>
+        {user.id !== userId && <Button
+          title="Fazer uma avaliação agora"
+          handlePress={onChangeTypeBottomSheet}
+        />}
+      </BottomSheetView>
+    )
+  }
 
   if (!isVisible || (currentType !== 'rate-profile' && currentType !== 'reviews-profile')) return null;
 
@@ -364,7 +374,7 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
             </TouchableOpacity>
 
             <Button
-              title={`${updateReview ? 'Atualizar' : 'Salvar alterações' }`}
+              title={`${updateReview ? 'Salvar alterações' : 'Publicar'}`}
               handlePress={form.handleSubmit(submit)}
               isLoading={isLoading}
               containerStyles="w-full"

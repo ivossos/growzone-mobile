@@ -25,7 +25,7 @@ interface Props {
   likes?: PostLike[];
 }
 
-const PostCard = ({ post, comments = [], likes = [] }: Props) => {
+const PostCard = ({ post, comments = [], likes = []}: Props) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);

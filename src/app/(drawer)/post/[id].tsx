@@ -38,7 +38,6 @@ export default function Post() {
         text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
       });
 
-      router.back();
     } finally {
       setIsLoadingPost(false);
     }

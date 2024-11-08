@@ -14,29 +14,18 @@ const VideoPlayer = ({ source }: { source: string }) => {
   const [status, setStatus] = useState<AVPlaybackStatus>();
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const isFocused = useIsFocused();
 
   const isBuffering = status?.isLoaded && status.isBuffering;
 
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        if (videoRef.current) {
-          videoRef.current.stopAsync().catch(error => console.error("Erro ao parar o vídeo:", error))
-        }
-      };
-    }, [])
-  );
-
   useEffect(() => {
     if (videoRef.current) {
-      if (isPlaying && isFocused) {
+      if (isPlaying) {
         videoRef.current?.playAsync().catch(error => console.error("Erro ao gerenciar a reprodução:", error));
       } else {
         videoRef.current.pauseAsync().catch(error => console.error("Erro ao gerenciar a reprodução:", error));
       }
     }
-  }, [isPlaying, isFocused]);
+  }, [isPlaying]);
 
   const onPressPlayPause = () => {
     if (!videoRef.current) return;
@@ -61,14 +50,14 @@ const VideoPlayer = ({ source }: { source: string }) => {
       <Pressable onPress={onPressPlayPause} style={styles.content}>
     <Video
       ref={videoRef}
-      style={[StyleSheet.absoluteFill, styles.video]}
+      style={[ styles.video]}
       source={{ uri: source }}
       resizeMode={ResizeMode.COVER}
       onPlaybackStatusUpdate={setStatus}
-      shouldPlay={isPlaying && isFocused}
+      shouldPlay={isPlaying}
       isLooping={false}
       useNativeControls={false}
-      onError={(error) => console.error("Video error Video player:", error)}
+      onError={(error) => console.error("error Video player:", error)}
     />
 
       
@@ -77,7 +66,7 @@ const VideoPlayer = ({ source }: { source: string }) => {
       <>
         <LinearGradient
         colors={["transparent", "rgba(0,0,0,0.8)"]}
-        style={[StyleSheet.absoluteFillObject]}
+        style={[StyleSheet.absoluteFillObject, { borderRadius: 16 }]}
         />
             <Ionicons
               style={{ position: "absolute", alignSelf: "center", top: "50%" }}
@@ -108,15 +97,16 @@ const VideoPlayer = ({ source }: { source: string }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    height: 350,
     borderRadius: 16 ,
   },
   video: {
+    width: '100%',
     height: '100%',
     borderRadius: 16
   },
   content: {
-    flex: 1,
+    height: '100%',
   },
 });
 

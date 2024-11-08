@@ -45,7 +45,7 @@ export default function Reels() {
   }, [id]);
 
   return (
-    <View style={{  backgroundColor: colors.black[100], flex: 1 }}>
+    <View style={{  backgroundColor: colors.brand.green, flex: 1 }}>
     <Stack.Screen options={{ headerShown: false }} />
     <StatusBar backgroundColor={colors.black[100]} style="light" />
 
@@ -64,10 +64,8 @@ export default function Reels() {
         </TouchableOpacity> */}
       </View>
       
+    {post && <ReelsPost post={post} activePostId={post.post_id} resizeMode={ResizeMode.COVER} isTab={false}/>}
     </SafeAreaView>
-    <View style={{ flex: 1 }}>
-      {post && <ReelsPost post={post} activePostId={post.post_id} resizeMode={ResizeMode.COVER}/>}
-    </View>
   </View>
   )
 }

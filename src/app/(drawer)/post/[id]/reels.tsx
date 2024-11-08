@@ -66,7 +66,7 @@ export default function Reels() {
       
     </SafeAreaView>
     <View style={{ flex: 1 }}>
-      {post && <ReelsPost post={post} activePostId={post.post_id} resizeMode={ResizeMode.COVER}/>}
+      {post && <ReelsPost post={post} activePostId={post.post_id} resizeMode={ResizeMode.COVER} isTab={false}/>}
     </View>
   </View>
   )

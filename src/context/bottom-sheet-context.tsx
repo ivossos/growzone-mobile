@@ -51,7 +51,7 @@ export const BottomSheetProvider = ({ children }: { children: ReactNode }) => {
       if (callback) {
         setCallback(null);
       }
-    }, 100);
+    }, 0);
   };
 
   return (

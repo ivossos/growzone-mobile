@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { Link, Redirect, router } from "expo-router";
+import { Redirect, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, ScrollView, Dimensions, Alert, Image, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import images from "@/constants/images";
 
 import Button from "@/components/ui/button";
-import { ArrowRight, AtSign, Lock, Mail, Phone, User2Icon } from "lucide-react-native";
+import { ArrowRight, Mail } from "lucide-react-native";
 import Divider from "@/components/ui/divider";
-import { FormField } from "@/components/ui/form-field";
-import { Checkbox } from "@/components/Checkbox";
 import { colors } from "@/styles/colors";
 import { useAuth } from "@/hooks/use-auth";
 import Loader from "@/components/ui/loader";
@@ -73,7 +71,7 @@ const Welcome = () => {
               </View>
             </View>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => submit()}
               activeOpacity={0.7}
               className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4"
@@ -89,7 +87,7 @@ const Welcome = () => {
                   className="ml-2"
                 />
               )}
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               onPress={() => router.push('/sign-in')}

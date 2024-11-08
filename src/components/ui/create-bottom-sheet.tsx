@@ -45,7 +45,7 @@ import SelectPhaseDropdown from "./select-phase-dropdown";
 import { FormFieldBottomSheetText } from "./form-field-bottom-sheet";
 
 export const GrowPostValidation = z.object({
-  day: z.number(),
+  day: z.string(),
   genetic: z.object({
     id: z.number().nullable(),
   }).refine(data => {

@@ -1,5 +1,6 @@
 import { SocialPost } from "@/api/@types/models";
 import { getUserPosts } from "@/api/social/post/get-user-posts";
+import { useAuth } from "@/hooks/use-auth";
 import { colors } from "@/styles/colors";
 import { Video } from "expo-av";
 import { router } from "expo-router";
@@ -35,6 +36,7 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
     const [hasMorePosts, setHasMorePosts] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const videoRefs = useRef<(Video | null)[]>([]);
+    const { user } = useAuth();
 
     const fetchPostsData = async (skipValue: number, limitValue: number) => {
 
@@ -112,12 +114,16 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
 
     const renderItem = ({ item, index }: { index: number; item: SocialPost }) => {
       if (item.is_compressing) {
-        Toast.show({
-          type: "info",
-          text1: "Opa",
-          text2: "Seu post está sendo processado!",
-        });
-        return null;
+        
+        if(user.id != userId) return null;
+
+        return (
+          <View className="mb-1 bg-black-90">
+            <View className="flex flex-row justify-center items-center" style={styles.image}>
+                <ActivityIndicator size="small" color={colors.brand.green} />
+              </View>
+          </View>
+        )
       }
 
       return (

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Image} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 import NotificationIcon from "@/assets/icons/notification-green.svg";
@@ -64,6 +64,12 @@ export default function NotificationsScreen() {
       fetchNotifications(skip, limit);
     }
   }, [skip]);
+
+  useFocusEffect(
+    useCallback(() => {
+      onRefresh();
+    }, [])
+  );
 
   const loadMoreNotifications = () => {
     if (!loadingMore && hasMoreNotifications) {

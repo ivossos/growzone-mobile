@@ -57,7 +57,7 @@ export function Metrics({
             <ReelsGreenIcon width={18} height={18} />
             <Text className="text-lg text-brand-white font-medium">{reelCount}</Text>
           </View>
-          <Text className="text-sm text-brand-grey font-regular">Reels</Text>
+          <Text className="text-sm text-brand-grey font-regular">Weells</Text>
         </View>
 
         <TouchableOpacity className="flex flex-col items-center" onPress={onReviewsPress}>

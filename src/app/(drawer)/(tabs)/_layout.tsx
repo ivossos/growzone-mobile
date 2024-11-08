@@ -8,9 +8,10 @@ import BottomSheet from '@gorhom/bottom-sheet';
 import CreateBottomSheet from '@/components/ui/create-bottom-sheet';
 import CommentBottomSheet from '@/components/ui/comment-bottom-sheet';
 import { BottomSheetProvider } from '@/context/bottom-sheet-context';
-import ReportBottomSheet from '@/components/ui/report-bottom-sheet';;
+import ReportBottomSheet from '@/components/ui/report-bottom-sheet';
 import GlobalSearchBottomSheet from '@/components/ui/global-search-bottom-sheet';
 import { useScrollToTop } from '@/context/scroll-top-context';
+import { StatusBar } from 'expo-status-bar';
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -189,6 +190,7 @@ export default function TabLayout() {
               }}
             />
           </Tabs>
+          <StatusBar backgroundColor="#000000" style="light" />
         <CreateBottomSheet ref={bottomSheetRef} onClose={closeCreateBottomSheet} />
         <CommentBottomSheet ref={commentSheetRef} />
         <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>

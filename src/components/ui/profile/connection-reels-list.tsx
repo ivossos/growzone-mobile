@@ -1,6 +1,6 @@
 import { SocialPost } from "@/api/@types/models";
-import { getUserPosts } from "@/api/social/post/get-user-posts";
 import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
+import { useAuth } from "@/hooks/use-auth";
 import { colors } from "@/styles/colors";
 import { ResizeMode, Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,8 +12,6 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatListProps,
-  Image,
-  ListRenderItem,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -39,6 +37,8 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
     const [hasMorePosts, setHasMorePosts] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const videoRefs = useRef<(Video | null)[]>([]);
+    
+    const { user } = useAuth();
 
     const fetchPostsData = async (skipValue: number, limitValue: number) => {
       try {
@@ -105,15 +105,14 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
     }, []);
   
     const renderItem = ({ item, index }: { index: number, item: SocialPost}) => {
-      
       if(item.is_compressing) {
-        Toast.show({
-          type: 'info',
-          text1: 'Opa',
-          text2: 'Seu post esta sendo processado!'
-        });
-  
-        return null;
+        if(user.id != userId) return null;
+
+        return (
+          <View className="flex flex-row justify-center items-center bg-black-90" style={styles.image}>
+            <ActivityIndicator size="small" color={colors.brand.green} />
+          </View>
+        )
       }
   
       return (
@@ -174,7 +173,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       <Animated.FlatList
         ref={ref}
         {...rest}
-      data={reels.filter(r => !r.is_compressing)}
+      data={reels}
       renderItem={renderItem}
       keyExtractor={(item) => item.post_id.toString()}
       numColumns={numColumns}

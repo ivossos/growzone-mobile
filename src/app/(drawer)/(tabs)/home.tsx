@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment, useRef } from 'react';
+import { useState, useEffect, Fragment, useRef, useCallback } from 'react';
 import { View, RefreshControl, FlatList, ActivityIndicator, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -13,7 +13,7 @@ import { getPosts } from '@/api/social/post/get-posts';
 import GrowPostCard from '@/components/ui/grow-post-card';
 import { getTopContributors } from '@/api/social/contributor /get-top-contributors';
 import ContributorCard from '@/components/ui/contributor-card';
-import { useLocalSearchParams } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useScrollToTop } from '@/context/scroll-top-context';
 
 export default function HomeScreen() {
@@ -79,6 +79,14 @@ export default function HomeScreen() {
     await fetchPostsData(0, limit);
   };
 
+  const renderItem = useCallback(({ item }) => {
+    if (item.type === 'social') {
+      return <PostCard post={item.post as PostDetail} />;
+    } else {
+      return <GrowPostCard post={item.post as GrowPostDetail} />;
+    }
+  }, []);
+
   useEffect(() => {
     if (hasMorePosts) {
       fetchPostsData(skip, limit);
@@ -86,7 +94,7 @@ export default function HomeScreen() {
   }, [skip]);
 
   useEffect(() => {
-    if (posts.length === 0 && loadingMore) {
+    if (posts.length === 0 && !loadingMore) {
       fetchTopContributors()
     }
   }, [posts, loadingMore]);
@@ -96,6 +104,14 @@ export default function HomeScreen() {
       onRefresh()
     }
   }, [refresh]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if(posts.length === 0  && !loadingMore) {
+        fetchTopContributors();
+      }
+      }, [posts, loadingMore])
+  );
 
   const loadMorePosts = () => {
     if (!loadingMore && hasMorePosts) {
@@ -157,13 +173,7 @@ export default function HomeScreen() {
           data={posts}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => `key-${item.post.post_id.toString()}`}
-          renderItem={({ item }) => {
-            if(item.type === 'social') {
-              return <PostCard post={item.post as PostDetail}  />
-            } else {
-              return <GrowPostCard post={item.post as GrowPostDetail}/>
-            }
-          }}
+          renderItem={renderItem}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmptyComponent}
           refreshControl={

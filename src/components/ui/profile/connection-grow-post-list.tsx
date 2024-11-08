@@ -1,10 +1,8 @@
-import { GrowPost, SocialPost } from "@/api/@types/models";
+import { GrowPost } from "@/api/@types/models";
 import { getUserGrowPosts } from "@/api/social/post/get-user-grow-posts";
-import { getUserPosts } from "@/api/social/post/get-user-posts";
-import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
+import { useAuth } from "@/hooks/use-auth";
 import { colors } from "@/styles/colors";
-import { ResizeMode, Video } from "expo-av";
-import { LinearGradient } from "expo-linear-gradient";
+import { Video } from "expo-av";
 import { useRouter } from "expo-router";
 import { uniqBy } from "lodash";
 import { CalendarDaysIcon, Eye } from "lucide-react-native";
@@ -14,7 +12,6 @@ import {
   Dimensions,
   FlatListProps,
   Image,
-  ListRenderItem,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -41,6 +38,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
     const [loadingMore, setLoadingMore] = useState(false);
     const videoRefs = useRef<(Video | null)[]>([]);
     const router = useRouter();
+    const { user } = useAuth();
   
 
     const fetchPostsData = async (skipValue: number, limitValue: number) => {
@@ -114,13 +112,40 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
     const renderItem = ({ item, index }: { index: number, item: GrowPost}) => {
       
       if(item.is_compressing) {
-        Toast.show({
-          type: 'info',
-          text1: 'Opa',
-          text2: 'Seu post esta sendo processado!'
-        });
+        if(user.id != userId) return null;
+        return (
+          <View className="flex flex-col gap-2 mb-6">
+           
+           <View className="relative">
+            <View className="flex flex-row justify-center items-center bg-black-90" style={styles.image}>
+              <ActivityIndicator size="small" color={colors.brand.green} />
+            </View>
   
-        return null;
+            <View className="absolute bottom-4 left-2 bg-white px-2 py-1 rounded-full">
+              <Text className="text-black text-xs ">{item.phase.name}</Text>
+            </View>
+           </View>
+  
+          <View className="flex flex-row justify-between items-center gap-2">
+  
+            {item.strain && <Text
+              className="text-base text-brand-grey font-normal w-24 truncate"
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              style={styles.description}
+              >
+                {item.strain.name}
+            </Text>}
+  
+            <View className="flex flex-row item-center gap-1 border border-black-80 bg-black-100 px-2 py-1 rounded-full">
+              <CalendarDaysIcon size={12} color={colors.brand.green} />
+              <Text className="text-brand-green text-xs ">{item.day === 1 ? `${item.day} dia` : `${item.day} dias` }</Text>
+            </View>
+  
+          </View>
+        </View>
+        )
+        
       }
   
       return (
@@ -174,7 +199,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
       <Animated.FlatList
         ref={ref}
         {...rest }
-        data={plants.filter(r => !r.is_compressing)}
+        data={plants}
       renderItem={renderItem}
       keyExtractor={(item) => item.post_id.toString()}
       numColumns={numColumns}

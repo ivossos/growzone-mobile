@@ -40,13 +40,14 @@ const SignIn = () => {
   });
 
   async function submit(values: z.infer<typeof SigninValidation>) {
+    let userLogged;
     try {
       setIsLoading(true);
       handleRememberMe(
         values.username, 
         values.password
       );
-      await signIn(
+      userLogged = await signIn(
         values.username, 
         values.password
       );
@@ -73,7 +74,7 @@ const SignIn = () => {
       setIsLoading(false);
     }
     
-    if(!user.is_verified) {
+    if(!userLogged.is_verified) {
       return router.replace("/verify-user");
     } 
 

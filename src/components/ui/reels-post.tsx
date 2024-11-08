@@ -1,11 +1,10 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions, TouchableOpacity, Platform, Dimensions } from "react-native";
-import { Video, ResizeMode, AVPlaybackStatus } from "expo-av";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions, TouchableOpacity, Dimensions, Platform, StatusBar } from "react-native";
+import { Video, ResizeMode, AVPlaybackStatus, AVPlaybackStatusSuccess } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
-import { MessageCircleMore } from "lucide-react-native";
+import { EllipsisIcon, MessageCircleMore } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Link, router, useFocusEffect } from "expo-router";
 import ExpandableText from "./expandable-text";
@@ -27,12 +26,10 @@ type ReelsPostProps = {
   post: ReelsDetail;
   activePostId: number;
   resizeMode?: ResizeMode
+  isTab: boolean;
 };
 
-const ScreenWidth = Dimensions.get('window').width;
-const ScreenHeight = Dimensions.get('window').height;
-
-const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: ReelsPostProps) => {
+const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN, isTab = true }: ReelsPostProps) => {
   const { user } = useAuth();
   const video = useRef<Video>(null);
   const [status, setStatus] = useState<AVPlaybackStatus>();
@@ -44,6 +41,9 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
   const [isViewed, setIsViewed] = useState(post.is_viewed);
   const { openBottomSheet } = useBottomSheetContext();
+
+  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
+  const ScreenHeight = Dimensions.get('window').height - (Platform.OS === 'ios' ? 72 : statusBarHeight);
   
   const isPlaying = status?.isLoaded && status.isPlaying;
   const isBuffering = status?.isLoaded && status.isBuffering;
@@ -150,6 +150,18 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
     [activePostId, post.post_id]
   );
 
+  function handlePlaybackStatus(newStatus: AVPlaybackStatus) {
+    setStatus(newStatus);
+
+    if (newStatus.isLoaded) {
+      if ((newStatus as AVPlaybackStatusSuccess).didJustFinish) {
+        if (video.current) {
+          video.current.playFromPositionAsync(0);
+        }
+      }
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       return () => {
@@ -169,6 +181,7 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
       debouncedManagePlayback.cancel();
     };
   }, [activePostId, post.post_id]);
+  
 
   const onPress = async () => {
     if (!video.current) return;
@@ -184,19 +197,15 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
     }
   };
 
-  const { height } = useWindowDimensions();
-  const { top, bottom } = useSafeAreaInsets(); 
-  const videoHeight = height - top - bottom;
-
   return (
-    <View style={[styles.container, { height: videoHeight }]}>
+    <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
       <Video
         ref={video}
-        style={[StyleSheet.absoluteFill, styles.video]}
+        style={[styles.video, { height: ScreenHeight }]}
         source={{ uri: post.file.file }}
         resizeMode={resizeMode}
-        onPlaybackStatusUpdate={setStatus}
-        isLooping
+        onPlaybackStatusUpdate={handlePlaybackStatus}
+        isLooping={true}
         isMuted={false}
         onError={handlePlaybackError}
       />
@@ -221,96 +230,106 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN }: Reel
             color="#FFFFFF"
           />
         )}
-        
-          <View style={styles.footer}>
-            <View style={{ flex: 1 }} className="flex gap-2">
-              <View
-                key={post.user.id}
-                className="flex flex-row items-center justify-start w-full"
-              >
-                <TouchableOpacity className="flex flex-row items-center gap-2 mr-2" onPress={() => router.push({ pathname: '/profile/[id]', params: { id: post.user.id }})}>
-                  <Avatar className="w-12 h-12 bg-black-80">
-                  {!!(post.user.image?.image) &&
-                    <AvatarImage
-                      className="rounded-full"
-                      src={post.user.image.image}
-                    />}
-                    <AvatarFallback>{getInitials(post.user?.name || post.user?.username)}</AvatarFallback>
-                  </Avatar>
-                  <View>
-                    <Text className="text-white text-lg text-start font-semibold">
-                      {post.user.name || post.user.username}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-
-                {(user.id !== post.user.id) && (post.user.is_following ? (
-                  <TouchableOpacity className="px-3 py-1 bg-black-80 rounded-[64px]" onPress={handleFollower}>
-                    {isLoadingHandleFollower && (
-                      <ActivityIndicator
-                        animating
-                        color="#fff"
-                        size="small"
-                        className="ml-2"
-                      />
-                    )}
-                    {!isLoadingHandleFollower && <Text className="text-base text-neutral-400">Seguindo</Text>}
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity className="px-3 py-1 border border-brand-green rounded-[64px]" onPress={handleFollower}>
-                    {isLoadingHandleFollower && (
-                      <ActivityIndicator
-                        animating
-                        color="#fff"
-                        size="small"
-                        className="ml-2"
-                      />
-                    )}
-                    {!isLoadingHandleFollower && <Text className="text-base text-brand-green ">
-                      + Seguir
-                    </Text>}
-                  </TouchableOpacity>
-                ))}
-              </View>
-              {post.description && <ExpandableText text={post.description} numberOfLines={1} />}
-            </View>
-
-            <View style={styles.rightColumn}>
-              <View className="flex flex-col items-center justify-center gap-2">
-                <LinearGradient
-                  colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
-                  style={styles.blurContainer}
-                >
-                  <TouchableOpacity onPress={handleLike}>
-                  {liked ? (
-                  <LikedIcon width={20} height={20} />
-                ) : (
-                  <LikeIcon width={20} height={20} />
-                )}
-                  </TouchableOpacity>
-                </LinearGradient>
-                {likedCount > 0 && (
-                  <Link href={{ pathname: '/reels/[id]/likes', params: { id: post.post_id } }} >
-                    <Text className="text-white font-medium">{likedCount}</Text>
-                  </Link>
-                )}
-              </View>
-              <View className="flex flex-col items-center justify-center gap-2">
-                <LinearGradient
-                  colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
-                  style={styles.blurContainer}
-                >
-                  <TouchableOpacity onPress={() => handleBottomSheet(post.post_id)}>
-                    <MessageCircleMore size={20} color={colors.brand.white} />
-                  </TouchableOpacity>
-                </LinearGradient>
-                {commentCount > 0 && (
-                  <Text className="text-white font-medium">{commentCount}</Text>
-                )}
-              </View>
-            </View>
-          </View>
       </Pressable>
+        
+      <View style={[styles.footer ]}>
+        <View style={{ flex: 1 }} className="flex gap-2">
+          <View
+            key={post.user.id}
+            className="flex flex-row items-center justify-start w-full"
+          >
+            <TouchableOpacity className="flex flex-row items-center gap-2 mr-2" onPress={() => router.push({ pathname: '/profile/[id]', params: { id: post.user.id }})}>
+              <Avatar className="w-12 h-12 bg-black-80">
+              {!!(post.user.image?.image) &&
+                <AvatarImage
+                  className="rounded-full"
+                  src={post.user.image.image}
+                />}
+                <AvatarFallback>{getInitials(post.user?.name || post.user?.username)}</AvatarFallback>
+              </Avatar>
+              <View>
+                <Text className="text-white text-lg text-start font-semibold">
+                  {post.user.name || post.user.username}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {(user.id !== post.user.id) && (post.user.is_following ? (
+              <TouchableOpacity className="px-3 py-1 bg-black-80 rounded-[64px]" onPress={handleFollower}>
+                {isLoadingHandleFollower && (
+                  <ActivityIndicator
+                    animating
+                    color="#fff"
+                    size="small"
+                    className="ml-2"
+                  />
+                )}
+                {!isLoadingHandleFollower && <Text className="text-base text-neutral-400">Seguindo</Text>}
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity className="px-3 py-1 border border-brand-green rounded-[64px]" onPress={handleFollower}>
+                {isLoadingHandleFollower && (
+                  <ActivityIndicator
+                    animating
+                    color="#fff"
+                    size="small"
+                    className="ml-2"
+                  />
+                )}
+                {!isLoadingHandleFollower && <Text className="text-base text-brand-green ">
+                  + Seguir
+                </Text>}
+              </TouchableOpacity>
+            ))}
+          </View>
+          {post.description && <ExpandableText text={post.description} numberOfLines={1} />}
+        </View>
+
+        <View style={styles.rightColumn}>
+          <View className="flex flex-col items-center justify-center gap-2">
+            <TouchableOpacity onPress={handleLike}>
+              <LinearGradient
+                colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
+                style={styles.blurContainer}
+              >
+                {liked ? (
+                <LikedIcon width={20} height={20} />
+              ) : (
+                <LikeIcon width={20} height={20} />
+              )}
+              </LinearGradient>
+            </TouchableOpacity>
+            {likedCount > 0 && (
+              <Link href={{ pathname: '/reels/[id]/likes', params: { id: post.post_id } }} >
+                <Text className="text-white font-medium">{likedCount}</Text>
+              </Link>
+            )}
+          </View>
+          <View className="flex flex-col items-center justify-center gap-2">
+            <TouchableOpacity onPress={() => handleBottomSheet(post.post_id)}>
+              <LinearGradient
+                colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
+                style={styles.blurContainer}
+              >
+                <MessageCircleMore size={20} color={colors.brand.white} />
+              </LinearGradient>
+            </TouchableOpacity>
+            {commentCount > 0 && (
+              <Text className="text-white font-medium">{commentCount}</Text>
+            )}
+          </View>
+          {user.id !== post.user.id && <View className="flex flex-col items-center justify-center gap-2">
+            <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
+              <LinearGradient
+                colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
+                style={styles.blurContainer}
+              >
+                <EllipsisIcon size={20} color={colors.brand.white} />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>}
+        </View>
+      </View>
     </View>
   );
 };
@@ -328,17 +347,27 @@ const styles = StyleSheet.create({
     flex: 1
   },
   video: {
-    height: '100%'
+    flex: 1,
+    alignSelf: 'center',
+    width: Dimensions.get('window').width,
   },
   content: {
     flex: 1,
-    padding: 24,
+    position: 'absolute',
+    width: '100%', 
+    height: '100%',
+    zIndex: 10,
   },
   overlay: {
     top: "50%",
   },
   footer: {
-    marginTop: "auto",
+    paddingHorizontal: 24,
+    position: 'absolute',
+    zIndex: 11,
+    bottom: 20,
+    
+    // marginTop: "auto",
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 16,

@@ -1,4 +1,4 @@
-import { UserSocial } from "@/api/@types/models";
+import { User, UserSocial } from "@/api/@types/models";
 import { accessToken } from "@/api/auth/access-token";
 import { getCurrentAuthUser } from "@/api/auth/get-current-user";
 import { getCurrentUser } from "@/api/social/user/get-current-user";
@@ -10,7 +10,7 @@ import { createContext, ReactNode, useEffect, useState } from "react";
 type AuthContextProps = {
   user: UserSocial;
   isLoadingUserStorage: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<User>;
   signOut: () => Promise<void>;
   updateUserData: () => Promise<void>
 }
@@ -63,6 +63,8 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         await storageSaveUserAndToken(userSocial, res.access_token, res.refresh_token);
         updateUserAndToken(userSocial, res.access_token)
       }
+
+      return authUser
 
     } catch(err) {
       throw err;

@@ -1,13 +1,9 @@
-import Button from "@/components/ui/button";
 import TermsCard from "@/components/ui/terms-card";
 import ConfigHeader from "@/components/ui/config-header";
-import { FormField } from "@/components/ui/form-field";
-import { terms } from "@/constants/mock";
 import { screens } from "@/constants/screens";
 import { colors } from "@/styles/colors";
 import { useNavigation } from "expo-router";
-import { ArrowLeft, Lock } from "lucide-react-native";
-import { useState } from "react";
+import { ArrowLeft } from "lucide-react-native";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InfoCard from "@/components/ui/info-card";
@@ -29,7 +25,7 @@ export default function TermDetail() {
 
             <ConfigHeader title={title} description={description} Icon={Icon}/>
             <InfoCard description="Ao utilizar o aplicativo Growzone, você concorda com as práticas descritas nesta política." />
-            <TermsCard data={terms} />
+            {/* <TermsCard data={terms} /> */}
           </View>
         </ScrollView>
       </SafeAreaView>

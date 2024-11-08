@@ -41,7 +41,6 @@ export default function SearchScreen() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [topContributors, setTopContributors] = useState<UserDTO[]>([]);
   const [trendingWells, setTrendingWells] = useState<SocialPost[]>([]);
@@ -50,6 +49,8 @@ export default function SearchScreen() {
   const [isLoadingTrendingWells, setIsLoadingTrendingWells] = useState(false);
   const [isLoadingTopContributors, setIsLoadingTopContributors] = useState(false);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false)
+
+  const isLoading = isLoadingTopContributors || isLoadingTrendingWells || isLoadingTrendingGrowPosts;
 
   const { openBottomSheet } = useBottomSheetContext();
 
@@ -327,17 +328,23 @@ export default function SearchScreen() {
           data={[{ key: 'contributors' }, { key: 'reels' }, { key: 'buds' }]}
           keyExtractor={(item) => item.key}
           showsVerticalScrollIndicator={false}
-          contentContainerClassName="pb-6"
+          contentContainerClassName="pb-6 flex-1"
+          ListHeaderComponent={() => (
+            isLoading && (
+              <View className="flex flex-col justify-center items-center ">
+                <ActivityIndicator
+                  animating
+                  color={colors.brand.green}
+                  size="small"
+                  className="my-16"
+                />
+              </View>
+            )
+          )}
           renderItem={({ item, index}) => {
             if (item.key === 'contributors') {
               return (
-                (isLoadingTopContributors ? <ActivityIndicator
-                  animating
-                  color="#fff"
-                  size="small"
-                  className="my-8"
-                /> :
-                topContributors.length > 0 && <View className="flex flex-col gap-5 px-6">
+                !isLoading && topContributors.length > 0 && <View className="flex flex-col gap-5 px-6">
                   <Text className="text-lg text-white font-semibold">
                     Top Contribuidores
                   </Text>
@@ -352,15 +359,10 @@ export default function SearchScreen() {
                     contentContainerStyle={{ gap: 16 }}
                   />
                 </View>
-              ));
+              );
             } else if (item.key === 'reels') {
               return (
-                (isLoadingTrendingWells ? <ActivityIndicator
-                  animating
-                  color="#fff"
-                  size="small"
-                  className="my-8"
-                /> : trendingWells?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
+                !isLoading && trendingWells?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
                   <View className="flex flex-row justify-between items-center ">
                     <Text className="text-lg text-white font-semibold">
                       Weelz em Alta
@@ -380,16 +382,11 @@ export default function SearchScreen() {
                     )}
                     contentContainerStyle={{ gap: 16 }}
                   />
-                </View>)
+                </View>
               );
             } else if (item.key === 'buds') {
               return (
-                (isLoadingTrendingGrowPosts ? <ActivityIndicator
-                  animating
-                  color="#fff"
-                  size="small"
-                  className="my-8"
-                /> : trendingGrowPosts?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
+                !isLoading && trendingGrowPosts?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
                   <View className="flex flex-row justify-between items-center ">
                     <Text className="text-lg text-white font-semibold">
                       Top Buds
@@ -409,7 +406,7 @@ export default function SearchScreen() {
                     )}
                     contentContainerStyle={{ gap: 16 }}
                   />
-                </View>)
+                </View>
               );
             } else {
               return null

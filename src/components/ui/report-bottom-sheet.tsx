@@ -22,7 +22,7 @@ const ReportBottomSheet = React.forwardRef<BottomSheet, ReportBottomSheetProps>(
   const [reportSuccess, setReportSuccess] = useState(false);
   const [isLoadingFetchReportReasons, setIsLoadingFetchReportReasons] = useState(false);
   const [isDecided, setIsDecided] = useState<ReportReason | null>(null);
-  const snapPoints = useMemo(() => ['40%', '70%', '90%'], []);
+  const snapPoints = useMemo(() => ['30%', '40%', '70%', '90%'], []);
   
   const { postId, isVisible, currentType, closeBottomSheet } = useBottomSheetContext();
   
@@ -44,10 +44,10 @@ const ReportBottomSheet = React.forwardRef<BottomSheet, ReportBottomSheetProps>(
   }, []);
   
   function handleClose() {
-    setReportSubmitted(false);
-    setIsDecided(null);
     onClose();
     closeBottomSheet();
+    setReportSubmitted(false);
+    setIsDecided(null);
   }
 
   const renderBackdrop = useCallback(
@@ -72,6 +72,7 @@ const ReportBottomSheet = React.forwardRef<BottomSheet, ReportBottomSheetProps>(
       await createReport(postId, isDecided.id);
       setReportSubmitted(true);
       setReportSuccess(true);
+      ref?.current?.snapToIndex(2);
     } catch (error) {
       setReportSuccess(false); 
       Toast.show({
@@ -110,7 +111,10 @@ const ReportBottomSheet = React.forwardRef<BottomSheet, ReportBottomSheetProps>(
       <TouchableOpacity className="flex justify-center items-center min-h-[56px] px-4 bg-brand-green rounded-lg w-full" onPress={handleReportSubmit}>
         <Text className="text-brand-black text-base font-medium">Reportar</Text>
       </TouchableOpacity>
-      <TouchableOpacity className="flex justify-center items-center min-h-[56px] px-4 border border-black-80 rounded-lg w-full" onPress={() => setIsDecided(null)}>
+      <TouchableOpacity className="flex justify-center items-center min-h-[56px] px-4 border border-black-80 rounded-lg w-full" onPress={() => {
+        setIsDecided(null)
+        ref?.current?.snapToIndex(3);
+      }}>
         <Text className="text-white text-base font-medium">Cancelar</Text>
       </TouchableOpacity>
     </BottomSheetView>
@@ -129,7 +133,10 @@ const ReportBottomSheet = React.forwardRef<BottomSheet, ReportBottomSheetProps>(
           <TouchableOpacity 
             key={index} 
             className='flex flex-row items-center justify-between gap-2 border border-black-80 rounded-lg p-4'
-            onPress={() => setIsDecided(item)}
+            onPress={() => {
+              setIsDecided(item);
+              ref?.current?.snapToIndex(1);
+            }}
           >
             <Text className="text-base font-medium text-brand-white">{item.name}</Text>
             <ChevronRight size={28} color={colors.black[70]} />
@@ -142,7 +149,7 @@ const ReportBottomSheet = React.forwardRef<BottomSheet, ReportBottomSheetProps>(
   return (
     <BottomSheet
       ref={ref}
-      index={2}
+      index={3}
       snapPoints={snapPoints}
       enablePanDownToClose
       handleIndicatorStyle={{ backgroundColor: colors.black[80] }}

@@ -8,8 +8,11 @@ import { DrawerActions } from "@react-navigation/native";
 import { getNotificationCount } from "@/api/social/notification/get-notification-count";
 import { useEffect, useState } from "react";
 
+interface Props {
+  scrollToTop?: () => void
+}
 
-export function Header() {
+export function Header({ scrollToTop = () => {} }: Props) {
   const [loading, setLoading] = useState(false);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const navigation = useNavigation();
@@ -45,7 +48,9 @@ export function Header() {
   
   return (
     <View className="flex flex-row justify-between items-center h-[72px] px-6 border-b-[1px] border-black-80">
-      <Logo width={114} height={24} />
+      <TouchableOpacity onPress={scrollToTop}>
+        <Logo width={114} height={24} />
+      </TouchableOpacity>
       <View className="flex flex-row items-center gap-4">
         {/* <TouchableOpacity activeOpacity={0.7} className="flex flex-row items-center gap-2">
           <Coin width={24} height={24} />

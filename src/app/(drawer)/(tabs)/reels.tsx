@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator, FlatList, RefreshControl, TouchableOpacity, View, ViewabilityConfigCallbackPair } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, TouchableOpacity, View, ViewabilityConfigCallbackPair, StatusBar, Dimensions, Platform } from "react-native";
 import { router, Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
 import { colors } from "@/styles/colors";
 
 import ReelsPost from "@/components/ui/reels-post";
@@ -80,13 +78,17 @@ export default function Reels() {
     },
   ]);
 
-  return (
-    <View style={{ backgroundColor: colors.black[100], flex: 1 }}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <StatusBar backgroundColor={colors.black[100]} style="light" />
 
-      <SafeAreaView style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
-        <View className="flex flex-row items-center justify-between h-[72px] px-6">
+  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
+  const ScreenHeight = Dimensions.get('window').height - (Platform.OS === 'ios' ? 72 : statusBarHeight);
+
+  return (
+    <View>
+      {/* <Stack.Screen options={{ headerShown: false }} />*/}
+      <StatusBar translucent backgroundColor={'transparent'} /> 
+
+      
+        <View className="flex flex-row items-center justify-between h-[72px] pt-20 px-6 absolute z-20">
           <View className="flex flex-row items-center gap-2">
             <TouchableOpacity
               className="p-2 rounded-lg border border-brand-white"
@@ -101,14 +103,16 @@ export default function Reels() {
             <Camera className="w-8 h-8" color={colors.brand.white} />
           </TouchableOpacity> */}
         </View>
-      </SafeAreaView>
 
       <FlatList
         data={posts}
         renderItem={({ item }) => (
-          <ReelsPost post={item} activePostId={activePostId!} resizeMode={ResizeMode.COVER}/>
+          <ReelsPost post={item} activePostId={activePostId!} resizeMode={ResizeMode.COVER} isTab/>
         )}
         keyExtractor={(item, index) => `${item.id}-${index}`}
+        snapToInterval={ScreenHeight}
+        snapToAlignment="center"
+        decelerationRate="fast"       
         pagingEnabled
         viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
         showsVerticalScrollIndicator={false}

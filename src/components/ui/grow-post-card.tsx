@@ -15,6 +15,7 @@ import Toast from "react-native-toast-message";
 import CommentCard from "./comment-card";
 import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
+import { useAuth } from "@/hooks/use-auth";
 
 const MAX_DESCRIPTION_LENGTH = 100;
 
@@ -30,6 +31,7 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { openBottomSheet } = useBottomSheetContext();
+  const { user } = useAuth();
 
   const handleLike = async () => {
     try {
@@ -81,9 +83,9 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
           <Text className="text-brand-grey text-sm">
             {formatDistance(post.created_at)}
           </Text>
-          <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
+          {user.id !== post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
             <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-          </TouchableOpacity>
+          </TouchableOpacity>}
         </View>
       </View>
 

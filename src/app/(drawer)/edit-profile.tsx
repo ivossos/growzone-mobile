@@ -136,7 +136,7 @@ export default function EditProfile() {
 
       form.reset();
 
-      router.push({ pathname: '/profile', params: { id: user.id }});
+      router.push({ pathname: '/profile/[id]', params: { id: user.id }});
       
     } catch (err) {
       console.error('Erro ao atualizar perfil', err);
