@@ -25,7 +25,7 @@ export default function ReelsCard( item: SocialPost) {
   }, []);
 
   return (
-    <Link href={{ pathname: '/reels/[id]', params: { id: item.post_id } }}>
+    <Link href={{ pathname: '/profile/post/[id]/reels', params: { id: item.post_id } }}>
 
       <View className="flex flex-col gap-2 w-[155px]">
           <Video

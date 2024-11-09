@@ -45,7 +45,7 @@ export default function Reels() {
   }, [id]);
 
   return (
-    <View style={{  backgroundColor: colors.brand.green, flex: 1 }}>
+    <View style={{ flex: 1 }}>
     <Stack.Screen options={{ headerShown: false }} />
     <StatusBar backgroundColor={colors.black[100]} style="light" />
 
