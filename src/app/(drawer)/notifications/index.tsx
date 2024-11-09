@@ -88,9 +88,19 @@ export default function NotificationsScreen() {
         pathname: '/profile/[id]',
         params: { id: user.id },
       });
-    } else if (item.type.name === 'Comment Post' || item.type.name === 'Like Post') {
+    } else if (item.post.type === 'social') {
       router.push({
-        pathname: '/post/[id]',
+        pathname: '/profile/post/[id]',
+        params: { id: item.post.id },
+      });
+    } else if (item.post.type === 'grow') {
+      router.push({
+        pathname: '/profile/post/[id]/grow',
+        params: { id: item.post.id },
+      });
+    } else if (item.post.type === 'reel') {
+      router.push({
+        pathname: '/profile/post/[id]/reels',
         params: { id: item.post.id },
       });
     } else {

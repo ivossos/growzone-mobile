@@ -389,6 +389,7 @@ export interface PostFile {
 
 export interface Post {
   id: number;
+  type: 'grow' | 'social' | 'reel';
   file: File;
   created_at: string;
 }
