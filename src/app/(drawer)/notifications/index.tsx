@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, Image} from "react-native";
+import { View, Text, TouchableOpacity, FlatList, Image, RefreshControl} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
@@ -165,14 +165,6 @@ export default function NotificationsScreen() {
     </TouchableOpacity>
   );
 
-  const renderFooter = () => {
-    return loadingMore ? (
-      <View className="py-4">
-        <ActivityIndicator size="large" color={colors.brand.white} />
-      </View>
-    ) : null;
-  };
-
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View className="flex-1 bg-black-100 overflow-hidden">
@@ -186,11 +178,17 @@ export default function NotificationsScreen() {
           data={notifications}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderNotificationItem}
-          ListFooterComponent={renderFooter}
           onEndReached={loadMoreNotifications}
           onEndReachedThreshold={0.1}
           refreshing={refreshing}
           onRefresh={onRefresh}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.brand.green}
+            />
+          }
           contentContainerClassName="gap-2"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingVertical: 24, paddingHorizontal: 16 }}
