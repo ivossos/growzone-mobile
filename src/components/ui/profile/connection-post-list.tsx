@@ -127,7 +127,7 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       }
 
       return (
-        <TouchableOpacity onPress={() => router.push({ pathname: '/profile/post/[id]', params: { id: item.post_id } })} className="mb-1">
+        <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]', params: { id: item.post_id } })} className="mb-1">
           {item?.file?.type === "image" ? (
             <Image source={{ uri: item?.file?.file }} style={styles.image} resizeMode="contain" />
           ) : (

@@ -29,11 +29,11 @@ export function Metrics({
   return (
     <View className="flex flex-col gap-1 px-6 mt-1">
       <View className="flex flex-row justify-between px-6 py-4">
-        <TouchableOpacity className="flex flex-col items-center gap-1" onPress={() => router.push({ pathname: '/profile/[id]/followers', params: { id: userId}})}>
+        <TouchableOpacity className="flex flex-col items-center gap-1" onPress={() => router.push({ pathname: '/followers', params: { id: userId}})}>
           <Text className="text-lg text-white font-medium">{followers}</Text>
           <Text className="text-sm text-brand-grey font-regular">Seguidores</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="flex flex-col items-center gap-1" onPress={() => router.push({ pathname: '/profile/[id]/following', params: { id: userId}})}>
+        <TouchableOpacity className="flex flex-col items-center gap-1" onPress={() => router.push({ pathname: '/following', params: { id: userId}})}>
           <Text className="text-lg text-white font-medium">{following}</Text>
           <Text className="text-sm text-brand-grey font-regular">Seguindo</Text>
         </TouchableOpacity>

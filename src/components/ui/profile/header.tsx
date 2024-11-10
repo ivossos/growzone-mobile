@@ -10,7 +10,7 @@ type HeaderProps = {
 
 const MemoizedHeader = ({ onBack }: HeaderProps) => {
   return (
-    <View className="flex flex-row items-center gap-4 h-[72px] px-6 border-b-[1px] border-black-80">
+    <View className="flex flex-row items-center gap-4 h-[72px] px-6 border-b-[1px] border-black-80 bg-black-100">
       <TouchableOpacity
         className="p-2 rounded-lg border border-black-80"
         onPress={onBack}

@@ -65,11 +65,11 @@ export default function NotificationsScreen() {
     }
   }, [skip]);
 
-  useFocusEffect(
-    useCallback(() => {
-      onRefresh();
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     onRefresh();
+  //   }, [])
+  // );
 
   const loadMoreNotifications = () => {
     if (!loadingMore && hasMoreNotifications) {
@@ -90,17 +90,17 @@ export default function NotificationsScreen() {
       });
     } else if (item.post.type === 'social') {
       router.push({
-        pathname: '/profile/post/[id]',
+        pathname: '/post/[id]',
         params: { id: item.post.id },
       });
     } else if (item.post.type === 'grow') {
       router.push({
-        pathname: '/profile/post/[id]/grow',
+        pathname: '/post/[id]/grow',
         params: { id: item.post.id },
       });
     } else if (item.post.type === 'reel') {
       router.push({
-        pathname: '/profile/post/[id]/reels',
+        pathname: '/post/[id]/reels',
         params: { id: item.post.id },
       });
     } else {

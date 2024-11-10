@@ -16,6 +16,8 @@ import SoproIcon from '@/assets/images/categories/sobro.svg'
 import RoboIcon from '@/assets/images/categories/robo.svg'
 import { Connection } from '@/components/ui/perfil/types'
 
+export const verifyIds = ['pedro', 'growzone', 'capi', 'diegopantojo']
+
 export const stories = [
   {
     id: 1,

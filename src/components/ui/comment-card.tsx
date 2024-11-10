@@ -84,10 +84,10 @@ export default function CommentCard({ comment }: Props) {
               {likeCount > 0 && <Text className="text-white font-medium">{likeCount}</Text>}
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex flex-row items-center gap-1">
+            {/* <TouchableOpacity className="flex flex-row items-center gap-1">
               <CommentIcon width={24} height={24} />
               {comment.reply_count > 0 && <Text className="text-white font-medium">{comment.reply_count}</Text>}
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
       </View>

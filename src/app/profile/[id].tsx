@@ -1,7 +1,6 @@
 import { Follow, UserProfile } from "@/api/@types/models";
-import { createFollow } from "@/api/social/follow/create-follow";
-import { deleteFollow } from "@/api/social/follow/delete-follow";
-import { isFollower } from "@/api/social/follow/read-follow";
+import { createFollow, deleteFollow, isFollower } from "@/api/social/follow";
+import {  } from "@/api/social/follow/read-follow";
 import { getProfileUser } from "@/api/social/profile/get-profile-user";
 import Loader from "@/components/ui/loader";
 import { AvatarSection, FollowButton, Header, Metrics, ProfileInfo } from "@/components/ui/profile";
@@ -9,8 +8,8 @@ import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDateToMonthYear } from "@/lib/utils";
 import { colors } from "@/styles/colors";
-import { NavigationContainer, useNavigationState, useRoute } from "@react-navigation/native";
-import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
+import { NavigationContainer } from "@react-navigation/native";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { Ellipsis } from "lucide-react-native";
 
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -55,9 +54,10 @@ import GrowIcon from "@/assets/icons/plant.svg";
 import ConnectionPostList from "@/components/ui/profile/connection-post-list";
 import ConnectionReelstList from "@/components/ui/profile/connection-reels-list"
 import ConnectionGrowPostList from "@/components/ui/profile/connection-grow-post-list";
+import { EditProfileButton } from "@/components/ui/profile/edit-profile-button";
 
 const TAB_BAR_HEIGHT = 48;
-const HEADER_HEIGHT = 24;
+const HEADER_HEIGHT = 0;
 
 const OVERLAY_VISIBILITY_OFFSET = 30;
 
@@ -98,7 +98,7 @@ const Profile: React.FC = () => {
 
   const [headerHeight, setHeaderHeight] = useState(0);
 
-  const defaultHeaderHeight = top + HEADER_HEIGHT;
+  const defaultHeaderHeight = HEADER_HEIGHT;
 
   const headerConfig = useMemo<HeaderConfig>(
     () => ({
@@ -240,7 +240,7 @@ const Profile: React.FC = () => {
   const tabBarStyle = useMemo<StyleProp<ViewStyle>>(
     () => [
       rendered ? styles.tabBarContainer : undefined,
-      { top: rendered ? headerHeight : undefined },
+      { top: rendered ? headerHeight: undefined },
       tabBarAnimatedStyle,
     ],
     [rendered, headerHeight, tabBarAnimatedStyle]
@@ -250,7 +250,7 @@ const Profile: React.FC = () => {
     (props: MaterialTopTabBarProps) => React.ReactElement
   >(
     (props) => (
-      <Animated.View style={tabBarStyle}>
+      <Animated.View style={[tabBarStyle, { backgroundColor: colors.black[100] }]}>
         <TabBar onIndexChange={setTabIndex} {...props} />
       </Animated.View>
     ),
@@ -351,52 +351,9 @@ const Profile: React.FC = () => {
     }
   };
 
-  const renderHeader = () => (
-    <View>
-      <Header onBack={() => router.back()} />
-          <AvatarSection
-            imageUri={image?.image}
-            coverUri={cover?.cover}
-            isLoggerUser={user?.id === id}
-            onEditProfile={handleEditProfile}
-          />
-          <ProfileInfo name={info?.name} username={info?.username} biography={info?.biography} category={info?.category}/>
-          <Metrics
-            userId={info.id}
-            followers={metric?.followers}
-            following={metric?.following}
-            memberSince={formatDateToMonthYear(info?.created_at)}
-            socialCount={metric?.social_count}
-            reelCount={metric?.reel_count}
-            averageReview={metric?.average_review}
-            onReviewsPress={handleReviewsPress}
-          />
-          {user && user.id != id && (
-            <View className="flex flex-row gap-2 px-6 mt-6">
-              <FollowButton isFollowing={!!follow} isLoading={isLoadingFollow} onFollowPress={handleFollowPress} />
-              <TouchableOpacity
-                onPress={handleRateProfilePress}
-                style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderWidth: 1,
-                  borderColor: colors.black[70],
-                  borderRadius: 100,
-                  padding: 4,
-                  height: 40,
-                  width: 40,
-                }}
-              >
-                <Ellipsis size={16} color={colors.black[70]} />
-              </TouchableOpacity>
-            </View>
-          )}
-    </View>
-  )
-
   useEffect(() => {
     fetchProfileData();
-  }, [id]);
+  }, []);
 
 
   if (!profile) return null;
@@ -405,13 +362,18 @@ const Profile: React.FC = () => {
  
   return (
     <>
-      <SafeAreaView className="bg-black-100" style={{ flex: 1 }}>      
-      {info &&<View style={styles.container}>
-      <Animated.View onLayout={handleHeaderLayout} style={headerContainerStyle}>
+      <SafeAreaView className="bg-black-100" style={{ backgroundColor: colors.black[100], flex: 1 }}>      
+      <View style={styles.container}>
+      {/* <View style={styles.fixedHeader}>
+        <Header onBack={() => router.back()} />
+      </View> */}
+
+      <Animated.View onLayout={handleHeaderLayout} style={[headerContainerStyle]}>
           <Header onBack={() => navigation.goBack()} />
           <AvatarSection
             imageUri={image?.image}
             coverUri={cover?.cover}
+            name={info?.name || info?.username}
             isLoggerUser={user?.id === id}
             onEditProfile={handleEditProfile}
           />
@@ -446,41 +408,49 @@ const Profile: React.FC = () => {
               </TouchableOpacity>
             </View>
           )}
+          {user && user.id == id && (
+            <View className="flex flex-row flex-1 px-6 mt-6 w-full">
+              <EditProfileButton />
+            </View>
+          )}
         </Animated.View>
-        <Animated.View style={collapsedOverlayStyle}>
+        {/* {info && <Animated.View style={collapsedOverlayStyle}>
           <HeaderOverlay name={info.name || info.username}  imageUri={image?.image} onBack={() => navigation.goBack()} />
-        </Animated.View>
-        <NavigationContainer independent={true}>
-          <Tab.Navigator tabBar={renderTabBar} screenOptions={({ route }) => ({
-            tabBarContentContainerStyle: {
-              justifyContent: 'center', alignItems: 'center'
-            },
-            tabBarIndicatorContainerStyle: {
-              backgroundColor: colors.black[100],
-            },
-            tabBarIndicatorStyle: {
-              backgroundColor: colors.brand.green,
-              height: 2.5,
-              // borderBottomColor: colors.black[100], borderBottomWidth: 1
-            },
-            tabBarIcon: ({ focused }) => {
-              return icons[route.name](focused);
-            },
-            tabBarIconStyle: {
-              width: w / 3,
-              justifyContent: 'center',
-              alignItems: 'center'
-            },
-            tabBarShowLabel: false,
-          })}>
+        </Animated.View>} */}
+        {profile && <NavigationContainer independent={true}>
+          <Tab.Navigator 
+            tabBar={renderTabBar} 
+            style={{ backgroundColor: colors.black[100] }}
+            screenOptions={({ route }) => ({
+              tabBarContentContainerStyle: {
+                justifyContent: 'center', alignItems: 'center'
+              },
+              tabBarIndicatorContainerStyle: {
+                backgroundColor: colors.black[100],
+              },
+              tabBarIndicatorStyle: {
+                backgroundColor: colors.brand.green,
+                height: 2.5,
+                // borderBottomColor: colors.black[100], borderBottomWidth: 1
+              },
+              tabBarIcon: ({ focused }) => {
+                return icons[route.name](focused);
+              },
+              tabBarIconStyle: {
+                width: w / 3,
+                justifyContent: 'center',
+                alignItems: 'center'
+              },
+              tabBarShowLabel: false,
+            })}>
             <Tab.Screen name="posts">{renderPosts}</Tab.Screen>
             <Tab.Screen name="wellz">{renderReels}</Tab.Screen>
             <Tab.Screen name="plantas">{renderGrowPost}</Tab.Screen>
           </Tab.Navigator>
-        </NavigationContainer>
-      </View>}
+        </NavigationContainer>}
+      </View>
       </SafeAreaView>
-      <Loader isLoading={isLoading} />
+      {/* <Loader isLoading={isLoading} /> */}
     </>
   );
 };
@@ -490,12 +460,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.black[100],
   },
-  tabBarContainer: {
-    top: 0,
-    left: 0,
-    right: 0,
+  fixedHeader: {
     position: "absolute",
-    zIndex: 1,
+    top: 0,
+    width: "100%",
+    zIndex: 50,
     backgroundColor: colors.black[100]
   },
   overlayName: {
@@ -508,7 +477,7 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: colors.black[100],
     justifyContent: "center",
-    zIndex: 2,
+    zIndex: 1,
   },
   headerContainer: {
     top: 0,
@@ -517,6 +486,14 @@ const styles = StyleSheet.create({
     position: "absolute",
     zIndex: 1,
     backgroundColor: colors.black[100],
+  },
+  tabBarContainer: {
+    top: 0,
+    left: 0,
+    right: 0,
+    position: "absolute",
+    zIndex: 1,
+    backgroundColor: colors.black[100]
   },
 });
 

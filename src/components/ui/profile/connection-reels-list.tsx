@@ -116,7 +116,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       }
   
       return (
-        <TouchableOpacity onPress={() => router.push({ pathname: '/profile/post/[id]/reels', params: { id: item.post_id }})} className="flex flex-col gap-2">
+        <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]/reels', params: { id: item.post_id }})} className="flex flex-col gap-2">
            <Video
             ref={ref => (videoRefs.current[index] = ref)} 
             source={{ uri: item?.file?.file}}

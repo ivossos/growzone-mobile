@@ -149,7 +149,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
       }
   
       return (
-        <TouchableOpacity onPress={() => router.push({ pathname: '/profile/post/[id]/grow', params: { id: item.post_id }})}
+        <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]/grow', params: { id: item.post_id }})}
           className="flex flex-col gap-2 mb-6">
            
            <View className="relative">

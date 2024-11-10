@@ -172,7 +172,6 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
       setReviews(prevReviews => [...prevReviews, ...data]);
 
       if(data && data.length === 0 && reviews.length === 0) {
-        console.log('entrou')
         ref?.current?.snapToIndex(1);
       }
     
@@ -221,8 +220,13 @@ const RateProfileBottomSheet = React.forwardRef<BottomSheet, RateProfileBottomSh
       setSkip(0);
       setReviews([]);
       if (!isLoadingFetchReviews && userId) {
-        fetchReview();
-        fetchReviews();
+        if(currentType === 'rate-profile') {
+          fetchReview();
+        }
+
+        if(currentType === 'reviews-profile') {
+          fetchReviews();
+        }
       }
     }
   }, [currentType, userId]);

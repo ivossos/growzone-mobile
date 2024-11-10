@@ -8,6 +8,7 @@ import { colors } from "@/styles/colors";
 type AvatarSectionProps = {
   imageUri: string | undefined;
   coverUri: string | undefined;
+  name: string;
   isLoggerUser: boolean;
   onEditProfile: () => void;
 };
@@ -17,6 +18,7 @@ export function AvatarSection({
   coverUri,
   isLoggerUser,
   onEditProfile,
+  name
 }: AvatarSectionProps) {
   return (
     <View className="relative bg-black-60">
@@ -42,7 +44,7 @@ export function AvatarSection({
           {imageUri ? (
             <AvatarImage className="rounded-full" source={{ uri: imageUri }} />
           ) : (
-            <AvatarFallback textClassname="text-4xl">{getInitials("Nome")}</AvatarFallback>
+            <AvatarFallback textClassname="text-4xl">{getInitials(name)}</AvatarFallback>
           )}
         </Avatar>
       </View>

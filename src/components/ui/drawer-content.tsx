@@ -14,6 +14,7 @@ import { router, useNavigation } from "expo-router";
 import { DrawerActions } from "@react-navigation/native";
 import { useAuth } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/utils";
+import { verifyIds } from "@/constants/mock";
 
 export function DrawerContent( props: DrawerContentComponentProps) {
   const { user } = useAuth();
@@ -53,7 +54,7 @@ export function DrawerContent( props: DrawerContentComponentProps) {
               <Text className="text-white text-base font-semibold">
                 {user?.name || user.username}
               </Text>
-              <VerifiedIcon width={18} heigth={18} />
+              {verifyIds.includes(user.username) && <VerifiedIcon width={18} heigth={18} />}
             </View>
           </TouchableOpacity>
         </View>

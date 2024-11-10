@@ -52,7 +52,7 @@ export function Header({ scrollToTop = () => {} }: Props) {
         <Logo width={114} height={24} />
       </TouchableOpacity>
       <View className="flex flex-row items-center gap-4">
-        {/* <TouchableOpacity activeOpacity={0.7} className="flex flex-row items-center gap-2">
+        {/* <TouchableOpacity activeOpacity={0.7} className="flex flex-row items-center gap-2" onPress={() => router.push('/teste')}>
           <Coin width={24} height={24} />
           <Text className="text-white font-bold text-lg">582</Text>
         </TouchableOpacity> */}
