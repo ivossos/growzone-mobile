@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { View, Text, ScrollView, Dimensions, TouchableOpacity, Image, Alert } from "react-native";
 import images from "@/constants/images";
 
@@ -189,7 +190,11 @@ const SignUp = () => {
         </TouchableOpacity>
         <Progress value={progress} className="max-h-1 max-w-20" />
       </View>
-      <ScrollView className="bg-black-100">
+      <KeyboardAwareScrollView className="bg-black-100" showsVerticalScrollIndicator={false}
+       extraScrollHeight={-200}
+       
+       contentContainerStyle={{ flexGrow: 1 }}
+       keyboardShouldPersistTaps="handled">
         <View
           className="w-full flex items-center h-full px-6"
           style={{
@@ -216,7 +221,7 @@ const SignUp = () => {
             />
           </FormProvider>
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };

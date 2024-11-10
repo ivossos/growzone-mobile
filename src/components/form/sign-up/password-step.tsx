@@ -50,15 +50,7 @@ export default function PasswordStep({
     }
   }
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1, width: '100%'}}
-    >
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: Platform.OS === "ios" ? 16 : 0 }}
-        keyboardShouldPersistTaps="handled"
-      >
+      <>
         <View className="flex gap-2 pt-6 mb-4">
           <Text className="text-4xl font-semibold text-white text-center">
             Crie uma senha de acesso
@@ -132,7 +124,6 @@ export default function PasswordStep({
           isDisabled={isLoading}
           isLoading={isLoading}
         />
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </>
   );
 }
