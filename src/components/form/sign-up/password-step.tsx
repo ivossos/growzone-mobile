@@ -51,7 +51,7 @@ export default function PasswordStep({
   }
   return (
       <>
-        <View className="flex gap-2 pt-6 mb-4">
+        <View className="flex gap-2 pt-2 mb-2">
           <Text className="text-4xl font-semibold text-white text-center">
             Crie uma senha de acesso
           </Text>

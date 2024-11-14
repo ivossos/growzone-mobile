@@ -11,12 +11,15 @@ import { verifyCode } from "@/api/user";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import { resendEmailCode } from "@/api/user/resend-email-code";
+import { useAuth } from "@/hooks/use-auth";
+import { router } from "expo-router";
 
 export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [timer, setTimer] = useState<number>(60);
   const { trigger, getValues, setError } = useFormContext();
+  const { signIn } = useAuth();
 
   async function handleNextStep() {
     const isValid = await trigger("code");
@@ -24,27 +27,42 @@ export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
 
     try {
       setIsLoading(true);
-      const { code, email } = getValues();
+      const { code, email, username, password } = getValues();
       await verifyCode({ email, code: code });
-      onSubmit();
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        setError("code", {
-          type: "manual",
-          message:
-            "O código de verificação está incorreto. Por favor, tente novamente.",
-        });
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Opss",
-          text2:
-            "Ocorreu um erro ao validar seu código, tente novamente mais tarde.",
-        });
 
-      }
+      await attemptSignIn(username, password);
+      router.replace("/home");
+    } catch (error) {
+      handleVerificationError(error)
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  function handleVerificationError(error: any) {
+    if (axios.isAxiosError(error)) {
+      setError("code", {
+        type: "manual",
+        message:
+          "O código de verificação está incorreto. Por favor, tente novamente.",
+      });
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Opss",
+        text2:
+          "Ocorreu um erro ao validar seu código, tente novamente mais tarde.",
+      });
+
+    }
+  }
+
+  async function attemptSignIn(username: string, password: string) {
+    try {
+      await signIn(username, password);
+    } catch (err) {
+      console.log("error automatic login", err);
+      router.replace("/sign-in");
     }
   }
 

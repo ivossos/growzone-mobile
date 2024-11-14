@@ -115,7 +115,7 @@ const SignIn = () => {
 
   return (
     <>
-    <SafeAreaView className="bg-black-100 h-full">
+    <SafeAreaView className="bg-black-100 h-full" edges={['top']}>
       <ScrollView className="bg-black-100 pb-10">
         <View
           className="w-full flex items-center h-full px-6"
@@ -123,16 +123,16 @@ const SignIn = () => {
             minHeight: Dimensions.get("window").height - 100,
           }}
         >
-           <View className="flex items-center justify-center gap-6 my-10">
+           <View className="flex items-center justify-center gap-6 my-8">
             <Image source={images.logoGreen} className='w-[250px] h-10'  resizeMode='contain'/>
 
             <View className="flex gap-2">
-              <Text className="text-4xl font-semibold text-white text-center">
+              <Text className="text-3xl font-semibold text-white text-center">
                 Seja bem-vindo ao Growzone!
               </Text>
               
-              <Text className="text-lg font-regular text-black-30 text-center ">
-                Digite seu email e senha para conectar-se com a comunidade.
+              <Text className="text-lg font-regular text-black-30 text-center mt-">
+                Já é um membro? Digite seu e-mail e senha para conectar-se com a comunidade
               </Text>
             </View>
            </View>
@@ -143,7 +143,7 @@ const SignIn = () => {
                 <FormField
                   title="Nome de usuário"
                   placeholder="Digite seu nome de usuário"
-                  otherStyles="mt-6 w-full"
+                  otherStyles="mt-5 w-full"
                   leftIcon={AtSign}
                   onBlur={onBlur}
                   value={value}
@@ -187,22 +187,22 @@ const SignIn = () => {
             </View>
 
             <Button
+              variant="outline"
               handlePress={form.handleSubmit(submit)}
               containerStyles="w-full mt-6"
               title='Conectar-se'
               isLoading={isLoading}
             />
 
-            <Divider text="Ou" />
+            <Divider text="Ou" className="!my-4"/>
 
           <View className="flex flex-col justify-center w-full gap-2">
             <Text className="text-center text-lg text-gray-100 font-medium">
               Ainda não possui uma conta?
             </Text>
             <Button
-              variant="outline"
               handlePress={() => router.push("/sign-up")}
-              containerStyles="mt-6"
+              containerStyles="mt-4"
               title='Crie agora'
               rightIcon={ArrowRight}
             />

@@ -43,9 +43,9 @@ export interface UserSocial {
 
 export interface UserInfo {
   id: number;
-  name: string;
+  name?: string;
   username: string;
-  biography: string;
+  biography?: string;
   created_at: string;
   category?: {
     id: number,
@@ -76,8 +76,8 @@ export interface UserMetrics {
 
 export interface UserProfile {
   info: UserInfo;
-  image: UserImage;
-  cover: UserCover;
+  image?: UserImage;
+  cover?: UserCover;
   metric: UserMetrics;
 }
 

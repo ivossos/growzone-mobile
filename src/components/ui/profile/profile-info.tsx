@@ -4,7 +4,7 @@ import { Link } from "expo-router";
 import { verifyIds } from "@/constants/mock";
 
 type ProfileInfoProps = {
-  name: string;
+  name?: string;
   username: string;
   biography?: string;
   category?: {

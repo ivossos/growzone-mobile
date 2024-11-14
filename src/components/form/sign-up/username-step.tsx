@@ -46,7 +46,7 @@ export default function UsernameStep({
 
   return (
     <>
-      <View className="flex gap-2 pt-6 mb-4">
+      <View className="flex gap-2 pt-2 mb-2">
         <Text className="text-4xl font-semibold text-white text-center">
           Crie um nome de usuário
         </Text>
@@ -63,7 +63,7 @@ export default function UsernameStep({
             title="Nome de usuário"
             placeholder="Digite seu usuário"
             otherStyles="mt-6"
-            keyboardType="email-address"
+            keyboardType="default"
             onBlur={onBlur}
             value={value}
             handleChangeText={onChange}

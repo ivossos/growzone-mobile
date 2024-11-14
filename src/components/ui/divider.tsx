@@ -2,11 +2,12 @@ import { View, Text } from "react-native";
 
 interface DividerProps {
   text?: string;
+  className?: string;
 }
 
-const Divider = ({ text }:DividerProps) => {
+const Divider = ({ text, className }:DividerProps) => {
   return (
-    <View className="flex-row items-center my-8">
+    <View className={`flex-row items-center my-8 ${className }`}>
       <View className="flex-1 h-px bg-black-90" />
       {text ? (
         <>

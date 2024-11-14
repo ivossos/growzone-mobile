@@ -283,8 +283,8 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
               },
               {
                 Icon: ReelsIcon,
-                title: "Weells",
-                description: "Crie vídeos curtos e envolventes com Weells",
+                title: "Weedz",
+                description: "Crie vídeos curtos e envolventes com Weedz",
                 onAction: handleCreateReels,
               },
               // { Icon: QuestionIcon, title: 'Pergunta', description: 'Crie perguntas em uma comunidade', onAction: onClose },

@@ -12,6 +12,12 @@ import ReportBottomSheet from '@/components/ui/report-bottom-sheet';
 import GlobalSearchBottomSheet from '@/components/ui/global-search-bottom-sheet';
 import { useScrollToTop } from '@/context/scroll-top-context';
 import { StatusBar } from 'expo-status-bar';
+import { useAuth } from '@/hooks/use-auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
+import { getInitials } from '@/lib/utils';
+import { UserSocial } from '@/api/@types/models';
+import RateProfileBottomSheet from '@/components/ui/rate-profile-bottom-sheet';
+import ProfileBottomSheet from '@/components/ui/profile/bottom-sheet/profile-bottom-sheet';
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -52,13 +58,18 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
   );
 };
 
+
 export default function TabLayout() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const searchSheetRef = useRef<BottomSheet>(null);
   const reportSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
   const createPostSheetRef = useRef<BottomSheet>(null);
+  const rateProfileSheetRef = useRef<BottomSheet>(null);
+  const profileSheetRef = useRef<BottomSheet>(null);
+
   const { scrollToTop } = useScrollToTop();
+  const { user } = useAuth();
 
   const openBottomSheet = () => {
     bottomSheetRef.current?.snapToIndex(1)
@@ -78,6 +89,14 @@ export default function TabLayout() {
 
   const createPostBottomSheet = () => {
     createPostSheetRef.current?.close()
+  };
+
+  const rateProfileBottomSheet = () => {
+    rateProfileSheetRef.current?.close()
+  };
+
+  const profileBottomSheet = () => {
+    profileSheetRef.current?.close()
   };
 
   return (
@@ -175,17 +194,22 @@ export default function TabLayout() {
               }}
             />
             <Tabs.Screen
-              name="store"
+              name="profile"
               options={{
-                title: 'Store',
+                title: 'Perfil',
                 headerShown: false,
-                tabBarIcon: ({ color, focused }) => (
-                  <TabIcon 
-                    name={focused ? 'store' : 'store-outline'} 
-                    color={color} 
-                    focused={focused}
-                    icon={icons.store}
-                  />
+                tabBarIcon: ({ focused }) => (
+                  <Avatar className={`w-8 h-8 bg-black-80 ${focused && 'border border-brand-green'}`}>
+                    {user.image?.image && (
+                      <AvatarImage
+                        className="rounded-full"
+                        source={{ uri: user.image?.image }}
+                      />
+                    )}
+                    <AvatarFallback>
+                      {getInitials(user.name || user.username)}
+                    </AvatarFallback>
+                  </Avatar>
                 ),
               }}
             />
@@ -195,7 +219,10 @@ export default function TabLayout() {
         <CommentBottomSheet ref={commentSheetRef} />
         <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
         <GlobalSearchBottomSheet ref={searchSheetRef}  onClose={closeSeachBottomSheet} />
+        <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
+        <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>
       </BottomSheetProvider>
+      
     </>
   );
 }

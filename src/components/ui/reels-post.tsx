@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions, TouchableOpacity, Dimensions, Platform, StatusBar } from "react-native";
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions, TouchableOpacity, Dimensions, Platform, StatusBar, Image } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus, AVPlaybackStatusSuccess } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -32,6 +32,7 @@ type ReelsPostProps = {
 const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN, isTab = true }: ReelsPostProps) => {
   const { user } = useAuth();
   const video = useRef<Video>(null);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [status, setStatus] = useState<AVPlaybackStatus>();
   const [follow, setFollow] = useState<boolean>(post.user.is_following);
   const [liked, setLiked] = useState(post.is_liked);
@@ -138,6 +139,7 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN, isTab 
         } else {
           await video.current.pauseAsync();
           await video.current.unloadAsync();
+          setIsVideoLoaded(false);
         }
       } catch (error) {
         console.error("Erro ao gerenciar a reprodução:", error);
@@ -197,13 +199,34 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN, isTab 
     }
   };
 
+  function replaceMediaUrl(url: string, newFileType = 'webp') {
+    if (!url || typeof url !== 'string') {
+      throw new Error("A URL fornecida é inválida.");
+    }
+
+    const newExtension = newFileType.toLowerCase() === 'm3u8' ? 'output.m3u8' : 'thumbnail.webp';
+  
+    const newUrl = url.replace(/\/[^/]+$/, `/${newExtension}`);
+    
+    return newUrl;
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
+      {!isVideoLoaded && (
+      <Image
+        source={{ uri: replaceMediaUrl(post.file.file) }}
+        style={[styles.video, { height: ScreenHeight }]}
+        resizeMode="cover"
+      />
+    )}
       <Video
         ref={video}
-        style={[styles.video, { height: ScreenHeight }]}
+        style={[styles.video, { height: ScreenHeight }, isVideoLoaded ? {} : { display: 'none' }]}
         source={{ uri: post.file.file }}
         resizeMode={resizeMode}
+        onLoadStart={() => setIsVideoLoaded(false)}
+        onLoad={() => setIsVideoLoaded(true)}
         onPlaybackStatusUpdate={handlePlaybackStatus}
         isLooping={true}
         isMuted={false}

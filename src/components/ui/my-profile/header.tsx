@@ -3,16 +3,13 @@ import Logo from '@/assets/icons/logo.svg';
 import Coin from '@/assets/icons/coin.svg';
 import Bell from '@/assets/icons/bell.svg';
 import MenuBurger from '@/assets/icons/menu-burger.svg';
-import { router, useNavigation, useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { DrawerActions } from "@react-navigation/native";
 import { getNotificationCount } from "@/api/social/notification/get-notification-count";
 import { useEffect, useState } from "react";
 
-interface Props {
-  scrollToTop?: () => void
-}
 
-export function Header({ scrollToTop = () => {} }: Props) {
+export function Header() {
   const [loading, setLoading] = useState(false);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const navigation = useNavigation();
@@ -48,9 +45,7 @@ export function Header({ scrollToTop = () => {} }: Props) {
   
   return (
     <View className="flex flex-row justify-between items-center h-[72px] px-6 border-b-[1px] border-black-80">
-      <TouchableOpacity onPress={scrollToTop}>
-        <Logo width={114} height={24} />
-      </TouchableOpacity>
+      <Logo width={114} height={24} />
       <View className="flex flex-row items-center gap-4">
         {/* <TouchableOpacity activeOpacity={0.7} className="flex flex-row items-center gap-2" onPress={() => router.push('/teste')}>
           <Coin width={24} height={24} />
@@ -64,9 +59,9 @@ export function Header({ scrollToTop = () => {} }: Props) {
           )}
           <Bell width={24} height={24} />
         </TouchableOpacity>
-        {/* <TouchableOpacity activeOpacity={0.7} onPress={toggleMenu}>
+        <TouchableOpacity activeOpacity={0.7} onPress={toggleMenu}>
           <MenuBurger width={24} height={24} />
-        </TouchableOpacity> */}
+        </TouchableOpacity>
       </View>
     </View>
   )

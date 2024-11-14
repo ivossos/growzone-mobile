@@ -17,6 +17,7 @@ import {
   Text,
   FlatList,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { debounce } from 'lodash';
@@ -49,8 +50,7 @@ export default function SearchScreen() {
   const [isLoadingTrendingWells, setIsLoadingTrendingWells] = useState(false);
   const [isLoadingTopContributors, setIsLoadingTopContributors] = useState(false);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false)
-
-  const isLoading = isLoadingTopContributors || isLoadingTrendingWells || isLoadingTrendingGrowPosts;
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const { openBottomSheet } = useBottomSheetContext();
 
@@ -178,15 +178,28 @@ export default function SearchScreen() {
     }
   };
 
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        fetchTopContributors(),
+        fetchTrendingWells(),
+        fetchTrendingGrowPosts(),
+      ]);
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchGlobalSearch(skip, limit);
   }, [debouncedQuery]);
   
 
   useEffect(() => {
-    fetchTopContributors();
-    fetchTrendingWells();
-    fetchTrendingGrowPosts();
+    onRefresh();
   }, [])
 
   useEffect(() => {
@@ -195,13 +208,13 @@ export default function SearchScreen() {
     }
   }, [skip]);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchTopContributors();
-      fetchTrendingWells();
-      fetchTrendingGrowPosts();
-    }, [])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchTopContributors();
+  //     fetchTrendingWells();
+  //     fetchTrendingGrowPosts();
+  //   }, [])
+  // );
 
    const loadMorePosts = () => {
     if (!loadingMore && hasMore) {
@@ -329,22 +342,19 @@ export default function SearchScreen() {
           keyExtractor={(item) => item.key}
           showsVerticalScrollIndicator={false}
           contentContainerClassName="pb-6 flex-1"
-          ListHeaderComponent={() => (
-            isLoading && (
-              <View className="flex flex-col justify-center items-center ">
-                <ActivityIndicator
-                  animating
-                  color={colors.brand.green}
-                  size="small"
-                  className="my-16"
-                />
-              </View>
-            )
-          )}
+          refreshing={isRefreshing} 
+          onRefresh={onRefresh}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.brand.green}
+            />
+          }  
           renderItem={({ item, index}) => {
             if (item.key === 'contributors') {
               return (
-                !isLoading && topContributors.length > 0 && <View className="flex flex-col gap-5 px-6">
+                !isRefreshing && topContributors.length > 0 && <View className="flex flex-col gap-5 px-6">
                   <Text className="text-lg text-white font-semibold">
                     Top Contribuidores
                   </Text>
@@ -362,7 +372,7 @@ export default function SearchScreen() {
               );
             } else if (item.key === 'reels') {
               return (
-                !isLoading && trendingWells?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
+                !isRefreshing && trendingWells?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
                   <View className="flex flex-row justify-between items-center ">
                     <Text className="text-lg text-white font-semibold">
                       Weelz em Alta
@@ -386,7 +396,7 @@ export default function SearchScreen() {
               );
             } else if (item.key === 'buds') {
               return (
-                !isLoading && trendingGrowPosts?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
+                !isRefreshing && trendingGrowPosts?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
                   <View className="flex flex-row justify-between items-center ">
                     <Text className="text-lg text-white font-semibold">
                       Top Buds

@@ -8,7 +8,7 @@ import { Controller } from 'react-hook-form';
 export default function ChannelStep({ control, onNext }: StepProps) {
   return (
     <>
-      <View className="flex gap-2 pt-6 mb-4">
+      <View className="flex gap-2 pt-2 mb-2">
         <Text className="text-4xl font-semibold text-white text-center">
           Escolha o canal para receber o código
         </Text>

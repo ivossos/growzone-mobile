@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { View, Text, ScrollView, Dimensions, TouchableOpacity, Image, Alert } from "react-native";
+import { View, Dimensions, TouchableOpacity, Image } from "react-native";
 import images from "@/constants/images";
 
 import { ArrowLeft } from "lucide-react-native";
@@ -14,14 +14,8 @@ import UsernameStep from "@/components/form/sign-up/username-step";
 import EmailStep from "@/components/form/sign-up/email-step";
 import CodeStep from "@/components/form/sign-up/code-step";
 import PasswordStep from "@/components/form/sign-up/password-step";
-import PhoneStep from "@/components/form/sign-up/phone-step";
-import ChannelStep from "@/components/form/sign-up/channel-step";
-import TermsStep from "@/components/form/sign-up/terms-step";
 import { router } from "expo-router";
-import { createUser, verifyCode } from "@/api/user";
-import { findUsername } from "@/api/user/find-username";
-import { findEmail } from "@/api/user/find-email";
-import axios from "axios";
+
 
 
 const signUpSchema = z
@@ -202,7 +196,7 @@ const SignUp = () => {
           }}
         >
           <FormProvider {...methods}>
-            <View className="flex items-center justify-center my-10">
+            <View className="flex items-center justify-center my-10 mb-5">
               <Image
                 source={images.logoGreen}
                 className="w-[250px] h-10"

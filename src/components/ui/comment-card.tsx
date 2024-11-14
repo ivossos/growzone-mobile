@@ -11,6 +11,7 @@ import { formatDistance, getInitials } from '@/lib/utils';
 import { deleteCommentLike } from '@/api/social/post/comment/delete-comment-like';
 import { createCommentLike } from '@/api/social/post/comment/create-comment-like';
 import Toast from 'react-native-toast-message';
+import { router } from 'expo-router';
 
 interface Props {
   comment: Comment;
@@ -44,7 +45,7 @@ export default function CommentCard({ comment }: Props) {
   return (
     <View className='flex flex-col gap-2 bg-black-100 mb-4'>
       <View className="flex flex-row items-center justify-between gap-2 w-full">
-        <View className="flex flex-row items-center gap-2">
+        <TouchableOpacity onPress={() => router.push({ pathname: '/profile/[id]', params: { id: comment.user.id }})} className="flex flex-row items-center gap-2">
           <Avatar className="w-10 h-10 bg-black-80">
             {comment.user?.image?.image && (
               <AvatarImage className="rounded-full" source={{ uri: comment.user?.image?.image }} />
@@ -58,11 +59,11 @@ export default function CommentCard({ comment }: Props) {
             <DotIcon className="w-3 h-3" color={colors.black[70]} />
             <Text className="text-brand-grey text-xs">{formatDistance(comment.created_at)}</Text>
           </View>
-        </View>
+        </TouchableOpacity>
 
-        <View className="flex flex-row items-center">
+        {/* <View className="flex flex-row items-center">
           <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-        </View>
+        </View> */}
       </View>
 
       <View className='flex flex-row gap-2 min-h-min'>
