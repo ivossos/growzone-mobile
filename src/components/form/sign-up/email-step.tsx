@@ -44,7 +44,7 @@ export default function EmailStep({ control, onNext = () => {} }: StepProps) {
   return (
     <>
       <View className="flex gap-2 pt-2 mb-2">
-        <Text className="text-4xl font-semibold text-white text-center">
+        <Text className="text-3xl font-semibold text-white text-center">
           Qual é seu e-mail ?
         </Text>
         <Text className="text-lg font-regular text-black-30 text-center ">

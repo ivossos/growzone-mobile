@@ -375,7 +375,7 @@ export default function SearchScreen() {
                 !isRefreshing && trendingWells?.length > 0 && <View className="flex flex-col gap-5 px-6 pt-6">
                   <View className="flex flex-row justify-between items-center ">
                     <Text className="text-lg text-white font-semibold">
-                      Weelz em Alta
+                      Weedz em Alta
                     </Text>
                     <TouchableOpacity className="flex items-center flex-row gap-1" onPress={() => router.navigate('/reels')}>
                       <Text className="text-primary text-base font-medium">ver mais</Text>
