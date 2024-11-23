@@ -16,9 +16,9 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
-const CategoryList: React.FC = () => {
+const CategoryList = () => {
   const route = useRoute();
-  const categoryName = (route.params as { name: string })?.name;
+  const categoryName = decodeURIComponent((route.params as { name: string })?.name);
   const [searchResponse, setSearchResponse] = useState<GlobalSearchResponse[]>([]);
   const [skip, setSkip] = useState(0);
   const [limit, setLimit] = useState(20);

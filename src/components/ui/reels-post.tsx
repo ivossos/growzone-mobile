@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, useWindowDimensions, TouchableOpacity, Dimensions, Platform, StatusBar, Image } from "react-native";
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, TouchableOpacity, Dimensions, Platform, StatusBar, Image } from "react-native";
 import { Video, ResizeMode, AVPlaybackStatus, AVPlaybackStatusSuccess } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -9,7 +9,7 @@ import { colors } from "@/styles/colors";
 import { Link, router, useFocusEffect } from "expo-router";
 import ExpandableText from "./expandable-text";
 import { ReelsDetail } from "@/api/@types/models";
-import { getInitials } from "@/lib/utils";
+import { getInitials, replaceMediaUrl } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import Toast from "react-native-toast-message";
@@ -199,17 +199,7 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN, isTab 
     }
   };
 
-  function replaceMediaUrl(url: string, newFileType = 'webp') {
-    if (!url || typeof url !== 'string') {
-      throw new Error("A URL fornecida é inválida.");
-    }
-
-    const newExtension = newFileType.toLowerCase() === 'm3u8' ? 'output.m3u8' : 'thumbnail.webp';
   
-    const newUrl = url.replace(/\/[^/]+$/, `/${newExtension}`);
-    
-    return newUrl;
-  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
@@ -277,7 +267,7 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN, isTab 
               </View>
             </TouchableOpacity>
 
-            {(user.id !== post.user.id) && (post.user.is_following ? (
+            {(user.id !== post.user.id) && (follow ? (
               <TouchableOpacity className="px-3 py-1 bg-black-80 rounded-[64px]" onPress={handleFollower}>
                 {isLoadingHandleFollower && (
                   <ActivityIndicator

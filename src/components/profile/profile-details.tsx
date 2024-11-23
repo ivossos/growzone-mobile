@@ -227,7 +227,7 @@ export default function ProfileDetails({
                   </Text>
                 </View>
                 <Text className="text-sm text-brand-grey font-regular">
-                  Wells
+                  Weedz
                 </Text>
               </View>
               <TouchableOpacity

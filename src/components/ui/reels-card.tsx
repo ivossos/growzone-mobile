@@ -1,34 +1,41 @@
 import { Image, StyleSheet, View, Text } from "react-native";
-import { Avatar, AvatarImage } from "../Avatar";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { SocialPost } from "@/api/@types/models";
-import { useEffect, useRef } from "react";
-import { ResizeMode, Video } from "expo-av";
 import { Link } from "expo-router";
+import { replaceMediaUrl } from "@/lib/utils";
 
 export default function ReelsCard( item: SocialPost) {
-  const videoRef = useRef<(Video | null)>(null);
+  // const videoRef = useRef<(Video | null)>(null);
 
-  useEffect(() => {
-    return () => {
-      const releaseVideo = async () => {
-        if (videoRef.current) {
-          await videoRef.current.pauseAsync();
-          await videoRef.current.unloadAsync();
-        }
-      };
+  // useEffect(() => {
+  //   return () => {
+  //     const releaseVideo = async () => {
+  //       if (videoRef.current) {
+  //         await videoRef.current.pauseAsync();
+  //         await videoRef.current.unloadAsync();
+  //       }
+  //     };
 
-      releaseVideo().catch(error => console.error("Erro ao liberar o vídeo:", error));
-    };
-  }, []);
+  //     releaseVideo().catch(error => console.error("Erro ao liberar o vídeo:", error));
+  //   };
+  // }, []);
 
   return (
     <Link href={{ pathname: '/profile/post/[id]/reels', params: { id: item.post_id } }}>
 
       <View className="flex flex-col gap-2 w-[155px]">
-          <Video
+        <Image
+          source={{ uri: replaceMediaUrl(item?.file?.file) }}
+          className="rounded-t-2xl"
+          style={{
+            height: 224, 
+            width: 155
+          }}
+            resizeMode="cover"
+        />
+          {/* <Video
             ref={ref => (videoRef.current = ref)} 
             source={{ uri: item?.file?.file}}
             className="rounded-t-2xl"
@@ -40,7 +47,7 @@ export default function ReelsCard( item: SocialPost) {
             shouldPlay={false}
             isLooping
             useNativeControls={false}
-          />
+          /> */}
           <LinearGradient
             colors={["rgba(255, 255, 255, 0.20)", "rgba(255, 255, 255, 0.20)"]}
             style={styles.blurContainer}

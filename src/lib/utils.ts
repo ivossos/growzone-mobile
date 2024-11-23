@@ -109,3 +109,15 @@ export function formatDistance(dateString: string) {
 export function getMimeType(uri: string): string | false {
   return lookup(uri);
 }
+
+export function replaceMediaUrl(url: string, newFileType = 'webp') {
+  if (!url || typeof url !== 'string') {
+    throw new Error("A URL fornecida é inválida.");
+  }
+
+  const newExtension = newFileType.toLowerCase() === 'm3u8' ? 'output.m3u8' : 'thumbnail.webp';
+
+  const newUrl = url.replace(/\/[^/]+$/, `/${newExtension}`);
+  
+  return newUrl;
+}

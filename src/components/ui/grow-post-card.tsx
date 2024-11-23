@@ -17,7 +17,7 @@ import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
 
-const MAX_DESCRIPTION_LENGTH = 100;
+const MAX_DESCRIPTION_LENGTH = 150;
 
 interface Props {
   post: GrowPostDetail;
@@ -156,6 +156,7 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
             )}
           </>
         )}
+        
 
         {comments.length > 0 && (
           <View className="pt-6">

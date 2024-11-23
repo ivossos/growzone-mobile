@@ -7,7 +7,7 @@ import MediaSlider from "./media-slider";
 import LikeIcon from "@/assets/icons/like.svg";
 import LikedIcon from "@/assets/icons/liked.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
-import { router } from "expo-router";
+import { Link, router } from "expo-router";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { Comment, PostDetail, PostLike } from "@/api/@types/models";
 import { formatDistance, getInitials } from "@/lib/utils";
@@ -17,7 +17,7 @@ import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
 
-const MAX_DESCRIPTION_LENGTH = 100;
+const MAX_DESCRIPTION_LENGTH = 150;
 
 interface Props {
   post: PostDetail;
@@ -96,8 +96,8 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
           {isLoadingLiked ? (
             <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
           ) : (
+            <View className="flex flex-row items-center gap-1">
             <TouchableOpacity
-              className="flex flex-row items-center gap-1"
               onPress={handleLike}
             >
               {liked ? (
@@ -105,10 +105,13 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
               ) : (
                 <LikeIcon width={24} height={24} />
               )}
-              {likedCount > 0 && (
-                <Text className="text-white font-medium">{likedCount}</Text>
-              )}
             </TouchableOpacity>
+              {likedCount > 0 && (
+                <Link href={{ pathname: '/post/[id]/likes', params: { id: post.post_id } }} >
+                  <Text className="text-white font-medium">{likedCount}</Text>
+                </Link>
+              )}
+            </View>
           )}
 
           <TouchableOpacity

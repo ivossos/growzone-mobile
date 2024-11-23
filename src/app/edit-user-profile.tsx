@@ -10,7 +10,7 @@ import { colors } from "@/styles/colors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router, useNavigation } from "expo-router";
 import { ArrowLeft, CalendarDays, Camera, Pencil } from "lucide-react-native";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, Text, TouchableOpacity, View, KeyboardAvoidingView, Platform, Image, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -22,7 +22,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { createUserCover } from "@/api/social/user/create-user-cover";
 
 export const EditProfileValidation = z.object({
-  name: z.string().max(30, 'Nome pode ter no máximo 30 caracteres'),
+  name: z.string().max(30, 'Nome pode ter no máximo 30 caracteres').nullable(),
   username: z
     .string()
     .min(1, "Nome de usuário é obrigatório")
@@ -30,7 +30,7 @@ export const EditProfileValidation = z.object({
     .regex(/^(?![.])(?!.*[.]{2})(?!.*[.]$)[A-Za-z\d._]+$/, {
       message: "Nome de usuário inválido.",
     }),
-  biography: z.string().min(1, 'Campo obrigatório').max(150, 'A biografia pode ter no máximo 150 caracteres'),
+  biography: z.string().min(1, 'Campo obrigatório').max(200, 'A biografia pode ter no máximo 200 caracteres'),
   email: z.string().email("Digite um e-mail válido").optional(),
   date_of_birth: z.string().optional().refine((value = '') => {
     if (!value) return true;
@@ -54,7 +54,7 @@ export default function EditProfile() {
   const form = useForm({
     resolver: zodResolver(EditProfileValidation),
     values: {
-      name: user.name || '',
+      name: user.name,
       username: user.username || '',
       biography: user.biography || '',
       email: user.email || '',
@@ -109,7 +109,7 @@ export default function EditProfile() {
     try {
       setIsLoading(true);
       await updateUser({
-        name: values.name,
+        name: values.name || null,
         username: values.username,
         email: values.username,
         biography: values.biography,
@@ -139,11 +139,18 @@ export default function EditProfile() {
       
     } catch (err) {
       console.error('Erro ao atualizar perfil', err);
-      Toast.show({
-        type: 'error',
-        text1: 'Ops!',
-        text2: 'Ocorreu um erro ao atualizar seu perfil, tente novamente.',
-      });
+      if (err && err?.message === 'The user with this username already exists in the system') {
+        form.setError("username", {
+          type: "manual",
+          message: "Já existe um usuário registrado com este nome de usuário",
+        });
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Ops!',
+          text2: 'Ocorreu um erro ao atualizar seu perfil, tente novamente.',
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -206,10 +213,10 @@ export default function EditProfile() {
                 {form.watch('image')?.uri ? (
                   <AvatarImage className="rounded-full"  source={{ uri: form.watch('image')?.uri }}  />
                 ) : (
-                  <>
+                  <Fragment>
                     {user.image && <AvatarImage className="rounded-full" resizeMode="cover" src={user.image?.image} />}
                     <AvatarFallback>{getInitials(user.name || user.username)}</AvatarFallback>
-                  </>
+                  </Fragment>
                 )}
               </Avatar>
               <LinearGradient
@@ -233,7 +240,6 @@ export default function EditProfile() {
                   value={value}
                   handleChangeText={onChange}
                   error={fieldState.error?.message}
-                  editable={false}
                 />
               )}
             />

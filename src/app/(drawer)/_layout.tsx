@@ -22,6 +22,7 @@ import BlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/block-use
 import { BanIcon } from 'lucide-react-native';
 import UnlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/unlock-user-bottom-sheet';
 import { ScrollToTopProvider } from '@/context/scroll-top-context';
+import { NotificationProvider } from '@/context/notification-context';
 
 export default function DrawerLayout() {
   const { user, signOut, isLoadingUserStorage } = useAuth();
@@ -80,7 +81,8 @@ export default function DrawerLayout() {
   }
 
   return (
-    <BottomSheetProvider>
+    <NotificationProvider>
+      <BottomSheetProvider>
       <ScrollToTopProvider>
       <Drawer
         screenOptions={{
@@ -221,7 +223,7 @@ export default function DrawerLayout() {
       <UnlockUserBottomSheet ref={unlockUserSheetRef} onClose={unlockUserBottomSheet} />
       <StatusBar backgroundColor={colors.black[100]} style="light" />
       </ScrollToTopProvider>
-    </BottomSheetProvider>
-      
+      </BottomSheetProvider>
+    </NotificationProvider>
   )
 }

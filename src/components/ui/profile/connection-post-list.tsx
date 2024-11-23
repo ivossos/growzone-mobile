@@ -1,6 +1,7 @@
 import { SocialPost } from "@/api/@types/models";
 import { getUserPosts } from "@/api/social/post/get-user-posts";
 import { useAuth } from "@/hooks/use-auth";
+import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { Video } from "expo-av";
 import { router } from "expo-router";
@@ -35,7 +36,6 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
     const [limit, setLimit] = useState(10);
     const [hasMorePosts, setHasMorePosts] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-    const videoRefs = useRef<(Video | null)[]>([]);
     const { user } = useAuth();
 
     const fetchPostsData = async (skipValue: number, limitValue: number) => {
@@ -82,26 +82,6 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       }
     };
 
-    const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      viewableItems.forEach(({ index }) => {
-        const videoRef = videoRefs.current[index as number];
-        if (videoRef) {
-          videoRef.pauseAsync();
-        }
-      });
-    }).current;
-
-    useEffect(() => {
-      return () => {
-        videoRefs.current.forEach(async (videoRef) => {
-          if (videoRef) {
-            await videoRef.pauseAsync();
-            await videoRef.unloadAsync();
-          }
-        });
-      };
-    }, []);
-
     useEffect(() => {
       if (hasMorePosts) {
         fetchPostsData(skip, limit);
@@ -131,15 +111,20 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
           {item?.file?.type === "image" ? (
             <Image source={{ uri: item?.file?.file }} style={styles.image} resizeMode="contain" />
           ) : (
-            <Video
-              ref={(ref) => (videoRefs.current[index] = ref)}
-              source={{ uri: item?.file?.file }}
-              style={styles.image}
-              isMuted={false}
-              shouldPlay={false}
-              isLooping={false}
-              useNativeControls={false}
-            />
+            <Image
+            source={{ uri: replaceMediaUrl(item?.file?.file) }}
+            style={styles.image}
+            resizeMode="cover"
+          />
+            // <Video
+            //   ref={(ref) => (videoRefs.current[index] = ref)}
+            //   source={{ uri: item?.file?.file }}
+            //   style={styles.image}
+            //   isMuted={false}
+            //   shouldPlay={false}
+            //   isLooping={false}
+            //   useNativeControls={false}
+            // />
           )}
         </TouchableOpacity>
       );
@@ -161,7 +146,7 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
-        onViewableItemsChanged={onViewableItemsChanged}
+        // onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={{
           itemVisiblePercentThreshold: 50,
         }}

@@ -341,7 +341,7 @@ export default function SearchScreen() {
           data={[{ key: 'contributors' }, { key: 'reels' }, { key: 'buds' }]}
           keyExtractor={(item) => item.key}
           showsVerticalScrollIndicator={false}
-          contentContainerClassName="pb-6 flex-1"
+          contentContainerClassName="pb-20 flex-grow"
           refreshing={isRefreshing} 
           onRefresh={onRefresh}
           refreshControl={

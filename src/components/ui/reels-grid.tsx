@@ -42,7 +42,7 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
       Toast.show({
         type: 'error',
         text1: 'Opss',
-        text2: 'Aconteceu um erro ao buscar as Wells desse perfil. Tente novamente mais tarde.'
+        text2: 'Aconteceu um erro ao buscar as Weedz desse perfil. Tente novamente mais tarde.'
       });
     } finally {
       setLoadingMore(false);

@@ -6,9 +6,6 @@ import UserProfileScreen from "@/components/ui/profile/user-profile-screen";
 
 import { colors } from "@/styles/colors";
 import { Header } from "@/components/ui/profile";
-import { RefreshControl, ScrollView } from "react-native";
-
-
 
 
 const Profile: React.FC = () => {

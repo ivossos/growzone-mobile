@@ -1,6 +1,7 @@
 import axios, { AxiosError, AxiosInstance } from 'axios';
 import { storageGetAuthToken, storageSaveAuthToken } from '@/storage/storage-auth-token';
 import { AuthTokenResponse } from '@/api/@types/models';
+import { AppError } from '@/api/@types/AppError';
 
 type SignOut = () => Promise<void>;
 
@@ -25,6 +26,11 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 
   api.registerInterceptTokenManager = signOut => {
     const interceptTokenManager = api.interceptors.response.use(res => res, async (requestError) => {
+
+      if (requestError?.response?.status === 409) {
+        return Promise.reject(new AppError(requestError?.response?.data));
+      }
+
       if (requestError?.response?.status === 502) {
         await signOut();
         return Promise.reject(requestError);
@@ -101,6 +107,7 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
       }
 
       console.log('----> error', JSON.stringify(requestError?.response.status))
+      console.log('----> error', JSON.stringify(requestError?.response.data))
       return Promise.reject(requestError);
     });
 

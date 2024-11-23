@@ -1,6 +1,7 @@
 import { GrowPost } from "@/api/@types/models";
 import { getUserGrowPosts } from "@/api/social/post/get-user-grow-posts";
 import { useAuth } from "@/hooks/use-auth";
+import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { Video } from "expo-av";
 import { useRouter } from "expo-router";
@@ -36,7 +37,6 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
     const [limit, setLimit] = useState(10);
     const [hasMorePosts, setHasMorePosts] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-    const videoRefs = useRef<(Video | null)[]>([]);
     const router = useRouter();
     const { user } = useAuth();
   
@@ -65,15 +65,6 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
       }
     };
   
-    const onViewableItemsChanged = useRef(({ viewableItems }: {viewableItems: ViewToken[]}) => {
-      viewableItems.forEach(({ index }) => {
-        const videoRef = videoRefs.current[index as number];
-        if (videoRef) {
-          videoRef.pauseAsync();
-        }
-      });
-    }).current;
-  
     const onRefresh = async () => {
       setRefreshing(true);
       setSkip(0);
@@ -96,17 +87,6 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
 
     useEffect(() => {
       fetchPostsData(skip, limit);
-    }, []);
-  
-    useEffect(() => {
-      return () => {
-        videoRefs.current.forEach(async (videoRef) => {
-          if (videoRef) {
-            await videoRef.pauseAsync();
-            await videoRef.unloadAsync();
-          }
-        });
-      };
     }, []);
   
     const renderItem = ({ item, index }: { index: number, item: GrowPost}) => {
@@ -159,15 +139,22 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
                 style={styles.image}
                 resizeMode="cover"
               />
-              ) : <Video
-              ref={ref => (videoRefs.current[index] = ref)} 
-              source={{ uri: item?.file?.file}}
-              style={styles.image}
-              isMuted={false}
-              shouldPlay={false}
-              isLooping={false}
-              useNativeControls={false}
-            />}
+              ) : (
+                <Image
+                  source={{ uri: replaceMediaUrl(item?.file?.file) }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              //   <Video
+              //   ref={ref => (videoRefs.current[index] = ref)} 
+              //   source={{ uri: item?.file?.file}}
+              //   style={styles.image}
+              //   isMuted={false}
+              //   shouldPlay={false}
+              //   isLooping={false}
+              //   useNativeControls={false}
+              // />
+            )}
   
             <View className="absolute bottom-4 left-2 bg-white px-2 py-1 rounded-full">
               <Text className="text-black text-xs ">{item.phase.name}</Text>
@@ -211,7 +198,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
       initialNumToRender={10}
       maxToRenderPerBatch={10}
       windowSize={5}
-      onViewableItemsChanged={onViewableItemsChanged}
+      // onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={{
         itemVisiblePercentThreshold: 50,
       }}

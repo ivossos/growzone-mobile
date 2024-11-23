@@ -5,7 +5,7 @@ interface ErrorDetail {
 }
 
 interface ErrorResponse {
-  detail: ErrorDetail[];
+  detail: ErrorDetail[] | string;
 }
 
 export class AppError {
@@ -13,8 +13,15 @@ export class AppError {
   details: ErrorDetail[];
 
   constructor(errorResponse: ErrorResponse) {
-    this.message = errorResponse.detail.map((err) => err.msg).join(", ");
-    this.details = errorResponse.detail;
+    console.log(errorResponse)
+
+    if(typeof errorResponse.detail === 'object') {
+      this.message = errorResponse.detail.map((err) => err.msg).join(", ");
+      this.details = errorResponse.detail;
+    } else {
+      this.message = errorResponse.detail;
+      this.details = [];
+    }
   }
 
   getMessagesByField(field: string): string[] {

@@ -2,7 +2,7 @@ import { socialApi } from '@/lib/axios';
 import { UserSocial } from '@/api/@types/models';
 
 export interface UpdateUsertBody {
-  name?: string;
+  name?: string | null;
   username?: string;
   email?: string;
   biography?: string;

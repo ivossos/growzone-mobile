@@ -135,6 +135,8 @@ const ForgotPassword = () => {
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
       setProgress(steps[currentStep - 1]?.progress || 0);
+    } else {
+      router.back()
     }
   };
 

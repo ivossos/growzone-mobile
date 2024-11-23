@@ -1,6 +1,7 @@
 import { SocialPost } from "@/api/@types/models";
 import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 import { useAuth } from "@/hooks/use-auth";
+import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { ResizeMode, Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
@@ -12,6 +13,7 @@ import {
   ActivityIndicator,
   Dimensions,
   FlatListProps,
+  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -36,7 +38,6 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
     const [limit] = useState(10);
     const [hasMorePosts, setHasMorePosts] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-    const videoRefs = useRef<(Video | null)[]>([]);
     
     const { user } = useAuth();
 
@@ -56,7 +57,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
         Toast.show({
           type: 'error',
           text1: 'Opss',
-          text2: 'Aconteceu um erro ao buscar as Wells desse perfil. Tente novamente mais tarde.'
+          text2: 'Aconteceu um erro ao buscar as Weedz desse perfil. Tente novamente mais tarde.'
         });
       } finally {
         setLoadingMore(false);
@@ -64,14 +65,14 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       }
     };
   
-    const onViewableItemsChanged = useRef(({ viewableItems }: {viewableItems: ViewToken[]}) => {
-      viewableItems.forEach(({ index }) => {
-        const videoRef = videoRefs.current[index as number];
-        if (videoRef) {
-          videoRef.pauseAsync();
-        }
-      });
-    }).current;
+    // const onViewableItemsChanged = useRef(({ viewableItems }: {viewableItems: ViewToken[]}) => {
+    //   viewableItems.forEach(({ index }) => {
+    //     const videoRef = videoRefs.current[index as number];
+    //     if (videoRef) {
+    //       videoRef.pauseAsync();
+    //     }
+    //   });
+    // }).current;
   
     const onRefresh = async () => {
       setRefreshing(true);
@@ -93,16 +94,6 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       }
     }, [skip]);
   
-    useEffect(() => {
-      return () => {
-        videoRefs.current.forEach(async (videoRef) => {
-          if (videoRef) {
-            await videoRef.pauseAsync();
-            await videoRef.unloadAsync();
-          }
-        });
-      };
-    }, []);
   
     const renderItem = ({ item, index }: { index: number, item: SocialPost}) => {
       if(item.is_compressing) {
@@ -117,15 +108,10 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
   
       return (
         <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]/reels', params: { id: item.post_id }})} className="flex flex-col gap-2">
-           <Video
-            ref={ref => (videoRefs.current[index] = ref)} 
-            source={{ uri: item?.file?.file}}
+          <Image
+            source={{ uri: replaceMediaUrl(item?.file?.file) }}
             style={styles.image}
-            shouldPlay={false}
-            isLooping={false}
-            isMuted={true} 
-            useNativeControls={false}
-            resizeMode={ResizeMode.COVER}
+            resizeMode="cover"
           />
           <LinearGradient
             colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
@@ -185,7 +171,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       initialNumToRender={10}
       maxToRenderPerBatch={10}
       windowSize={5}
-      onViewableItemsChanged={onViewableItemsChanged}
+      // onViewableItemsChanged={onViewableItemsChanged}
       viewabilityConfig={{
         itemVisiblePercentThreshold: 50,
       }}

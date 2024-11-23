@@ -1,47 +1,25 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import Logo from '@/assets/icons/logo.svg';
-import Coin from '@/assets/icons/coin.svg';
 import Bell from '@/assets/icons/bell.svg';
 import MenuBurger from '@/assets/icons/menu-burger.svg';
 import { useNavigation, useRouter } from "expo-router";
 import { DrawerActions } from "@react-navigation/native";
-import { getNotificationCount } from "@/api/social/notification/get-notification-count";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useNotificationContext } from "@/hooks/use-notification";
 
 
 export function Header() {
   const [loading, setLoading] = useState(false);
-  const [notificationCount, setNotificationCount] = useState<number>(0);
   const navigation = useNavigation();
   const router = useRouter();
+  const { notificationCount, clearNotifications } = useNotificationContext();
+
   const toggleMenu = () => navigation.dispatch(DrawerActions.toggleDrawer());
-  const goToNotifications = () => router.push('/notifications');
-
-  const fetchNotificationCount = async () => {
-    try {
-      if (loading) return;
-
-      setLoading(true);
-      const data = await getNotificationCount();
-      setNotificationCount(data.notification_count);    
-
-    } catch (error) {
-      console.error("Erro ao buscar as notificações: ", error);
-
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchNotificationCount();
-
-    const interval = setInterval(() => {
-      fetchNotificationCount();
-    },5 * 60 * 1000);
-
-    return () => clearInterval(interval); 
-  }, []);
+  
+  const goToNotifications = () => {
+    clearNotifications();
+    router.push('/notifications');
+  }
   
   return (
     <View className="flex flex-row justify-between items-center h-[72px] px-6 border-b-[1px] border-black-80">
