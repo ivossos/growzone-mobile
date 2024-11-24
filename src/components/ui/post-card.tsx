@@ -58,7 +58,7 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
   };
 
   return (
-    <View className="flex gap-6 m-6">
+    <View className="flex gap-6 mx-6 my-3">
       <View className="flex flex-row items-center justify-between gap-2 w-full">
         <TouchableOpacity
           className="flex flex-row items-center gap-2"
@@ -92,7 +92,7 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
       <MediaSlider items={post.files} />
 
       <View className="flex flex-col gap-2">
-        <View className="flex flex-row items-center gap-3 mt-2">
+        <View className="flex flex-row items-center gap-3">
           {isLoadingLiked ? (
             <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
           ) : (
