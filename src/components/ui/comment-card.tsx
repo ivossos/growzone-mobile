@@ -71,7 +71,7 @@ export default function CommentCard({ comment }: Props) {
           <View className='h-auto w-[1px] bg-black-80 mx-auto' />
         </View>
 
-        <View className='flex flex-col'>
+        <View className='flex flex-col flex-1'>
           <Text className="text-start text-sm text-brand-grey font-normal max-w-full">
             {comment.content}
           </Text>

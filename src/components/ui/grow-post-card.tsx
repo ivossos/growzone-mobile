@@ -168,7 +168,7 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
 
         {post.comment_count > 0 && post.comment_count > comments.length && (
           <TouchableOpacity
-            className="flex flex-row items-end gap-1 pt-6 mb-6 bg-black-100"
+            className="flex flex-row items-end gap-1 pt-3 mb-3 bg-black-100"
             onPress={() => openBottomSheet({ type: "comment", id: post.post_id })}
           >
             <Text className="text-base text-brand-grey font-semibold">

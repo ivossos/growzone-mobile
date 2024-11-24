@@ -130,18 +130,20 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
         {post.description && (
           <>
             <Text
-              className="flex-wrap w-full text-start text-ellipsis text-base text-brand-grey font-normal"
+              className="text-start text-base text-brand-grey font-normal"
               numberOfLines={isExpanded ? undefined : 3}
               ellipsizeMode="tail"
             >
               {post.description}
             </Text>
-            {post.description.length > MAX_DESCRIPTION_LENGTH && (
-              <TouchableOpacity onPress={() => setIsExpanded((prev) => !prev)}>
-                <Text className="text-base text-primary font-semibold">
-                  {isExpanded ? "ver menos" : "continuar lendo"}
-                </Text>
-              </TouchableOpacity>
+            {post.description.split(/\s+/).length > 10 && (
+            <TouchableOpacity
+              onPress={() => setIsExpanded((prev) => !prev)}
+            >
+              <Text className="text-sm text-primary font-semibold">
+                {isExpanded ? "ver menos" : "continuar lendo"}
+            </Text>
+          </TouchableOpacity>
             )}
           </>
         )}
@@ -156,7 +158,7 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
 
         {post.comment_count > 0 && post.comment_count > comments.length && (
           <TouchableOpacity
-            className="flex flex-row items-end gap-1 pt-6 mb-6 bg-black-100"
+            className="flex flex-row items-end gap-1 pt-3 mb-3 bg-black-100"
             onPress={() => openBottomSheet({ type: "comment", id: post.post_id })}
           >
             <Text className="text-base text-brand-grey font-semibold">
