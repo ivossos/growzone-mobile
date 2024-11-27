@@ -1,5 +1,5 @@
 import { useState, useEffect, Fragment, useRef, useCallback } from 'react';
-import { View, RefreshControl, FlatList, ActivityIndicator, Text } from 'react-native';
+import { View, RefreshControl, FlatList, ActivityIndicator, Text, ViewabilityConfigCallbackPair } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/ui/header';
@@ -15,6 +15,7 @@ import { getTopContributors } from '@/api/social/contributor /get-top-contributo
 import ContributorCard from '@/components/ui/contributor-card';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useScrollToTop } from '@/context/scroll-top-context';
+import { useActivePostHome } from '@/hooks/use-active-post-home';
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -28,6 +29,7 @@ export default function HomeScreen() {
   const { setFlatListRef } = useScrollToTop();
 
   const { refresh } = useLocalSearchParams();
+  const { activePostId, handlePostChange } = useActivePostHome();
 
   const fetchPostsData = async (skipValue: number, limitValue: number) => {
     try {
@@ -85,7 +87,7 @@ export default function HomeScreen() {
     } else {
       return <GrowPostCard post={item.post as GrowPostDetail} />;
     }
-  }, []);
+  }, [activePostId]);
 
   useEffect(() => {
     if (hasMorePosts) {
@@ -162,6 +164,18 @@ export default function HomeScreen() {
   
     return <View className="bg-black-100 h-full" />;
   };
+
+  const viewabilityConfigCallbackPairs = useRef<ViewabilityConfigCallbackPair[]>([
+    {
+      viewabilityConfig: { itemVisiblePercentThreshold: 80 },
+      onViewableItemsChanged: ({ viewableItems }) => {
+        if (viewableItems?.length > 0 && viewableItems[0].isViewable &&
+          activePostId !== viewableItems[0].item.post.post_id) {
+          handlePostChange(viewableItems[0].item.post.post_id);
+        }
+      },
+    },
+  ]);
   
 
   return (
@@ -170,6 +184,7 @@ export default function HomeScreen() {
         <FlatList
           ref={setFlatListRef}
           className="bg-black-100"
+          contentContainerClassName="gap-4"
           data={posts}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => `key-${item.post.post_id.toString()}`}
@@ -179,17 +194,18 @@ export default function HomeScreen() {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
+          viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
           onEndReached={loadMorePosts}
-          onEndReachedThreshold={0.1}
+          onEndReachedThreshold={0.5}
           ListFooterComponent={loadingMore ? (
             <View className="flex flex-row justify-center items-center py-4">
               <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
             </View>
           ) : null}
 
-          initialNumToRender={10}
-          maxToRenderPerBatch={10}
-          windowSize={5}
+          initialNumToRender={3}
+          maxToRenderPerBatch={5} 
+          windowSize={10}
         />
       </SafeAreaView>
       <StatusBar backgroundColor={colors.black[100]} style="light" />

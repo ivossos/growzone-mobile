@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { ChevronRight, EllipsisIcon } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
@@ -32,6 +32,10 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const { openBottomSheet } = useBottomSheetContext();
+
+  const handleToggleDescription = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+  }, []);
 
   const handleLike = async () => {
     try {
@@ -89,7 +93,7 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
         </View>
       </View>
 
-      <MediaSlider items={post.files} />
+      <MediaSlider items={post.files} postId={post.post_id} />
 
       <View className="flex flex-col gap-2">
         <View className="flex flex-row items-center gap-3">
@@ -138,7 +142,7 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
             </Text>
             {post.description.split(/\s+/).length > 10 && (
             <TouchableOpacity
-              onPress={() => setIsExpanded((prev) => !prev)}
+              onPress={handleToggleDescription}
             >
               <Text className="text-sm text-primary font-semibold">
                 {isExpanded ? "ver menos" : "continuar lendo"}

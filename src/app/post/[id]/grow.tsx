@@ -5,6 +5,7 @@ import { getPost } from "@/api/social/post/get-post";
 import { getPostLikes } from "@/api/social/post/like/get-likes";
 import GrowPostCard from "@/components/ui/grow-post-card";
 import PostCard from "@/components/ui/post-card";
+import { useActivePostHome } from "@/hooks/use-active-post-home";
 import { colors } from "@/styles/colors";
 import { useRoute } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -24,12 +25,14 @@ export default function Post() {
   const [post, setPost] = useState<GrowPostDetail>();
   const [comments, setComments] = useState<Comment[]>([]);
   const [likes, setLikes] = useState<PostLike[]>([]);
+  const { handlePostChange } = useActivePostHome();
 
   const fetchPost = async () => {
     try {
       setIsLoadingPost(true);
       const data = await getGrowPost(id);
       setPost(data);
+      handlePostChange(data.post_id);
     } catch (error) {
       Toast.show({
         type: 'error',

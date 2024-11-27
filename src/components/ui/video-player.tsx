@@ -1,128 +1,100 @@
-import React, { useState, useRef, useEffect, memo } from 'react';
+import React, { useState, useRef, useEffect, memo, useCallback } from 'react';
 import { View, Pressable, Image, ActivityIndicator, StyleSheet } from 'react-native';
-import { AVPlaybackStatus, ResizeMode, Video } from 'expo-av';
+import { ResizeMode, Video } from 'expo-av';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { replaceMediaUrl } from '@/lib/utils';
+import { useActivePostHome } from '@/hooks/use-active-post-home';
 
-const VideoPlayer = ({ source }: { source: string }) => {
-  const videoRef = useRef<Video>(null);
-  const [status, setStatus] = useState<AVPlaybackStatus>();
-  const [isThumbnailVisible, setIsThumbnailVisible] = useState(true);
+const VideoPlayer = ({ source, postId, isActive }: { source: string, postId: number, isActive: boolean }) => {
+  const video = useRef<Video>(null);
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const { activePostId } = useActivePostHome();
 
-  const isBuffering = status?.isLoaded && status.isBuffering;
+  const handlePlaybackStatus = (status) => {
+    setIsPlaying(status.isPlaying);
+    if (status.didJustFinish && video.current) {
+      video.current.playFromPositionAsync(0);
+    }
+  };
+
+  const managePlayback = useCallback(async () => {
+    if (!video.current) return;
+  
+    try {
+      if (isActive && activePostId === postId) {
+        const status = await video.current.getStatusAsync();
+        if (!status.isLoaded) {
+          await video.current.loadAsync({ uri: source }, { shouldPlay: true });
+        } else {
+          await video.current.playAsync();
+        }
+      } else {
+        await video.current.pauseAsync();
+        await video.current.unloadAsync();
+        setIsVideoLoaded(false);
+      }
+    } catch (error) {
+      console.error("Erro ao gerenciar reprodução:", error);
+    }
+  }, [isActive, activePostId, postId, source]);
 
   useEffect(() => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current
-          .playAsync()
-          .catch((error) => console.error("Erro ao iniciar o vídeo:", error));
-      } else {
-        videoRef.current
-          .pauseAsync()
-          .catch((error) => console.error("Erro ao pausar o vídeo:", error));
-      }
-    }
-  }, [isPlaying]);
+    managePlayback();
+  }, [managePlayback]);
 
-  const handlePlayPause = () => {
-    setIsPlaying((prev) => !prev);
-    setIsThumbnailVisible(false);
-  };
-
-  const handleReadyForDisplay = () => {
-    setIsThumbnailVisible(false); // Oculta a thumbnail quando o vídeo estiver pronto.
-  };
-
-  const handlePlaybackStatusUpdate = (status: AVPlaybackStatus) => {
-    setStatus(status);
-    if (status?.didJustFinish) {
-      setIsPlaying(false);
-      setIsThumbnailVisible(true); // Exibe a thumbnail novamente após o término do vídeo.
+  const onPress = async () => {
+    if (!video.current) return;
+    if (isPlaying) {
+      await video.current.pauseAsync();
+    } else {
+      await video.current.playAsync();
     }
   };
-
-  if (!source) return null;
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={handlePlayPause} style={styles.content}>
-        {isThumbnailVisible && (
+      <Pressable onPress={onPress} style={styles.content}>
+        {!isVideoLoaded && (
           <Image
             source={{ uri: replaceMediaUrl(source) }}
-            style={[styles.video]}
+            style={styles.video}
             resizeMode="cover"
           />
         )}
         <Video
-          ref={videoRef}
-          style={[styles.video, isThumbnailVisible ? { display: 'none' } : {}]}
+          ref={video}
+          style={[styles.video, !isVideoLoaded && { opacity: 0 }]}
           source={{ uri: source }}
           resizeMode={ResizeMode.COVER}
-          onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
-          onReadyForDisplay={handleReadyForDisplay}
-          shouldPlay={isPlaying}
-          isLooping={false}
-          useNativeControls={false}
-          onError={(error) => console.error("Erro no Video Player:", error)}
+          onLoadStart={() => setIsVideoLoaded(false)}
+          onLoad={() => setIsVideoLoaded(true)}
+          onPlaybackStatusUpdate={handlePlaybackStatus}
+          isLooping
+          isMuted={false}
+          onError={(error) => console.log('Playback Error:', error)}
         />
-        {!isPlaying && !isBuffering && (
+        {!isPlaying && (
           <>
             <LinearGradient
-              colors={["transparent", "rgba(0,0,0,0.8)"]}
-              style={[StyleSheet.absoluteFillObject, { borderRadius: 16 }]}
+              colors={['transparent', 'rgba(0,0,0,0.8)']}
+              style={StyleSheet.absoluteFillObject}
             />
-            <Ionicons
-              style={styles.playIcon}
-              name="play"
-              size={70}
-              color="rgba(255, 255, 255, 0.6)"
-            />
+            <Ionicons name="play" size={70} color="rgba(255,255,255,0.6)" style={styles.playIcon} />
           </>
         )}
-        {isBuffering && (
-          <>
-            <LinearGradient
-              colors={["transparent", "rgba(0,0,0,0.8)"]}
-              style={[StyleSheet.absoluteFillObject]}
-            />
-            <ActivityIndicator
-              style={styles.bufferingIndicator}
-              size="large"
-              color="#FFFFFF"
-            />
-          </>
-        )}
+        {isPlaying && !isVideoLoaded && <ActivityIndicator size="large" color="#FFF" />}
       </Pressable>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    height: 350,
-    borderRadius: 16,
-  },
-  video: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 16,
-  },
-  content: {
-    height: '100%',
-  },
-  playIcon: {
-    position: "absolute",
-    alignSelf: "center",
-    top: "50%",
-  },
-  bufferingIndicator: {
-    position: "absolute",
-    alignSelf: "center",
-    top: "50%",
-  },
+  container: { height: 350, borderRadius: 16 },
+  video: { width: '100%', height: '100%', borderRadius: 16 },
+  content: { height: '100%' },
+  playIcon: { position: 'absolute', alignSelf: 'center', top: '50%' },
 });
 
 export default memo(VideoPlayer);

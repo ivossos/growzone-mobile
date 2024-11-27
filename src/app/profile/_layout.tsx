@@ -11,6 +11,7 @@ import ProfileBottomSheet from '@/components/ui/profile/bottom-sheet/profile-bot
 import ReportUserBottomSheet from '@/components/ui/profile/bottom-sheet/report-user-bottom-sheet';
 import BlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/block-user-bottom-sheet';
 import UnlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/unlock-user-bottom-sheet';
+import { ActivePostHomeContext, ActivePostHomeProvider } from '@/context/active-post-home-context';
 
 export default function Layout() {
   const reportSheetRef = useRef<BottomSheet>(null);
@@ -47,15 +48,17 @@ export default function Layout() {
 
   return (
     <BottomSheetProvider>
-      <Slot />
-      <CommentBottomSheet ref={commentSheetRef} />
-      <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
-      <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
-      <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>
-      <ReportUserBottomSheet ref={reportUserSheetRef} onClose={reportUserBottomSheet} />
-      <BlockUserBottomSheet ref={blockUserSheetRef} onClose={blockUserBottomSheet} />
-      <UnlockUserBottomSheet ref={unlockUserSheetRef} onClose={unlockUserBottomSheet} />
-      <StatusBar backgroundColor={colors.black[100]} style="light" />
+      <ActivePostHomeProvider>
+        <Slot />
+        <CommentBottomSheet ref={commentSheetRef} />
+        <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+        <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
+        <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>
+        <ReportUserBottomSheet ref={reportUserSheetRef} onClose={reportUserBottomSheet} />
+        <BlockUserBottomSheet ref={blockUserSheetRef} onClose={blockUserBottomSheet} />
+        <UnlockUserBottomSheet ref={unlockUserSheetRef} onClose={unlockUserBottomSheet} />
+        <StatusBar backgroundColor={colors.black[100]} style="light" />
+      </ActivePostHomeProvider>
     </BottomSheetProvider>
   )
 }

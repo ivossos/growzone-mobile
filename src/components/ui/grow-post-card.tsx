@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { CalendarDaysIcon, ChevronRight, EllipsisIcon } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
@@ -32,6 +32,10 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { openBottomSheet } = useBottomSheetContext();
   const { user } = useAuth();
+
+  const handleToggleDescription = useCallback(() => {
+    setIsExpanded((prev) => !prev);
+  }, []);
 
   const handleLike = async () => {
     try {
@@ -90,7 +94,7 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
       </View>
 
       <View className="relative">
-        <MediaSlider items={post.files} />
+        <MediaSlider items={post.files} postId={post.post_id} />
         <View className="absolute bottom-4 left-2 border border-black-80 bg-white px-2 py-1 rounded-full">
           <Text className="text-black text-base ">{post.phase.name}</Text>
         </View>
@@ -147,8 +151,8 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
             >
               {post.description}
             </Text>
-            {post.description.length > MAX_DESCRIPTION_LENGTH && (
-              <TouchableOpacity onPress={() => setIsExpanded((prev) => !prev)}>
+            {post.description.split(/\s+/).length > 50 && (
+              <TouchableOpacity onPress={handleToggleDescription}>
                 <Text className="text-base text-primary font-semibold">
                   {isExpanded ? "ver menos" : "continuar lendo"}
                 </Text>

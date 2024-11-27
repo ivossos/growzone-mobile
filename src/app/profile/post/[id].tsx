@@ -3,6 +3,7 @@ import { getPostComments } from "@/api/social/post/comment/get-comments";
 import { getPost } from "@/api/social/post/get-post";
 import { getPostLikes } from "@/api/social/post/like/get-likes";
 import PostCard from "@/components/ui/post-card";
+import { useActivePostHome } from "@/hooks/use-active-post-home";
 import { colors } from "@/styles/colors";
 import { useNavigationState, useRoute } from "@react-navigation/native";
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
@@ -24,13 +25,14 @@ export default function Post() {
   const [post, setPost] = useState<PostDetail>();
   const [comments, setComments] = useState<Comment[]>([]);
   const [likes, setLikes] = useState<PostLike[]>([]);
-  const navigation = useNavigation();
+  const { handlePostChange } = useActivePostHome();
 
   const fetchPost = async () => {
     try {
       setIsLoadingPost(true);
       const data = await getPost(id);
       setPost(data);
+      handlePostChange(data.post_id);
     } catch (error) {
       Toast.show({
         type: 'error',
