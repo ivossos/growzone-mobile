@@ -19,7 +19,7 @@ import { StatusBar } from 'expo-status-bar';
 import ProfileBottomSheet from '@/components/ui/profile/bottom-sheet/profile-bottom-sheet';
 import ReportUserBottomSheet from '@/components/ui/profile/bottom-sheet/report-user-bottom-sheet';
 import BlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/block-user-bottom-sheet';
-import { BanIcon } from 'lucide-react-native';
+import { BanIcon, UserRoundXIcon } from 'lucide-react-native';
 import UnlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/unlock-user-bottom-sheet';
 import { ScrollToTopProvider } from '@/context/scroll-top-context';
 import { NotificationProvider } from '@/context/notification-context';
@@ -174,6 +174,17 @@ export default function DrawerLayout() {
                   {
                     title: 'Usuários bloqueados',
                     iconName: BanIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              />
+
+              <Drawer.Screen
+                name="delete-account"
+                options={
+                  {
+                    title: 'Excluir conta',
+                    iconName: UserRoundXIcon,
                     isDivider: true,
                   } as CustomOptions
                 }

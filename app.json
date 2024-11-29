@@ -2,7 +2,7 @@
   "expo": {
     "name": "Growzone",
     "slug": "growzone",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "growzone",
@@ -14,12 +14,39 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.growzone.growzonesocial"
+      "bundleIdentifier": "com.growzone.growzonesocial",
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
+        "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
+      },
+      "locales": {
+        "pt-BR": {
+          "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
+          "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
+        },
+        "es": {
+          "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
+          "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para capturar fotos y videos."
+        },
+        "en": {
+          "NSPhotoLibraryUsageDescription": "We need access to your photo library to select photos and videos.",
+          "NSCameraUsageDescription": "We need access to your camera to capture photos and videos."
+        }
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "backgroundColor": "#000000",
+        "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"],
+        "permissions": {
+          "READ_EXTERNAL_STORAGE": {
+            "message": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos."
+          },
+          "CAMERA": {
+            "message": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
+          }
+        }
       },
       "package": "com.growzone.growzonesocial"
     },
