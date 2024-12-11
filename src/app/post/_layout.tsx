@@ -12,6 +12,8 @@ import ReportUserBottomSheet from '@/components/ui/profile/bottom-sheet/report-u
 import BlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/block-user-bottom-sheet';
 import UnlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/unlock-user-bottom-sheet';
 import { ActivePostHomeProvider } from '@/context/active-post-home-context';
+import PostBottomSheet from '@/components/ui/post/post-bottom-sheet';
+import DeletePostBottomSheet from '@/components/ui/post/delete-post-bottom-sheet';
 
 export default function Layout() {
   const reportSheetRef = useRef<BottomSheet>(null);
@@ -21,6 +23,8 @@ export default function Layout() {
   const reportUserSheetRef = useRef<BottomSheet>(null);
   const blockUserSheetRef = useRef<BottomSheet>(null);
   const unlockUserSheetRef = useRef<BottomSheet>(null);
+  const postSheetRef = useRef<BottomSheet>(null);
+  const deletePostSheetRef = useRef<BottomSheet>(null);
 
   const closeReportBottomSheet = () => {
     reportSheetRef.current?.close()
@@ -46,6 +50,16 @@ export default function Layout() {
     unlockUserSheetRef.current?.close()
   };
 
+  const closePostBottomSheet = () => {
+    postSheetRef.current?.close()
+  };
+
+  const closeDeletePostBottomSheet = () => {
+    deletePostSheetRef.current?.close()
+  };
+
+
+
   return (
     <BottomSheetProvider>
       <ActivePostHomeProvider>
@@ -57,6 +71,8 @@ export default function Layout() {
         <ReportUserBottomSheet ref={reportUserSheetRef} onClose={reportUserBottomSheet} />
         <BlockUserBottomSheet ref={blockUserSheetRef} onClose={blockUserBottomSheet} />
         <UnlockUserBottomSheet ref={unlockUserSheetRef} onClose={unlockUserBottomSheet} />
+        <PostBottomSheet ref={postSheetRef} onClose={closePostBottomSheet} />
+        <DeletePostBottomSheet ref={deletePostSheetRef} onClose={closeDeletePostBottomSheet} />
         <StatusBar backgroundColor={colors.black[100]} style="light" />
       </ActivePostHomeProvider>
     </BottomSheetProvider>

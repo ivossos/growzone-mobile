@@ -3,11 +3,10 @@ import { getUserGrowPosts } from "@/api/social/post/get-user-grow-posts";
 import { useAuth } from "@/hooks/use-auth";
 import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
-import { Video } from "expo-av";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { uniqBy } from "lodash";
 import { CalendarDaysIcon, Eye } from "lucide-react-native";
-import React, { forwardRef, memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { forwardRef, memo } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -31,63 +30,46 @@ type Props = Omit<FlatListProps<GrowPost>, "renderItem"> & {
 
 const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
   ({ userId, ...rest }, ref) => {
-    const [refreshing, setRefreshing] = useState(false);
-    const [plants, setPlants] = useState<GrowPost[]>([]);
-    const [skip, setSkip] = useState(0);
-    const [limit, setLimit] = useState(10);
-    const [hasMorePosts, setHasMorePosts] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
     const router = useRouter();
     const { user } = useAuth();
-  
+    const limit = 10;
 
-    const fetchPostsData = async (skipValue: number, limitValue: number) => {
-      try {
-        if (!userId || loadingMore || refreshing) return;
-  
-        setLoadingMore(true);
-        const data = await getUserGrowPosts({ id: userId, skip: skipValue, limit: limitValue });
-        if (data.length < limit) {
-          setHasMorePosts(false);
-        }
-  
-        setPlants((prevPosts) => uniqBy([...prevPosts, ...data], 'post_id'));
-      } catch (error) {
-        console.log('Erro ao buscar as postagens: ', error);
-        Toast.show({
-          type: 'error',
-          text1: 'Opss',
-          text2: 'Aconteceu um erro ao buscar as Plantas desse perfil. Tente novamente mais tarde.'
+    const {
+      data,
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
+      isLoading,
+      refetch,
+      error
+    } = useInfiniteQuery({
+      queryKey: ['profile-post-grow', userId.toString()],
+      queryFn: async ({ pageParam = 0 }) => {
+        return await getUserGrowPosts({
+          id: userId,
+          skip: pageParam,
+          limit,
         });
-      } finally {
-        setLoadingMore(false);
-        setRefreshing(false);
-      }
-    };
-  
-    const onRefresh = async () => {
-      setRefreshing(true);
-      setSkip(0);
-      setHasMorePosts(true);
-      setPlants([]);
-      await fetchPostsData(0, limit);
-    };
-  
-    const loadMorePosts = () => {
-      if (!loadingMore && hasMorePosts) {
-        setSkip((prevSkip) => prevSkip + limit);
-      }
-    };
-  
-    useEffect(() => {
-      if (hasMorePosts) {
-        fetchPostsData(skip, limit);
-      }
-    }, [skip]);
+      },
+      enabled: !!userId,
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < limit) return undefined;
+        return allPages.length * limit;
+      },
+      initialPageParam: 0,
+    });
 
-    useEffect(() => {
-      fetchPostsData(skip, limit);
-    }, []);
+    if(error) {
+      console.error("Erro ao buscar postagens:", error);
+      Toast.show({
+        type: "error",
+        text1: "Opss",
+        text2: "Aconteceu um erro ao buscar as postagens desse perfil. Tente novamente mais tarde.",
+      });
+      return null;
+    }
+
+    const plants = data?.pages.flat() ?? [];
   
     const renderItem = ({ item, index }: { index: number, item: GrowPost}) => {
       
@@ -192,7 +174,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
       numColumns={numColumns}
       contentContainerClassName="bg-black-100 mt-2"
       columnWrapperClassName="flex gap-6 px-4 w-full"
-      onEndReached={loadMorePosts}
+      onEndReached={() => hasNextPage && fetchNextPage()}
       onEndReachedThreshold={0.5} 
       showsVerticalScrollIndicator={false}
       initialNumToRender={10}
@@ -205,7 +187,9 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
       // refreshControl={
       //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       // }
-      ListFooterComponent={loadingMore ? (
+      refreshing={isLoading}
+      onRefresh={refetch}
+      ListFooterComponent={isFetchingNextPage ? (
         <View className="flex flex-row justify-center items-center py-4">
           <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
         </View>

@@ -4,6 +4,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { colors } from '@/styles/colors';
 import debounce from 'lodash/debounce';
 import { getPhases } from '@/api/social/phase';
+import { uniqBy } from 'lodash';
 
 interface Phase {
   name: string;
@@ -14,13 +15,14 @@ interface Props {
   title?: string;
   placeholder: string;
   error?: string;
+  initialValue?: { id?: number, label?: string },
   handleChangeText: (text: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
 }
 
-const SelectPhaseDropdown = ({ title, placeholder, error, handleChangeText, onBlur = () => {}, onFocus = () => {} }: Props) => {
-  const [value, setValue] = useState(null);
+const SelectPhaseDropdown = ({ title, placeholder, error, handleChangeText, initialValue, onBlur = () => {}, onFocus = () => {} }: Props) => {
+  const [value, setValue] = useState<number | null>(null);
   const [isFocus, setIsFocus] = useState(false);
   const [data, setData] = useState<Phase[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,6 +50,33 @@ const SelectPhaseDropdown = ({ title, placeholder, error, handleChangeText, onBl
     setSkip(0);
     fetchSuggestions(searchQuery);
   }, [searchQuery]);
+
+  useEffect(() => {
+    const loadInitialValue = async () => {
+      if (!initialValue || !initialValue.id || value === initialValue.id) return;
+  
+      if (data.some(item => item.id === initialValue.id)) return;
+  
+      try {
+        setIsLoading(true);
+        const genetics = await getPhases({ query: initialValue.label });
+        const genetic = genetics.find(item => item.id === initialValue.id);
+  
+        if (genetic) {
+          setData(prev => 
+            uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], 'id')
+          );
+          setValue(initialValue.id);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar o item inicial:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    loadInitialValue();
+  }, [initialValue?.id, value, data]);
 
   const loadMoreData = () => {
     if (hasMore && !isLoading) {

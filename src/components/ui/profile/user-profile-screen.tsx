@@ -50,6 +50,9 @@ import ConnectionPostList from "@/components/ui/profile/connection-post-list";
 import ConnectionReelstList from "@/components/ui/profile/connection-reels-list"
 import ConnectionGrowPostList from "@/components/ui/profile/connection-grow-post-list";
 import { EditProfileButton } from "@/components/ui/profile/edit-profile-button";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/react-query";
+import Loader from "../loader";
 
 const TAB_BAR_HEIGHT = 48;
 const HEADER_HEIGHT = 0;
@@ -74,10 +77,7 @@ interface Props {
 const UserProfileScreen = ({ userId, Header }: Props) => {
   
   const navigation = useNavigation();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingFollow, setIsLoadingFollow] = useState(false);
-  const [follow, setFollow] = useState<Follow | undefined>(undefined);
-  const [profile, setProfile] = useState<UserProfile>({} as UserProfile);
+  // const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { openBottomSheet } = useBottomSheetContext();
 
@@ -280,81 +280,97 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   );
   //_________________________________________________________________
 
-  const fetchProfileData = async () => {
-    setIsLoading(true);
-    try {
-      const [profileData, followData] = await Promise.all([
-        getProfileUser(userId),
-        isFollower(userId),
-      ]);
-      setProfile(profileData);
-      setFollow(followData);
-    } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Opss",
-        text2: "Aconteceu um erro ao carregar as informações desse perfil. Tente novamente mais tarde.",
-      });
-      router.push("/home");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: profile, isLoading: isLoadingProfile, error } = useQuery({
+    queryKey: ["profile", userId],
+    queryFn: () => getProfileUser(userId),
+    enabled: !!userId,
+  });
+
+  const { data: follow, isLoading: isLoadingFollow, error: errorFoller } = useQuery({
+    queryKey: ["follow", userId],
+    queryFn: () => isFollower(userId),
+    enabled: !!userId,
+  });
+
+  
+  if(error || errorFoller) {
+    console.error('erro on get user ', error || errorFoller)
+    Toast.show({
+      type: "error",
+      text1: "Opss",
+      text2: "Erro ao carregar perfil. Tente novamente mais tarde.",
+    });
+    router.push("/home");
+  }
 
   const handleEditProfile = () => {
     router.push({ pathname: "/edit-user-profile" });
   };
 
-  const handleReviewsPress = () => {
-    openBottomSheet({ type: "reviews-profile", userId: profile.info.id });
+  const handleReviewsPress = (id: number) => {
+    openBottomSheet({ type: "reviews-profile", userId: id});
   };
 
-  const handleRateProfilePress = () => {
-    // openBottomSheet({
-    //   type: "rate-profile",
-    //   userId: profile.info.id,
-    //   callbackFn: fetchProfileData,
-    // });
-
+  const handleRateProfilePress = (id: number) => {
     openBottomSheet({
       type: "profile",
-      userId: profile.info.id,
-      callbackFn: fetchProfileData,
+      userId: id,
+      callbackFn: async () => queryClient.invalidateQueries({ queryKey: ["profile", userId] })
     });
   };
 
-  const handleFollowPress = async () => {
-    if (isLoadingFollow) return;
-    setIsLoadingFollow(true);
+  const { mutateAsync: deleteFollowFn, isPending: isDeleteFollowLoading } =
+    useMutation({
+      mutationFn: deleteFollow,
+      async onSuccess() {
+      },
+      async onError(error) {
+        console.error("erro on delete Follow", error);
+        Toast.show({
+          type: "error",
+          text1: "Opss",
+          text2: "Aconteceu um erro ao realizar essa ação. Tente novamente mais tarde.",
+        });
+      },
+    })
+  const { mutateAsync: createFollowFn, isPending: isCreateFollowLoading } =
+    useMutation({
+      mutationFn: createFollow,
+      async onSuccess() {
+      },
+      async onError(error) {
+        console.error("erro on create Follow", error);
+        Toast.show({
+          type: "error",
+          text1: "Opss",
+          text2: "Aconteceu um erro ao realizar essa ação. Tente novamente mais tarde.",
+        });
+      },
+    })
+
+  const handleFollowAction = async (isFollowing: boolean, id: number) => {
     try {
-      if (follow?.is_active) {
-        await deleteFollow(profile.info.id);
-        setFollow(undefined);
+      if (isFollowing) {
+        await deleteFollowFn(id);
       } else {
-        const newFollow = await createFollow(profile.info.id);
-        setFollow(newFollow);
+        await createFollowFn(id);
       }
-      await fetchProfileData();
+
+      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      queryClient.invalidateQueries({ queryKey: ["follow", userId] });
     } catch (error) {
-      console.error("erro on handleFollower", error);
-      Toast.show({
-        type: "error",
-        text1: "Opss",
-        text2: "Aconteceu um erro ao realizar essa ação. Tente novamente mais tarde.",
-      });
-    } finally {
-      setIsLoadingFollow(false);
+      console.error("Erro na ação de follow", error);
     }
   };
 
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
-
+  if(isLoadingProfile) {
+    return <Loader isLoading />
+  }
 
   if (!profile) return null;
 
   const { cover, image, info, metric } = profile;
+
  
   return (
     <View style={styles.container}>
@@ -380,13 +396,17 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
           socialCount={metric?.social_count}
           reelCount={metric?.reel_count}
           averageReview={metric?.average_review}
-          onReviewsPress={handleReviewsPress}
+          onReviewsPress={() => handleReviewsPress(profile.info.id)}
         />}
         {user && user.id != userId && (
           <View className="flex flex-row gap-2 px-6 mt-6">
-            <FollowButton isFollowing={!!follow} isLoading={isLoadingFollow} onFollowPress={handleFollowPress} />
+            <FollowButton 
+              isFollowing={!!follow} 
+              isLoading={isLoadingFollow || isCreateFollowLoading || isDeleteFollowLoading} 
+              onFollowPress={() => handleFollowAction(!!follow?.is_active, profile.info.id)} 
+            />
             <TouchableOpacity
-              onPress={handleRateProfilePress}
+              onPress={() => handleRateProfilePress(profile.info.id)}
               style={{
                 alignItems: 'center',
                 justifyContent: 'center',

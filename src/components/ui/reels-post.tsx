@@ -341,6 +341,16 @@ const ReelsPost = ({ post, activePostId, resizeMode = ResizeMode.CONTAIN, isTab 
               </LinearGradient>
             </TouchableOpacity>
           </View>}
+          {user.id === post.user.id && <View className="flex flex-col items-center justify-center gap-2">
+            <TouchableOpacity onPress={() => openBottomSheet({ type: "reel-post-bottom-sheet", id: post.post_id })}>
+              <LinearGradient
+                colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
+                style={styles.blurContainer}
+              >
+                <EllipsisIcon size={20} color={colors.brand.white} />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>}
         </View>
       </View>
     </View>

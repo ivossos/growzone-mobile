@@ -4,7 +4,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import { colors } from '@/styles/colors';
 import debounce from 'lodash/debounce';
 import { getGenetics } from '@/api/social/genetic';
-import { find } from 'lodash';
+import { find, uniqBy } from 'lodash';
 
 interface Genetic {
   name: string;
@@ -15,13 +15,14 @@ interface SelectGeneticDropdownProps {
   title?: string;
   placeholder: string;
   error?: string;
+  initialValue?: { id?: number, label?: string },
   handleChangeText: (text: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
 }
 
-const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, onBlur = () => {}, onFocus = () => {} }: SelectGeneticDropdownProps) => {
-  const [value, setValue] = useState(null);
+const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, initialValue, onBlur = () => {}, onFocus = () => {} }: SelectGeneticDropdownProps) => {
+  const [value, setValue] = useState<number | null>(null);
   const [isFocus, setIsFocus] = useState(false);
   const [data, setData] = useState<Genetic[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +59,34 @@ const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, on
     setSkip(0);
     fetchSuggestions(searchQuery);
   }, [searchQuery]);
+
+  useEffect(() => {
+    const loadInitialValue = async () => {
+      if (!initialValue || !initialValue.id || value === initialValue.id) return;
+  
+      if (data.some(item => item.id === initialValue.id)) return;
+  
+      try {
+        setIsLoading(true);
+        const genetics = await getGenetics({ query: initialValue.label });
+        const genetic = genetics.find(item => item.id === initialValue.id);
+  
+        if (genetic) {
+          setData(prev => 
+            uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], 'id')
+          );
+          setValue(initialValue.id);
+        }
+      } catch (error) {
+        console.error('Erro ao carregar o item inicial:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    loadInitialValue();
+  }, [initialValue?.id, value, data]);
+  
 
   const loadMoreData = () => {
     if (hasMore && !isLoading) {

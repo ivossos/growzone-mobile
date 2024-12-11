@@ -45,7 +45,7 @@ import SelectPhaseDropdown from "./select-phase-dropdown";
 import { FormFieldBottomSheetText } from "./form-field-bottom-sheet";
 
 export const GrowPostValidation = z.object({
-  day: z.string(),
+  day: z.string().min(1, "Adicione os dias desse cultivo"),
   genetic: z.object({
     id: z.number().nullable(),
   }).refine(data => {
@@ -91,7 +91,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
     const form = useForm({
       resolver: zodResolver(GrowPostValidation),
       defaultValues: {
-        day: 10,
+        day: '10',
         genetic: { id: null },
         phase: { id: null },
       }
@@ -467,7 +467,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                           keyboardType="numeric"
                           otherStyles="w-full"
                           onBlur={onBlur}
-                          value={value.toString()}
+                          value={value}
                           handleChangeText={onChange}
                           error={fieldState.error?.message}
                         />

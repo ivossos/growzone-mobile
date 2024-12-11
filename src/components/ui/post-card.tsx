@@ -90,6 +90,12 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
           {user.id !== post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
             <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
           </TouchableOpacity>}
+
+          {user.id === post.user.id && (
+            <TouchableOpacity onPress={() => openBottomSheet({ type: "post-bottom-sheet", id: post.post_id })}>
+              <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

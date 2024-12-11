@@ -11,7 +11,7 @@ import { FeedAllPost, GrowPostDetail, PostDetail, UserDTO } from '@/api/@types/m
 import PostCard from '@/components/ui/post-card';
 import { getPosts } from '@/api/social/post/get-posts';
 import GrowPostCard from '@/components/ui/grow-post-card';
-import { getTopContributors } from '@/api/social/contributor /get-top-contributors';
+import { getTopContributors } from '@/api/social/contributor/get-top-contributors';
 import ContributorCard from '@/components/ui/contributor-card';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useScrollToTop } from '@/context/scroll-top-context';

@@ -25,13 +25,13 @@ import { searchGlobal } from "@/api/social/global-search/seach-global";
 import Toast from "react-native-toast-message";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
 import { getInitials } from "@/lib/utils";
-import { getTopContributors } from "@/api/social/contributor /get-top-contributors";
 import { deleteFollow } from "@/api/social/follow/delete-follow";
 import { createFollow } from "@/api/social/follow/create-follow";
 import { useAuth } from "@/hooks/use-auth";
 import { getTrendingWells } from "@/api/social/wells/get-trending-wells";
 import { getTrendingGrowPosts } from "@/api/social/post/get-trending-grow-posts";
 import { TrendingGrowCard } from "@/components/ui/trending-grow-card";
+import { getTopContributors } from "@/api/social/contributor/get-top-contributors";
 
 export default function SearchScreen() {
   const { user } = useAuth();
