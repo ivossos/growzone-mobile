@@ -37,10 +37,14 @@ export default function HomeScreen() {
 
       setLoadingMore(true);
       const data = await getPosts({ skip: skipValue, limit: limitValue });
-      if (data.length === 0) {
+      const postsFilter = data.filter((post) => {
+        return post.type !== 'reel'
+      })
+
+      if (postsFilter.length === 0) {
         setHasMorePosts(false);
       } else {
-        setPosts((prevPosts) => [...prevPosts, ...data]);
+        setPosts((prevPosts) => [...prevPosts, ...postsFilter]);
       }
     } catch (error) {
       console.error('Erro ao buscar as postagens: ', error);

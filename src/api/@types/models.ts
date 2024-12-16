@@ -345,7 +345,7 @@ export interface GrowPostDetail {
 }
 
 export interface FeedAllPost {
-  type: 'grow' | 'social'
+  type: 'grow' | 'social' | 'reel'
   post: GrowPostDetail | PostDetail
 }
 
