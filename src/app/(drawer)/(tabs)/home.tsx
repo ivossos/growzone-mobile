@@ -11,7 +11,7 @@ import { FeedAllPost, GrowPostDetail, PostDetail, UserDTO } from '@/api/@types/m
 import PostCard from '@/components/ui/post-card';
 import { getPosts } from '@/api/social/post/get-posts';
 import GrowPostCard from '@/components/ui/grow-post-card';
-import { getTopContributors } from '@/api/social/contributor /get-top-contributors';
+import { getTopContributors } from '@/api/social/contributor/get-top-contributors';
 import ContributorCard from '@/components/ui/contributor-card';
 import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useScrollToTop } from '@/context/scroll-top-context';
@@ -81,15 +81,35 @@ export default function HomeScreen() {
     await fetchPostsData(0, limit);
   };
 
-  const renderItem = useCallback(({ item }) => {
-    if (item.type === 'social') {
-      return <PostCard post={item.post as PostDetail} />;
-    } else {
-      return <GrowPostCard post={item.post as GrowPostDetail} />;
+  const loadComments = async () => {
+    setRefreshing(true);
+    setSkip(0);
+    setHasMorePosts(true);
+  
+    try {
+      const data = await getPosts({ skip: 0, limit });
+      setPosts(data);
+    } catch (error) {
+      console.error("Erro ao recarregar os comentários:", error);
+      Toast.show({
+        type: "error",
+        text1: "Ops!",
+        text2: "Erro ao recarregar os comentários. Tente novamente mais tarde.",
+      });
+    } finally {
+      setRefreshing(false);
     }
-  }, [activePostId]);
+  };
 
-  useEffect(() => {
+  const renderItem = useCallback(({ item }: any) => {    
+    if (item.type === 'social') {
+      return <PostCard loadComments={loadComments} post={item.post as PostDetail} />;
+    } else {
+      return <GrowPostCard loadComments={loadComments} post={item.post as GrowPostDetail} />;
+    }
+  }, [activePostId, posts]);
+
+  useEffect(() => {  
     if (hasMorePosts) {
       fetchPostsData(skip, limit);
     }
@@ -187,7 +207,7 @@ export default function HomeScreen() {
           contentContainerClassName="gap-4"
           data={posts}
           showsVerticalScrollIndicator={false}
-          keyExtractor={(item) => `key-${item.post.post_id.toString()}`}
+          keyExtractor={(item) => `key-${item.post.id}-${item.post.post_id}`}
           renderItem={renderItem}
           ListHeaderComponent={renderHeader}
           ListEmptyComponent={renderEmptyComponent}

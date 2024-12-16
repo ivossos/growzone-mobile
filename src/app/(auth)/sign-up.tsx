@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { View, Dimensions, TouchableOpacity, Image } from "react-native";
 import images from "@/constants/images";
 
@@ -8,15 +8,18 @@ import { ArrowLeft } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Progress } from "@/components/Progress";
 import { z } from "zod";
-import { Control, FormProvider, useForm, UseFormHandleSubmit } from "react-hook-form";
+import {
+  Control,
+  FormProvider,
+  useForm,
+  UseFormHandleSubmit,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import UsernameStep from "@/components/form/sign-up/username-step";
 import EmailStep from "@/components/form/sign-up/email-step";
 import CodeStep from "@/components/form/sign-up/code-step";
 import PasswordStep from "@/components/form/sign-up/password-step";
 import { router } from "expo-router";
-
-
 
 const signUpSchema = z
   .object({
@@ -28,9 +31,7 @@ const signUpSchema = z
         message: "Nome de usuário inválido.",
       }),
     // fieldType: z.enum(['email', 'phone']),
-    email: z
-      .string()
-      .email("Digite um e-mail válido"),
+    email: z.string().email("Digite um e-mail válido"),
     // phone: z
     //   .string()
     //   .optional(),
@@ -39,15 +40,19 @@ const signUpSchema = z
       .string()
       .min(6, "Senha fraca demais")
       .max(30, "Máximo é 30 caracteres")
-      .regex(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$!%&*])[A-Za-z\d@#$!%&*]+$/, {
-        message: "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.",
-      }),
+      .regex(
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@#$!%&*])[A-Za-z\d@#$!%&*]+$/,
+        {
+          message:
+            "A senha deve conter pelo menos uma letra maiúscula, uma minúscula, um número e um caractere especial.",
+        }
+      ),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "As senhas estão diferentes",
     path: ["confirmPassword"],
-  })
+  });
 //   .refine(data => {
 //     if (data.fieldType === 'email') return data.email !== undefined;
 //     if (data.fieldType === 'phone') return data.phone !== undefined;
@@ -65,7 +70,7 @@ export interface StepProps {
   control: Control<SignUpSchema>;
   handleSubmit: UseFormHandleSubmit<SignUpSchema>;
   onSubmit: () => void;
-  onNext: (nextStep?: 'email' | 'phone') => void;
+  onNext: (nextStep?: "email" | "phone") => void;
   onPrev?: () => void;
   isLoading: boolean;
   timer?: number;
@@ -73,10 +78,10 @@ export interface StepProps {
 }
 
 const initialSteps = [
-  { 
+  {
     progress: 20,
     Component: UsernameStep,
-    fields: ["username"] as FieldKeys[]
+    fields: ["username"] as FieldKeys[],
   },
   // {
   //   progress: 30,
@@ -86,24 +91,24 @@ const initialSteps = [
   {
     progress: 30,
     Component: EmailStep,
-    fields: ["email"] as FieldKeys[]
+    fields: ["email"] as FieldKeys[],
   },
   {
     progress: 70,
     Component: PasswordStep,
-    fields: ["password", "confirmPassword"] as FieldKeys[], 
+    fields: ["password", "confirmPassword"] as FieldKeys[],
   },
   {
     progress: 100,
     Component: CodeStep,
-    fields: ["code"] as FieldKeys[]
+    fields: ["code"] as FieldKeys[],
   },
 ];
 
 const emailStep = {
   progress: 40,
   Component: EmailStep,
-  fields: ["email"] as FieldKeys[]
+  fields: ["email"] as FieldKeys[],
 };
 
 // const phoneStep = {
@@ -131,10 +136,10 @@ const SignUp = () => {
   const [steps, setSteps] = useState(initialSteps);
   const { trigger, handleSubmit } = methods;
 
-  const onNext = async (nextStep?: 'email' | 'phone') => {
+  const onNext = async (nextStep?: "email" | "phone") => {
     const { fields } = steps[currentStep];
     const formData = methods.getValues();
-    
+
     if (fields.length > 0) {
       const isValid = await trigger(fields);
       if (!isValid) return;
@@ -154,19 +159,17 @@ const SignUp = () => {
     //   setCurrentStep((prev) => prev + 1);
     //   setProgress(steps[currentStep + 1]?.progress || 100);
     // }
-    
   };
 
   const onPrev = () => {
-
-    if(currentStep === 3) {
-      router.back()
-    } 
+    if (currentStep === 3) {
+      router.back();
+    }
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
       setProgress(steps[currentStep - 1]?.progress || 0);
     } else {
-      router.back()
+      router.back();
     }
   };
 
@@ -177,18 +180,25 @@ const SignUp = () => {
   const CurrentComponent = steps[currentStep].Component;
 
   return (
-    <SafeAreaView className="bg-black-100 h-full" style={{ flex: 1 }} edges={['top']}>
+    <SafeAreaView
+      className="bg-black-100 h-full"
+      style={{ flex: 1 }}
+      edges={["top"]}
+    >
       <View className="flex flex-row items-center justify-between bg-black-100 w-full px-6 min-h-14 border-b-[1px] border-black-80">
         <TouchableOpacity activeOpacity={0.7} onPress={onPrev}>
           <ArrowLeft width={24} height={24} color={colors.brand.white} />
         </TouchableOpacity>
         <Progress value={progress} className="max-h-1 max-w-20" />
       </View>
-      <KeyboardAwareScrollView className="bg-black-100" showsVerticalScrollIndicator={false}
-       extraScrollHeight={-200}
-       
-       contentContainerStyle={{ flexGrow: 1 }}
-       keyboardShouldPersistTaps="handled">
+
+      <KeyboardAwareScrollView
+        className="bg-black-100"
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        extraScrollHeight={70}
+        enableOnAndroid={true}
+      >
         <View
           className="w-full flex items-center h-full px-6"
           style={{
@@ -202,7 +212,6 @@ const SignUp = () => {
                 className="w-[250px] h-10"
                 resizeMode="contain"
               />
-
             </View>
 
             <CurrentComponent

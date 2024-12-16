@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { ChevronRight, EllipsisIcon } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
@@ -17,15 +17,14 @@ import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
 
-const MAX_DESCRIPTION_LENGTH = 150;
-
 interface Props {
   post: PostDetail;
   comments?: Comment[];
   likes?: PostLike[];
+  loadComments: () => Promise<void>;
 }
 
-const PostCard = ({ post, comments = [], likes = []}: Props) => {
+const PostCard = ({ post, comments = [], likes = [], loadComments }: Props) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
@@ -54,19 +53,52 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
       Toast.show({
         type: "error",
         text1: "Opss",
-        text2: `Aconteceu um erro no ${liked ? "deslike" : "like"} do post. Tente novamente mais tarde.`,
+        text2: `Aconteceu um erro no ${
+          liked ? "deslike" : "like"
+        } do post. Tente novamente mais tarde.`,
       });
     } finally {
       setIsLoadingLiked(false);
     }
   };
 
+  const commentsScreen = useMemo(() => {
+    return (
+      comments.length > 0 && (
+        <View className="pt-6">
+          {comments.map((comment) => (
+            <CommentCard
+              loadComments={loadComments}
+              key={comment.id}
+              comment={comment}
+            />
+          ))}
+        </View>
+      )
+    );
+  }, [comments]);
+
+  const handlerOpenCommentSheet = useCallback(() => {
+    openBottomSheet({
+      type: "comment",
+      id: post.post_id,
+      callbackFn: async () => {
+        await loadComments();
+      },
+    });
+  }, [post]);
+
   return (
     <View className="flex gap-6 mx-6 my-3">
       <View className="flex flex-row items-center justify-between gap-2 w-full">
         <TouchableOpacity
           className="flex flex-row items-center gap-2"
-          onPress={() => router.push({ pathname: '/profile/[id]', params: { id: post.user.id },  })}
+          onPress={() =>
+            router.push({
+              pathname: "/profile/[id]",
+              params: { id: post.user.id },
+            })
+          }
         >
           <Avatar className="w-10 h-10 bg-black-80">
             {post?.user?.image?.image && (
@@ -87,9 +119,15 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
           <Text className="text-brand-grey text-sm">
             {formatDistance(post.created_at)}
           </Text>
-          {user.id !== post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
-            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-          </TouchableOpacity>}
+          {user.id !== post.user.id && (
+            <TouchableOpacity
+              onPress={() =>
+                openBottomSheet({ type: "report", id: post.post_id })
+              }
+            >
+              <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
@@ -101,17 +139,20 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
             <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
           ) : (
             <View className="flex flex-row items-center gap-1">
-            <TouchableOpacity
-              onPress={handleLike}
-            >
-              {liked ? (
-                <LikedIcon width={24} height={24} />
-              ) : (
-                <LikeIcon width={24} height={24} />
-              )}
-            </TouchableOpacity>
+              <TouchableOpacity onPress={handleLike}>
+                {liked ? (
+                  <LikedIcon width={24} height={24} />
+                ) : (
+                  <LikeIcon width={24} height={24} />
+                )}
+              </TouchableOpacity>
               {likedCount > 0 && (
-                <Link href={{ pathname: '/post/[id]/likes', params: { id: post.post_id } }} >
+                <Link
+                  href={{
+                    pathname: "/post/[id]/likes",
+                    params: { id: post.post_id },
+                  }}
+                >
                   <Text className="text-white font-medium">{likedCount}</Text>
                 </Link>
               )}
@@ -120,7 +161,7 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
 
           <TouchableOpacity
             className="flex flex-row items-center gap-1"
-            onPress={() => openBottomSheet({ type: "comment", id: post.post_id })}
+            onPress={handlerOpenCommentSheet}
           >
             <CommentIcon width={24} height={24} />
             {post.comment_count > 0 && (
@@ -141,29 +182,21 @@ const PostCard = ({ post, comments = [], likes = []}: Props) => {
               {post.description}
             </Text>
             {post.description.split(/\s+/).length > 10 && (
-            <TouchableOpacity
-              onPress={handleToggleDescription}
-            >
-              <Text className="text-sm text-primary font-semibold">
-                {isExpanded ? "ver menos" : "continuar lendo"}
-            </Text>
-          </TouchableOpacity>
+              <TouchableOpacity onPress={handleToggleDescription}>
+                <Text className="text-sm text-primary font-semibold">
+                  {isExpanded ? "ver menos" : "continuar lendo"}
+                </Text>
+              </TouchableOpacity>
             )}
           </>
         )}
 
-        {comments.length > 0 && (
-          <View className="pt-6">
-            {comments.map((comment) => (
-              <CommentCard key={comment.id} comment={comment} />
-            ))}
-          </View>
-        )}
+        {commentsScreen}
 
         {post.comment_count > 0 && post.comment_count > comments.length && (
           <TouchableOpacity
             className="flex flex-row items-end gap-1 pt-3 mb-3 bg-black-100"
-            onPress={() => openBottomSheet({ type: "comment", id: post.post_id })}
+            onPress={handlerOpenCommentSheet}
           >
             <Text className="text-base text-brand-grey font-semibold">
               {`Ver todos os ${post.comment_count} comentários`}

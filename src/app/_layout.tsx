@@ -11,6 +11,7 @@ import "@/styles/global.css"
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthContextProvider } from '@/context/auth-context';
+import UpdateAppModal from './update-app';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -48,11 +49,12 @@ export default function RootLayout() {
             <Stack.Screen name="followers" options={{ headerShown: false }} />
             <Stack.Screen name="following" options={{ headerShown: false }} />
             <Stack.Screen name="post" options={{ headerShown: false }} />
-            <Stack.Screen name="edit-user-profile" options={{ headerShown: false }} />
+            <Stack.Screen name="user" options={{ headerShown: false }} />
             <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
           <Toast />
+          <UpdateAppModal />
         </GestureHandlerRootView>
       </AuthContextProvider>
     </ThemeProvider>

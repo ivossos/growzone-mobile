@@ -83,6 +83,10 @@ export default function Post() {
     }
   }
 
+  const loadComments = async () => {
+    await Promise.all([fetchPost(), fetchPostLikes(), fetchPostComments()])
+  }
+
   useEffect(() => {
     fetchPost();
     fetchPostLikes();
@@ -102,7 +106,7 @@ export default function Post() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         {!isLoadingPost && !isLoadingPostComments && !isLoadingPostLikes && (
-          post && <PostCard post={post} comments={comments} likes={likes} />
+          post && <PostCard loadComments={loadComments} post={post} comments={comments} likes={likes} />
         )}
       </ScrollView>
     </View>

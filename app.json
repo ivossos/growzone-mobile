@@ -17,7 +17,8 @@
       "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
-        "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
+        "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
+        "NSUserNotificationUsageDescription": "Precisamos de permissão para enviar notificações."
       },
       "locales": {
         "pt-BR": {
@@ -38,13 +39,19 @@
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#000000",
-        "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"],
+        "permissions": ["CAMERA", "MEDIA_LIBRARY", "READ_EXTERNAL_STORAGE", "NOTIFICATIONS"],
         "permissions": {
           "READ_EXTERNAL_STORAGE": {
             "message": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos."
           },
           "CAMERA": {
             "message": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
+          },
+          "MEDIA_LIBRARY": {
+            "message": "Precisamos de acesso à sua galeria para upload de fotos e vídeos."
+          },
+          "NOTIFICATIONS": {
+            "message": "Precisamos de permissão para enviar notificações."
           }
         }
       },

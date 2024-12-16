@@ -90,7 +90,7 @@ export default function NotificationsScreen() {
       });
     } else if (item.post.type === 'social') {
       router.push({
-        pathname: '/post/[id]',
+        pathname: '/post/[id]', // brendo aqui olhar depois
         params: { id: item.post.id },
       });
     } else if (item.post.type === 'grow') {

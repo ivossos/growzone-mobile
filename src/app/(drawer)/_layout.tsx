@@ -24,12 +24,14 @@ import UnlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/unlock-u
 import { ScrollToTopProvider } from '@/context/scroll-top-context';
 import { NotificationProvider } from '@/context/notification-context';
 import { ActivePostHomeProvider } from '@/context/active-post-home-context';
+import ReportCommentBottomSheet from '@/components/ui/report-comment-bottom-sheet';
 
 export default function DrawerLayout() {
   const { user, signOut, isLoadingUserStorage } = useAuth();
   const router = useRouter();
   const reportSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
+  const reportCommentSheetRef = useRef<BottomSheet>(null);
   const rateProfileSheetRef = useRef<BottomSheet>(null);
   const profileSheetRef = useRef<BottomSheet>(null);
   const reportUserSheetRef = useRef<BottomSheet>(null);
@@ -60,7 +62,9 @@ export default function DrawerLayout() {
     unlockUserSheetRef.current?.close()
   };
 
-  
+  const closeReportCommentBottomSheet = () => {
+    reportCommentSheetRef.current?.close()
+  };
  
   useEffect(() => {
     if (user?.id && !isLoadingUserStorage) {
@@ -229,6 +233,7 @@ export default function DrawerLayout() {
             </Drawer>
           <CommentBottomSheet ref={commentSheetRef} />
           <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+          <ReportCommentBottomSheet ref={reportCommentSheetRef} onClose={closeReportCommentBottomSheet} />
           <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
           <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>
           <ReportUserBottomSheet ref={reportUserSheetRef} onClose={reportUserBottomSheet} />

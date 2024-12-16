@@ -1,9 +1,10 @@
 import { View, TouchableOpacity, Image, StyleSheet } from "react-native";
-import { Camera } from "lucide-react-native";
+import { Pencil } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
 import { getInitials } from "@/lib/utils";
 import { colors } from "@/styles/colors";
+import { useEffect } from "react";
 
 type AvatarSectionProps = {
   imageUri: string | undefined;
@@ -18,12 +19,16 @@ export function AvatarSection({
   coverUri,
   isLoggerUser,
   onEditProfile,
-  name
+  name,
 }: AvatarSectionProps) {
   return (
     <View className="relative bg-black-60">
       {coverUri ? (
-        <Image source={{ uri: coverUri }} className="w-full h-40" resizeMode="cover" />
+        <Image
+          source={{ uri: coverUri }}
+          className="w-full h-40"
+          resizeMode="cover"
+        />
       ) : (
         <View className="bg-black-60 w-full h-40" />
       )}
@@ -34,7 +39,7 @@ export function AvatarSection({
           style={[styles.blurContainer, { top: 20, right: 20 }]}
         >
           <TouchableOpacity onPress={onEditProfile}>
-            <Camera size={14} color={colors.brand.white} />
+            <Pencil size={14} color={colors.brand.white} />
           </TouchableOpacity>
         </LinearGradient>
       )}
@@ -44,7 +49,9 @@ export function AvatarSection({
           {imageUri ? (
             <AvatarImage className="rounded-full" source={{ uri: imageUri }} />
           ) : (
-            <AvatarFallback textClassname="text-4xl">{getInitials(name)}</AvatarFallback>
+            <AvatarFallback textClassname="text-4xl">
+              {getInitials(name)}
+            </AvatarFallback>
           )}
         </Avatar>
       </View>
@@ -52,7 +59,7 @@ export function AvatarSection({
   );
 }
 
-const styles =  StyleSheet.create({
+const styles = StyleSheet.create({
   blurContainer: {
     position: "absolute",
     padding: 4,

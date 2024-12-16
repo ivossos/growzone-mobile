@@ -1,7 +1,12 @@
 import { Follow, UserProfile } from "@/api/@types/models";
 import { createFollow, deleteFollow, isFollower } from "@/api/social/follow";
 import { getProfileUser } from "@/api/social/profile/get-profile-user";
-import { AvatarSection, FollowButton, Metrics, ProfileInfo } from "@/components/ui/profile";
+import {
+  AvatarSection,
+  FollowButton,
+  Metrics,
+  ProfileInfo,
+} from "@/components/ui/profile";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDateToMonthYear } from "@/lib/utils";
@@ -13,7 +18,16 @@ import { Ellipsis } from "lucide-react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
 
-import React, { ElementType, memo, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  ElementType,
+  memo,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   createMaterialTopTabNavigator,
   MaterialTopTabBarProps,
@@ -37,7 +51,12 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Connection, HeaderConfig, ScrollPair, Visibility } from "@/components/ui/profile/types";
+import {
+  Connection,
+  HeaderConfig,
+  ScrollPair,
+  Visibility,
+} from "@/components/ui/profile/types";
 import useScrollSync from "@/hooks/use-scroll-sync";
 import TabBar from "@/components/ui/profile/tab-bar";
 import PostIcon from "@/assets/icons/post.svg";
@@ -47,7 +66,7 @@ import ReelsGreenIcon from "@/assets/icons/reels-green.svg";
 import GrowGreenIcon from "@/assets/icons/plant-green.svg";
 import GrowIcon from "@/assets/icons/plant.svg";
 import ConnectionPostList from "@/components/ui/profile/connection-post-list";
-import ConnectionReelstList from "@/components/ui/profile/connection-reels-list"
+import ConnectionReelstList from "@/components/ui/profile/connection-reels-list";
 import ConnectionGrowPostList from "@/components/ui/profile/connection-grow-post-list";
 import { EditProfileButton } from "@/components/ui/profile/edit-profile-button";
 
@@ -57,9 +76,24 @@ const HEADER_HEIGHT = 0;
 const OVERLAY_VISIBILITY_OFFSET = 30;
 
 const icons = {
-  posts: (focused: boolean) => focused ? <PostGreenIcon width={24} height={24} /> : <PostIcon width={24} height={24} />,
-  wellz: (focused: boolean) => focused ? <ReelsGreenIcon width={24} height={24} /> : <ReelsIcon width={24} height={24} />,
-  plantas: (focused: boolean) => focused ? <GrowGreenIcon width={24} height={24} /> : <GrowIcon width={24} height={24} />
+  posts: (focused: boolean) =>
+    focused ? (
+      <PostGreenIcon width={24} height={24} />
+    ) : (
+      <PostIcon width={24} height={24} />
+    ),
+  wellz: (focused: boolean) =>
+    focused ? (
+      <ReelsGreenIcon width={24} height={24} />
+    ) : (
+      <ReelsIcon width={24} height={24} />
+    ),
+  plantas: (focused: boolean) =>
+    focused ? (
+      <GrowGreenIcon width={24} height={24} />
+    ) : (
+      <GrowIcon width={24} height={24} />
+    ),
 };
 
 const w = Dimensions.get("screen").width;
@@ -72,7 +106,6 @@ interface Props {
 }
 
 const UserProfileScreen = ({ userId, Header }: Props) => {
-  
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingFollow, setIsLoadingFollow] = useState(false);
@@ -139,23 +172,27 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
       { list: reelsRef, position: reelsScrollValue },
       { list: growPostsRef, position: growPostScrollValue },
     ],
-    [postRef, postScrollValue, reelsRef, reelsScrollValue, growPostsRef, growPostScrollValue]
+    [
+      postRef,
+      postScrollValue,
+      reelsRef,
+      reelsScrollValue,
+      growPostsRef,
+      growPostScrollValue,
+    ]
   );
 
   const { sync } = useScrollSync(scrollPairs, headerConfig);
 
-  const currentScrollValue = useDerivedValue(
-    () => {
-      if(tabIndex === 0) {
-        return postScrollValue.value;
-      } else if(tabIndex === 1) {
-        return reelsScrollValue.value;
-      } else {
-        return growPostScrollValue.value;
-      }
-    },
-    [tabIndex, postScrollValue, reelsScrollValue, growPostScrollValue]
-  );
+  const currentScrollValue = useDerivedValue(() => {
+    if (tabIndex === 0) {
+      return postScrollValue.value;
+    } else if (tabIndex === 1) {
+      return reelsScrollValue.value;
+    } else {
+      return growPostScrollValue.value;
+    }
+  }, [tabIndex, postScrollValue, reelsScrollValue, growPostScrollValue]);
 
   const translateY = useDerivedValue(() => {
     if (currentScrollValue.value <= 0) {
@@ -208,7 +245,6 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
     [userId, postRef, postScrollHandler, sharedProps]
   );
 
-
   const renderReels = useCallback(
     () => (
       <ConnectionReelstList
@@ -230,13 +266,13 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
         {...sharedProps}
       />
     ),
-    [ growPostScrollValue, growPostScrollHandler, sharedProps]
+    [growPostScrollValue, growPostScrollHandler, sharedProps]
   );
 
   const tabBarStyle = useMemo<StyleProp<ViewStyle>>(
     () => [
       rendered ? styles.tabBarContainer : undefined,
-      { top: rendered ? headerHeight: undefined },
+      { top: rendered ? headerHeight : undefined },
       tabBarAnimatedStyle,
     ],
     [rendered, headerHeight, tabBarAnimatedStyle]
@@ -246,7 +282,9 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
     (props: MaterialTopTabBarProps) => React.ReactElement
   >(
     (props) => (
-      <Animated.View style={[tabBarStyle, { backgroundColor: colors.black[100] }]}>
+      <Animated.View
+        style={[tabBarStyle, { backgroundColor: colors.black[100] }]}
+      >
         <TabBar onIndexChange={setTabIndex} {...props} />
       </Animated.View>
     ),
@@ -254,10 +292,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   );
 
   const headerContainerStyle = useMemo<StyleProp<ViewStyle>>(
-    () => [
-      rendered ? styles.headerContainer : undefined,      
-      headerAnimatedStyle,
-    ],
+    () => [rendered ? styles.headerContainer : undefined, headerAnimatedStyle],
 
     [rendered, top, headerAnimatedStyle]
   );
@@ -274,7 +309,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
     () => [
       styles.collapsedOvarlay,
       collapsedOverlayAnimatedStyle,
-      { height: heightCollapsed},
+      { height: heightCollapsed },
     ],
     [collapsedOverlayAnimatedStyle, heightCollapsed, top]
   );
@@ -293,7 +328,8 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
       Toast.show({
         type: "error",
         text1: "Opss",
-        text2: "Aconteceu um erro ao carregar as informações desse perfil. Tente novamente mais tarde.",
+        text2:
+          "Aconteceu um erro ao carregar as informações desse perfil. Tente novamente mais tarde.",
       });
       router.push("/home");
     } finally {
@@ -302,7 +338,10 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   };
 
   const handleEditProfile = () => {
-    router.push({ pathname: "/edit-user-profile" });
+    router.push({
+      pathname: "/user/[userId]/edit",
+      params: { userId: user.id },
+    });
   };
 
   const handleReviewsPress = () => {
@@ -340,7 +379,8 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
       Toast.show({
         type: "error",
         text1: "Opss",
-        text2: "Aconteceu um erro ao realizar essa ação. Tente novamente mais tarde.",
+        text2:
+          "Aconteceu um erro ao realizar essa ação. Tente novamente mais tarde.",
       });
     } finally {
       setIsLoadingFollow(false);
@@ -351,45 +391,64 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
     fetchProfileData();
   }, []);
 
-
   if (!profile) return null;
 
   const { cover, image, info, metric } = profile;
- 
+
+  const avatarSection = useMemo(() => {
+    return (
+      <AvatarSection
+        imageUri={image?.image}
+        coverUri={cover?.cover}
+        name={info?.name || info?.username}
+        isLoggerUser={user.id === userId}
+        onEditProfile={handleEditProfile}
+      />
+    );
+  }, [profile, user, userId]);
+
   return (
     <View style={styles.container}>
-    {/* <View style={styles.fixedHeader}>
+      {/* <View style={styles.fixedHeader}>
       <Header onBack={() => router.back()} />
     </View> */}
 
-    <Animated.View onLayout={handleHeaderLayout} style={[headerContainerStyle]}>
-        <Header /> 
-        <AvatarSection
-          imageUri={image?.image}
-          coverUri={cover?.cover}
-          name={info?.name || info?.username}
-          isLoggerUser={user?.id === userId}
-          onEditProfile={handleEditProfile}
+      <Animated.View
+        onLayout={handleHeaderLayout}
+        style={[headerContainerStyle]}
+      >
+        <Header />
+        {avatarSection}
+        <ProfileInfo
+          name={info?.name}
+          username={info?.username}
+          biography={info?.biography}
+          category={info?.category}
         />
-        <ProfileInfo name={info?.name} username={info?.username} biography={info?.biography} category={info?.category}/>
-        {metric && <Metrics
-          userId={info.id}
-          followers={metric?.followers}
-          following={metric?.following}
-          memberSince={formatDateToMonthYear(info?.created_at)}
-          socialCount={metric?.social_count}
-          reelCount={metric?.reel_count}
-          averageReview={metric?.average_review}
-          onReviewsPress={handleReviewsPress}
-        />}
+        {metric && (
+          <Metrics
+            userId={info.id}
+            followers={metric?.followers}
+            following={metric?.following}
+            memberSince={formatDateToMonthYear(info?.created_at)}
+            socialCount={metric?.social_count}
+            reelCount={metric?.reel_count}
+            averageReview={metric?.average_review}
+            onReviewsPress={handleReviewsPress}
+          />
+        )}
         {user && user.id != userId && (
           <View className="flex flex-row gap-2 px-6 mt-6">
-            <FollowButton isFollowing={!!follow} isLoading={isLoadingFollow} onFollowPress={handleFollowPress} />
+            <FollowButton
+              isFollowing={!!follow}
+              isLoading={isLoadingFollow}
+              onFollowPress={handleFollowPress}
+            />
             <TouchableOpacity
               onPress={handleRateProfilePress}
               style={{
-                alignItems: 'center',
-                justifyContent: 'center',
+                alignItems: "center",
+                justifyContent: "center",
                 borderWidth: 1,
                 borderColor: colors.black[70],
                 borderRadius: 100,
@@ -404,46 +463,49 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
         )}
         {user && user.id == userId && (
           <View className="flex flex-row flex-1 px-6 mt-6 w-full">
-            <EditProfileButton />
+            <EditProfileButton userId={user.id} />
           </View>
         )}
       </Animated.View>
       {/* {info && <Animated.View style={collapsedOverlayStyle}>
         <HeaderOverlay name={info.name || info.username}  imageUri={image?.image} onBack={() => navigation.goBack()} />
       </Animated.View>} */}
-      {profile && <NavigationContainer independent={true}>
-        <Tab.Navigator 
-          tabBar={renderTabBar} 
-          style={{ backgroundColor: colors.black[100] }}
-          screenOptions={({ route }) => ({
-            tabBarContentContainerStyle: {
-              justifyContent: 'center', alignItems: 'center'
-            },
-            tabBarIndicatorContainerStyle: {
-              backgroundColor: colors.black[100],
-            },
-            tabBarIndicatorStyle: {
-              backgroundColor: colors.brand.green,
-              height: 2.5,
-              // borderBottomColor: colors.black[100], borderBottomWidth: 1
-            },
-            tabBarIcon: ({ focused }) => {
-              return icons[route.name](focused);
-            },
-            tabBarIconStyle: {
-              width: w / 3,
-              justifyContent: 'center',
-              alignItems: 'center'
-            },
-            tabBarShowLabel: false,
-          })}>
-          <Tab.Screen name="posts">{renderPosts}</Tab.Screen>
-          <Tab.Screen name="wellz">{renderReels}</Tab.Screen>
-          <Tab.Screen name="plantas">{renderGrowPost}</Tab.Screen>
-        </Tab.Navigator>
-      </NavigationContainer>}
+      {profile && (
+        <NavigationContainer independent={true}>
+          <Tab.Navigator
+            tabBar={renderTabBar}
+            style={{ backgroundColor: colors.black[100] }}
+            screenOptions={({ route }) => ({
+              tabBarContentContainerStyle: {
+                justifyContent: "center",
+                alignItems: "center",
+              },
+              tabBarIndicatorContainerStyle: {
+                backgroundColor: colors.black[100],
+              },
+              tabBarIndicatorStyle: {
+                backgroundColor: colors.brand.green,
+                height: 2.5,
+                // borderBottomColor: colors.black[100], borderBottomWidth: 1
+              },
+              tabBarIcon: ({ focused }) => {
+                return icons[route.name](focused);
+              },
+              tabBarIconStyle: {
+                width: w / 3,
+                justifyContent: "center",
+                alignItems: "center",
+              },
+              tabBarShowLabel: false,
+            })}
+          >
+            <Tab.Screen name="posts">{renderPosts}</Tab.Screen>
+            <Tab.Screen name="wellz">{renderReels}</Tab.Screen>
+            <Tab.Screen name="plantas">{renderGrowPost}</Tab.Screen>
+          </Tab.Navigator>
+        </NavigationContainer>
+      )}
     </View>
-    
   );
 };
 
@@ -457,7 +519,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: "100%",
     zIndex: 50,
-    backgroundColor: colors.black[100]
+    backgroundColor: colors.black[100],
   },
   overlayName: {
     fontSize: 24,
@@ -485,7 +547,7 @@ const styles = StyleSheet.create({
     right: 0,
     position: "absolute",
     zIndex: 1,
-    backgroundColor: colors.black[100]
+    backgroundColor: colors.black[100],
   },
 });
 

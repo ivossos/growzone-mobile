@@ -1,13 +1,9 @@
-import { socialApi } from '@/lib/axios';
-import { Genetic } from '@/api/@types/models';
+import { socialApi } from "@/lib/axios";
+import { CreateGenetic, Genetic } from "@/api/@types/models";
 
-interface CreateGeneticBody {
-  name: string;
-}
-
-export async function createGenetic({ name }: CreateGeneticBody) {
+export async function createGenetic(data: CreateGenetic) {
   const response = await socialApi.post<Genetic>(`/strain`, {
-    name
+    ...data,
   });
   return response.data;
 }

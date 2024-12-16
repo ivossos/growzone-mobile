@@ -4,7 +4,6 @@ import { getGrowPost } from "@/api/social/post/get-grow-post";
 import { getPost } from "@/api/social/post/get-post";
 import { getPostLikes } from "@/api/social/post/like/get-likes";
 import GrowPostCard from "@/components/ui/grow-post-card";
-import PostCard from "@/components/ui/post-card";
 import { colors } from "@/styles/colors";
 import { useRoute } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
@@ -83,6 +82,10 @@ export default function Post() {
     }
   }
 
+  const loadComments = async () => {
+    await Promise.all([fetchPost(), fetchPostLikes(), fetchPostComments()])
+  }
+
   useEffect(() => {
     fetchPost();
     fetchPostLikes();
@@ -107,7 +110,7 @@ export default function Post() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         {!isLoadingPost && !isLoadingPostComments && !isLoadingPostLikes && (
-          post && <GrowPostCard post={post} comments={comments} likes={likes} />
+          post && <GrowPostCard loadComments={loadComments} post={post} comments={comments} likes={likes} />
         )}
       </ScrollView>
     </View>

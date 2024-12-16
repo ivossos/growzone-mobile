@@ -18,6 +18,7 @@ import { getInitials } from '@/lib/utils';
 import { UserSocial } from '@/api/@types/models';
 import RateProfileBottomSheet from '@/components/ui/rate-profile-bottom-sheet';
 import ProfileBottomSheet from '@/components/ui/profile/bottom-sheet/profile-bottom-sheet';
+import ReportCommentBottomSheet from '@/components/ui/report-comment-bottom-sheet';
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -63,6 +64,7 @@ export default function TabLayout() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const searchSheetRef = useRef<BottomSheet>(null);
   const reportSheetRef = useRef<BottomSheet>(null);
+  const reportCommentSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
   const createPostSheetRef = useRef<BottomSheet>(null);
   const rateProfileSheetRef = useRef<BottomSheet>(null);
@@ -81,6 +83,10 @@ export default function TabLayout() {
 
   const closeReportBottomSheet = () => {
     reportSheetRef.current?.close()
+  };
+
+  const closeReportCommentBottomSheet = () => {
+    reportCommentSheetRef.current?.close()
   };
 
   const closeSeachBottomSheet = () => {
@@ -218,6 +224,7 @@ export default function TabLayout() {
         <CreateBottomSheet ref={bottomSheetRef} onClose={closeCreateBottomSheet} />
         <CommentBottomSheet ref={commentSheetRef} />
         <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+        <ReportCommentBottomSheet ref={reportCommentSheetRef} onClose={closeReportCommentBottomSheet} />
         <GlobalSearchBottomSheet ref={searchSheetRef}  onClose={closeSeachBottomSheet} />
         <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
         <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>

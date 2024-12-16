@@ -1,12 +1,12 @@
-import { Comment, PostDetail, PostLike, SocialPost } from "@/api/@types/models";
+import { Comment, PostDetail, PostLike } from "@/api/@types/models";
 import { getPostComments } from "@/api/social/post/comment/get-comments";
 import { getPost } from "@/api/social/post/get-post";
 import { getPostLikes } from "@/api/social/post/like/get-likes";
 import PostCard from "@/components/ui/post-card";
 import { useActivePostHome } from "@/hooks/use-active-post-home";
+import { useAuth } from "@/hooks/use-auth";
 import { colors } from "@/styles/colors";
-import { useNavigationState, useRoute } from "@react-navigation/native";
-import { router, useFocusEffect, useLocalSearchParams, useNavigation } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -50,6 +50,7 @@ export default function Post() {
     try {
       setIsLoadingPostComments(true);
       const data = await getPostComments({ postId: id, skip: 0, limit: 4 });
+      console.log('data ', data);
       setComments(data);
     } catch (error) {
 
@@ -86,6 +87,10 @@ export default function Post() {
     }
   }
 
+  const loadComments = async () => {
+    await Promise.all([fetchPost(), fetchPostLikes(), fetchPostComments()])
+  }
+
   useEffect(() => {
     fetchPost();
     fetchPostLikes();
@@ -105,7 +110,7 @@ export default function Post() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         {!isLoadingPost && !isLoadingPostComments && !isLoadingPostLikes && (
-          post && <PostCard post={post} comments={comments} likes={likes} />
+          post && <PostCard loadComments={loadComments} post={post} comments={comments} likes={likes} />
         )}
       </ScrollView>
     </View>

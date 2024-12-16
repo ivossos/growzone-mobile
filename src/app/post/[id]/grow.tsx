@@ -4,7 +4,6 @@ import { getGrowPost } from "@/api/social/post/get-grow-post";
 import { getPost } from "@/api/social/post/get-post";
 import { getPostLikes } from "@/api/social/post/like/get-likes";
 import GrowPostCard from "@/components/ui/grow-post-card";
-import PostCard from "@/components/ui/post-card";
 import { useActivePostHome } from "@/hooks/use-active-post-home";
 import { colors } from "@/styles/colors";
 import { useRoute } from "@react-navigation/native";
@@ -18,7 +17,7 @@ import Toast from "react-native-toast-message";
 
 export default function Post() {
   const params = useLocalSearchParams();
-  const { id } = (params  as { id: number }) || {};
+  const { id } = (params  as { id: string }) || {};
   const [isLoadingPost, setIsLoadingPost] = useState(false);
   const [isLoadingPostComments, setIsLoadingPostComments] = useState(false);
   const [isLoadingPostLikes, setIsLoadingPostLikes] = useState(false);
@@ -30,7 +29,7 @@ export default function Post() {
   const fetchPost = async () => {
     try {
       setIsLoadingPost(true);
-      const data = await getGrowPost(id);
+      const data = await getGrowPost(Number(id));
       setPost(data);
       handlePostChange(data.post_id);
     } catch (error) {
@@ -49,7 +48,7 @@ export default function Post() {
   const fetchPostComments = async () => {
     try {
       setIsLoadingPostComments(true);
-      const data = await getPostComments({ postId: id, skip: 0, limit: 4 });
+      const data = await getPostComments({ postId: Number(id), skip: 0, limit: 4 });
       setComments(data);
     } catch (error) {
 
@@ -69,7 +68,7 @@ export default function Post() {
   const fetchPostLikes = async () => {
     try {
       setIsLoadingPostLikes(true);
-      const data = await getPostLikes({ postId: id, skip: 0, limit: 4  });
+      const data = await getPostLikes({ postId: Number(id), skip: 0, limit: 4  });
       setLikes(data);
     } catch (error) {
 
@@ -86,7 +85,11 @@ export default function Post() {
     }
   }
 
-  useEffect(() => {
+  const loadComments = async () => {
+    await Promise.all([fetchPost(), fetchPostLikes(), fetchPostComments()])
+  }
+
+  useEffect(() => {    
     fetchPost();
     fetchPostLikes();
     fetchPostComments();
@@ -110,7 +113,7 @@ export default function Post() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         {!isLoadingPost && !isLoadingPostComments && !isLoadingPostLikes && (
-          post && <GrowPostCard post={post} comments={comments} likes={likes} />
+          post && <GrowPostCard loadComments={loadComments} post={post} comments={comments} likes={likes} />
         )}
       </ScrollView>
     </View>

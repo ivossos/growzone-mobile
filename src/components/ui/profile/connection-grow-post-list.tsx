@@ -49,8 +49,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
         const data = await getUserGrowPosts({ id: userId, skip: skipValue, limit: limitValue });
         if (data.length < limit) {
           setHasMorePosts(false);
-        }
-  
+        }  
         setPlants((prevPosts) => uniqBy([...prevPosts, ...data], 'post_id'));
       } catch (error) {
         console.log('Erro ao buscar as postagens: ', error);

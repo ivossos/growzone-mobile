@@ -32,7 +32,7 @@ const Profile: React.FC = () => {
   return (
     <>
       <SafeAreaView className="bg-black-100" style={{ backgroundColor: colors.black[100], flex: 1 }}>
-        <UserProfileScreen userId={id} Header={renderReader}/>
+        <UserProfileScreen userId={Number(id)} Header={renderReader}/>
       </SafeAreaView>
       {/* <Loader isLoading={isLoading} /> */}
     </>

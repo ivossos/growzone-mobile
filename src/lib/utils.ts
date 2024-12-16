@@ -3,6 +3,7 @@ import { twMerge } from 'tailwind-merge';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { lookup } from 'react-native-mime-types';
+import { UserDTO } from '@/api/@types/models';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -32,6 +33,10 @@ export function getInitials(name: string = ''): string {
   }
 
   return initials;
+}
+
+export function getUserName(user: UserDTO): string {
+  return user?.name || user?.username;
 }
 
 export function formatDateIso(dateString: string): string {

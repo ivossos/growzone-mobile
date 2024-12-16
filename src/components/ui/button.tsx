@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Text, TouchableOpacity } from "react-native";
-import { LucideIcon } from 'lucide-react-native';
+import { LucideIcon, LucideProps } from 'lucide-react-native';
 import { colors } from '@/styles/colors';
 
 
@@ -14,6 +14,8 @@ interface Props {
   variant?: 'default' | 'secondary' | 'outline';
   leftIcon?: LucideIcon;
   rightIcon?: LucideIcon;
+  leftIconProps?: LucideProps;
+  rightIconProps?: LucideProps;
 }
 
 const Button: React.FC<Props> = ({
@@ -25,7 +27,9 @@ const Button: React.FC<Props> = ({
   isDisabled,
   variant = 'default',
   leftIcon: LeftIcon,
-  rightIcon: RightIcon
+  rightIcon: RightIcon,
+  leftIconProps,
+  rightIconProps,
 }) => {
   const buttonClassName = variant === 'outline'
     ? `border border-primary active:bg-primary rounded-lg min-h-[56px] px-4 flex flex-row justify-center items-center group-isolate ${containerStyles} ${(isLoading || isDisabled) ? "opacity-50" : ""}`
@@ -52,6 +56,7 @@ const Button: React.FC<Props> = ({
           width={20}
           height={20}
           color={iconColor}
+          {...leftIconProps}
         />
       )}
       <Text className={`${textClassName} text-4xl`}>
@@ -70,6 +75,7 @@ const Button: React.FC<Props> = ({
           width={20}
           height={20}
           color={iconColor}
+          {...rightIconProps}
         />
       )}
     </TouchableOpacity>
