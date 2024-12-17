@@ -17,12 +17,10 @@ const Profile: React.FC = () => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     
-    // Simula a lógica de atualização. Aqui você pode carregar dados, por exemplo.
     try {
-      // Adicione a lógica para atualizar dados do perfil, caso necessário.
-      // Exemplo: await fetchUserProfile(id);
+    
     } finally {
-      setRefreshing(false); // Para de exibir o indicador de carregamento
+      setRefreshing(false); 
     }
   }, [id]);
 

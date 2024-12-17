@@ -13,12 +13,7 @@ import LikedIcon from "@/assets/icons/liked.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
 import { router } from "expo-router";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
-import {
-  Comment,
-  GrowPostDetail,
-  PostDetail,
-  PostLike,
-} from "@/api/@types/models";
+import { Comment, GrowPostDetail, PostLike } from "@/api/@types/models";
 import { formatDistance, getInitials } from "@/lib/utils";
 import Toast from "react-native-toast-message";
 import CommentCard from "./comment-card";
@@ -114,15 +109,12 @@ const GrowPostCard = ({ post, comments = [], likes = [], loadComments }: Props) 
           <Text className="text-brand-grey text-sm">
             {formatDistance(post.created_at)}
           </Text>
-          {user.id !== post.user.id && (
-            <TouchableOpacity
-              onPress={() =>
-                openBottomSheet({ type: "report", id: post.post_id })
-              }
-            >
-              <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-            </TouchableOpacity>
-          )}
+          {user.id !== post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
+            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+          </TouchableOpacity>}
+          {user.id === post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "grow-post-bottom-sheet", id: post.post_id })}>
+            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+          </TouchableOpacity>}
         </View>
       </View>
 

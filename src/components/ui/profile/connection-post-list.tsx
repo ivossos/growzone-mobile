@@ -3,128 +3,104 @@ import { getUserPosts } from "@/api/social/post/get-user-posts";
 import { useAuth } from "@/hooks/use-auth";
 import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
-import { Video } from "expo-av";
 import { router } from "expo-router";
-import { uniqBy } from "lodash";
-import React, { forwardRef, memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { forwardRef, memo } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  FlatListProps,
   Image,
-  ListRenderItem,
   StyleSheet,
   TouchableOpacity,
   View,
-  ViewToken,
 } from "react-native";
 import Animated from "react-native-reanimated";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
 const numColumns = 3;
 const w = Dimensions.get("window").width;
 
-type Props = Omit<FlatListProps<SocialPost>, "renderItem"> & {
+type Props = {
   userId: number;
 };
 
 const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
-  ({ userId,...rest }, ref) => {
-    const [refreshing, setRefreshing] = useState(false);
-    const [posts, setPosts] = useState<SocialPost[]>([]);
-    const [skip, setSkip] = useState(0);
-    const [limit, setLimit] = useState(10);
-    const [hasMorePosts, setHasMorePosts] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
+  ({ userId, ...rest }, ref) => {
     const { user } = useAuth();
+    const limit = 10;
 
-    const fetchPostsData = async (skipValue: number, limitValue: number) => {
-
-      try {
-        if (!userId || loadingMore || refreshing) return;
-
-        setLoadingMore(true);
-        const data = await getUserPosts({
+    const {
+      data,
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
+      isLoading,
+      refetch,
+      error
+    } = useInfiniteQuery({
+      queryKey: ['profile-posts', userId.toString()],
+      queryFn: async ({ pageParam = 0 }) => {
+        return await getUserPosts({
           id: userId,
-          skip: skipValue,
-          limit: limitValue,
+          skip: pageParam,
+          limit,
         });
+      },
+      enabled: !!userId,
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < limit) return undefined;
+        return allPages.length * limit;
+      },
+      initialPageParam: 0,
+    });
 
-        if (data.length < limit) {
-          setHasMorePosts(false);
-        }
+    if(error) {
+      console.error("Erro ao buscar postagens:", error);
+      Toast.show({
+        type: "error",
+        text1: "Opss",
+        text2: "Aconteceu um erro ao buscar as postagens desse perfil. Tente novamente mais tarde.",
+      });
+      return null;
+    }
 
-        setPosts((prevPosts) => uniqBy([...prevPosts, ...data], 'post_id'));
-      } catch (error) {
-        console.error("Erro ao buscar as postagens: ", error);
-        Toast.show({
-          type: "error",
-          text1: "Opss",
-          text2: "Aconteceu um erro ao buscar as postagens desse perfil. Tente novamente mais tarde.",
-        });
-      } finally {
-        setLoadingMore(false);
-        setRefreshing(false);
-      }
-    };
-
-    const onRefresh = async () => {
-      setRefreshing(true);
-      setSkip(0);
-      setHasMorePosts(true);
-      setPosts([]);
-      await fetchPostsData(0, limit);
-    };
-
-    const loadMorePosts = () => {
-      if (!loadingMore && hasMorePosts) {
-        setSkip((prevSkip) => prevSkip + limit);
-      }
-    };
-
-    useEffect(() => {
-      if (hasMorePosts) {
-        fetchPostsData(skip, limit);
-      }
-    }, [skip]);
-
-    useEffect(() => {
-      fetchPostsData(skip, limit);
-    }, []);
+    const posts = data?.pages.flat() ?? [];
 
     const renderItem = ({ item, index }: { index: number; item: SocialPost }) => {
       if (item.is_compressing) {
-        
-        if(user.id != userId) return null;
+        if (user.id !== userId) return null;
 
         return (
           <View className="mb-1 bg-black-90">
-            <View className="flex flex-row justify-center items-center" style={styles.image}>
-                <ActivityIndicator size="small" color={colors.brand.green} />
-              </View>
+            <View
+              className="flex flex-row justify-center items-center"
+              style={styles.image}
+            >
+              <ActivityIndicator size="small" color={colors.brand.green} />
+            </View>
           </View>
-        )
+        );
       }
 
       return (
-        <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]', params: { id: item.post_id } })} className="mb-1">
+        <TouchableOpacity
+          onPress={() =>
+            router.push({ pathname: "/post/[id]", params: { id: item.post_id } })
+          }
+          className="mb-1"
+        >
           {item?.file?.type === "image" ? (
-            <Image source={{ uri: item?.file?.file }} style={styles.image} resizeMode="contain" />
+            <Image
+              source={{ uri: item?.file?.file }}
+              style={styles.image}
+              resizeMode="contain"
+            />
           ) : (
             <Image
-            source={{ uri: replaceMediaUrl(item?.file?.file) }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-            // <Video
-            //   ref={(ref) => (videoRefs.current[index] = ref)}
-            //   source={{ uri: item?.file?.file }}
-            //   style={styles.image}
-            //   isMuted={false}
-            //   shouldPlay={false}
-            //   isLooping={false}
-            //   useNativeControls={false}
-            // />
+              source={{ uri: replaceMediaUrl(item?.file?.file) }}
+              style={styles.image}
+              resizeMode="cover"
+            />
           )}
         </TouchableOpacity>
       );
@@ -133,7 +109,7 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
     return (
       <Animated.FlatList
         ref={ref}
-        {...rest} 
+        {...rest}
         data={posts}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
@@ -141,17 +117,15 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
         numColumns={numColumns}
         columnWrapperClassName="flex gap-1"
         contentContainerClassName="bg-black-100 mt-2"
-        onEndReached={loadMorePosts}
+        onEndReached={() => hasNextPage && fetchNextPage()}
         onEndReachedThreshold={0.5}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
-        // onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{
-          itemVisiblePercentThreshold: 50,
-        }}
+        refreshing={isLoading}
+        onRefresh={refetch}
         ListFooterComponent={
-          loadingMore ? (
+          isFetchingNextPage ? (
             <View className="flex flex-row justify-center items-center py-4">
               <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
             </View>
@@ -163,10 +137,6 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
 );
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.black[100]
-  },
   image: {
     width: w / numColumns - 3,
     height: 120,

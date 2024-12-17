@@ -119,21 +119,12 @@ const PostCard = ({ post, comments = [], likes = [], loadComments }: Props) => {
           <Text className="text-brand-grey text-sm">
             {formatDistance(post.created_at)}
           </Text>
-          {user.id !== post.user.id && (
-            <TouchableOpacity
-              onPress={() =>
-                openBottomSheet({ type: "report", id: post.post_id })
-              }
-            >
-              <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-            </TouchableOpacity>
-          )}
-          {user.id !== post.user.id && (
-            <TouchableOpacity
-              onPress={() =>
-                openBottomSheet({ type: "report", id: post.post_id })
-              }
-            >
+          {user.id !== post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
+            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+          </TouchableOpacity>}
+
+          {user.id === post.user.id && (
+            <TouchableOpacity onPress={() => openBottomSheet({ type: "post-bottom-sheet", id: post.post_id })}>
               <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
             </TouchableOpacity>
           )}

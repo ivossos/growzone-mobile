@@ -1,16 +1,17 @@
-import { Comment, GrowPostDetail, PostDetail, PostLike, SocialPost } from "@/api/@types/models";
 import { getPostComments } from "@/api/social/post/comment/get-comments";
 import { getGrowPost } from "@/api/social/post/get-grow-post";
-import { getPost } from "@/api/social/post/get-post";
 import { getPostLikes } from "@/api/social/post/like/get-likes";
 import GrowPostCard from "@/components/ui/grow-post-card";
 import { useActivePostHome } from "@/hooks/use-active-post-home";
 import { colors } from "@/styles/colors";
 import { useQuery } from "@tanstack/react-query";
+<<<<<<< HEAD
 import { useRoute } from "@react-navigation/native";
+=======
+>>>>>>> main
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";

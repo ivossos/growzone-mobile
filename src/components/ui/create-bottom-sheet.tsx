@@ -45,36 +45,26 @@ import { FormFieldBottomSheetText } from "./form-field-bottom-sheet";
 import { MediaUpload } from "@/api/@types/models";
 
 export const GrowPostValidation = z.object({
-  day: z.string(),
-  genetic: z
-    .object({
-      id: z.number().nullable(),
-    })
-    .refine(
-      (data) => {
-        const isValid = data.id !== null && data.id !== undefined;
-        return isValid;
-      },
-      {
-        message: "Selecione uma genética válida",
-        path: ["genetic"],
-      }
-    ),
-  phase: z
-    .object({
-      id: z.number().nullable(),
-    })
-    .refine(
-      (data) => {
-        const isValid = data.id !== null && data.id !== undefined;
-        return isValid;
-      },
-      {
-        message: "Selecione uma fase válida",
-        path: ["phase"],
-      }
-    ),
-});
+  day: z.string().min(1, "Adicione os dias desse cultivo"),
+  genetic: z.object({
+    id: z.number().nullable(),
+  }).refine(data => {
+    const isValid = data.id !== null && data.id !== undefined;
+    return isValid;
+  }, {
+    message: "Selecione uma genética válida",
+    path: ["genetic"],
+  }),
+  phase: z.object({
+    id: z.number().nullable(),
+  }).refine(data => {
+    const isValid = data.id !== null && data.id !== undefined;
+    return isValid;
+  }, {
+    message: "Selecione uma fase válida",
+    path: ["phase"],
+  }),
+})
 
 interface CreateBottomSheetProps {
   onClose: () => void;
@@ -102,7 +92,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
     const form = useForm({
       resolver: zodResolver(GrowPostValidation),
       defaultValues: {
-        day: 10,
+        day: '10',
         genetic: { id: null },
         phase: { id: null },
       },

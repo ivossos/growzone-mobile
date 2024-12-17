@@ -380,8 +380,8 @@ export interface GrowPostDetail {
 }
 
 export interface FeedAllPost {
-  type: "grow" | "social";
-  post: GrowPostDetail | PostDetail;
+  type: 'grow' | 'social' | 'reel'
+  post: GrowPostDetail | PostDetail
 }
 
 export interface ReportReason {

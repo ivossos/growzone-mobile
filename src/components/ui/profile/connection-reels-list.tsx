@@ -3,12 +3,13 @@ import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 import { useAuth } from "@/hooks/use-auth";
 import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { ResizeMode, Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { uniqBy } from "lodash";
 import { Eye } from "lucide-react-native";
-import React, { forwardRef, memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { forwardRef, memo } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -18,7 +19,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ViewToken,
 } from "react-native";
 import Animated from "react-native-reanimated";
 import Toast from "react-native-toast-message";
@@ -32,69 +32,46 @@ type Props = Omit<FlatListProps<SocialPost>, "renderItem"> & {
 
 const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
   ({ userId, ...rest }, ref) => {
-    const [refreshing, setRefreshing] = useState(false);
-    const [reels, setReels] = useState<SocialPost[]>([]);
-    const [skip, setSkip] = useState(0);
-    const [limit] = useState(10);
-    const [hasMorePosts, setHasMorePosts] = useState(true);
-    const [loadingMore, setLoadingMore] = useState(false);
-    
+    const limit = 10;
     const { user } = useAuth();
 
-    const fetchPostsData = async (skipValue: number, limitValue: number) => {
-      try {
-        if (!userId || loadingMore || refreshing) return;
-  
-        setLoadingMore(true);
-        const data = await getUserReelsPosts({ id: userId, skip: skipValue, limit: limitValue });
-        if (data.length < limit) {
-          setHasMorePosts(false);
-        }
-  
-        setReels((prevPosts) => uniqBy([...prevPosts, ...data], 'post_id'));
-      } catch (error) {
-        console.log('Erro ao buscar as postagens: ', error);
-        Toast.show({
-          type: 'error',
-          text1: 'Opss',
-          text2: 'Aconteceu um erro ao buscar as Weedz desse perfil. Tente novamente mais tarde.'
+    const {
+      data,
+      fetchNextPage,
+      hasNextPage,
+      isFetchingNextPage,
+      isLoading,
+      refetch,
+      error
+    } = useInfiniteQuery({
+      queryKey: ['profile-reels', userId.toString()],
+      queryFn: async ({ pageParam = 0 }) => {
+        return await getUserReelsPosts({
+          id: userId,
+          skip: pageParam,
+          limit,
         });
-      } finally {
-        setLoadingMore(false);
-        setRefreshing(false);
-      }
-    };
+      },
+      enabled: !!userId,
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < limit) return undefined;
+        return allPages.length * limit;
+      },
+      initialPageParam: 0,
+    });
+
+    if(error) {
+      console.error('Erro ao buscar as postagens: ', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Aconteceu um erro ao buscar as Weedz desse perfil. Tente novamente mais tarde.'
+      });
+      return null;
+    }
   
-    // const onViewableItemsChanged = useRef(({ viewableItems }: {viewableItems: ViewToken[]}) => {
-    //   viewableItems.forEach(({ index }) => {
-    //     const videoRef = videoRefs.current[index as number];
-    //     if (videoRef) {
-    //       videoRef.pauseAsync();
-    //     }
-    //   });
-    // }).current;
-  
-    const onRefresh = async () => {
-      setRefreshing(true);
-      setSkip(0);
-      setHasMorePosts(true);
-      setReels([]);
-      await fetchPostsData(0, limit);
-    };
-  
-    const loadMorePosts = () => {
-      if (!loadingMore && hasMorePosts) {
-        setSkip((prevSkip) => prevSkip + limit);
-      }
-    };
-  
-    useEffect(() => {
-      if (hasMorePosts) {
-        fetchPostsData(skip, limit);
-      }
-    }, [skip]);
-  
-  
+    const reels = data?.pages.flat() ?? [];
+
     const renderItem = ({ item, index }: { index: number, item: SocialPost}) => {
       if(item.is_compressing) {
         if(user.id != userId) return null;
@@ -150,10 +127,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
         </TouchableOpacity>
       )
   };
-
-    useEffect(() => {
-      fetchPostsData(skip, limit);
-    }, []);
+  
 
     return (
       <Animated.FlatList
@@ -166,7 +140,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       showsVerticalScrollIndicator={false}
       contentContainerClassName="bg-black-100 px-6 mt-2"
       columnWrapperClassName="flex gap-2 w-full"
-      onEndReached={loadMorePosts}
+      onEndReached={() => hasNextPage && fetchNextPage()}
       onEndReachedThreshold={0.5} 
       initialNumToRender={10}
       maxToRenderPerBatch={10}
@@ -178,7 +152,9 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       // refreshControl={
       //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       // }
-      ListFooterComponent={loadingMore ? (
+      refreshing={isLoading}
+      onRefresh={refetch}
+      ListFooterComponent={isFetchingNextPage ? (
         <View className="flex flex-row justify-center items-center py-4">
           <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
         </View>

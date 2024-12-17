@@ -15,10 +15,11 @@ import { StatusBar } from 'expo-status-bar';
 import { useAuth } from '@/hooks/use-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/Avatar';
 import { getInitials } from '@/lib/utils';
-import { UserSocial } from '@/api/@types/models';
 import RateProfileBottomSheet from '@/components/ui/rate-profile-bottom-sheet';
 import ProfileBottomSheet from '@/components/ui/profile/bottom-sheet/profile-bottom-sheet';
 import ReportCommentBottomSheet from '@/components/ui/report-comment-bottom-sheet';
+import PostBottomSheet from '@/components/ui/post/post-bottom-sheet';
+import DeletePostBottomSheet from '@/components/ui/post/delete-post-bottom-sheet';
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -69,6 +70,8 @@ export default function TabLayout() {
   const createPostSheetRef = useRef<BottomSheet>(null);
   const rateProfileSheetRef = useRef<BottomSheet>(null);
   const profileSheetRef = useRef<BottomSheet>(null);
+  const postSheetRef = useRef<BottomSheet>(null);
+  const deletePostSheetRef = useRef<BottomSheet>(null);
 
   const { scrollToTop } = useScrollToTop();
   const { user } = useAuth();
@@ -103,6 +106,14 @@ export default function TabLayout() {
 
   const profileBottomSheet = () => {
     profileSheetRef.current?.close()
+  };
+
+  const closePostBottomSheet = () => {
+    postSheetRef.current?.close()
+  };
+
+  const closeDeletePostBottomSheet = () => {
+    deletePostSheetRef.current?.close()
   };
 
   return (
@@ -228,6 +239,8 @@ export default function TabLayout() {
         <GlobalSearchBottomSheet ref={searchSheetRef}  onClose={closeSeachBottomSheet} />
         <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
         <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>
+        <PostBottomSheet ref={postSheetRef} onClose={closePostBottomSheet} />
+        <DeletePostBottomSheet ref={deletePostSheetRef} onClose={closeDeletePostBottomSheet} />
       </BottomSheetProvider>
       
     </>
