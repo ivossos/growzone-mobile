@@ -6,6 +6,7 @@ import { getPostLikes } from "@/api/social/post/like/get-likes";
 import GrowPostCard from "@/components/ui/grow-post-card";
 import { useActivePostHome } from "@/hooks/use-active-post-home";
 import { colors } from "@/styles/colors";
+import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "@react-navigation/native";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
@@ -14,86 +15,60 @@ import { ScrollView, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
+import Loader from "@/components/ui/loader";
+
+const showErrorToast = (message: string) => {
+  Toast.show({
+    type: "error",
+    text1: "Opss",
+    text2: message,
+  });
+};
 
 export default function Post() {
   const params = useLocalSearchParams();
   const { id } = (params  as { id: string }) || {};
-  const [isLoadingPost, setIsLoadingPost] = useState(false);
-  const [isLoadingPostComments, setIsLoadingPostComments] = useState(false);
-  const [isLoadingPostLikes, setIsLoadingPostLikes] = useState(false);
-  const [post, setPost] = useState<GrowPostDetail>();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [likes, setLikes] = useState<PostLike[]>([]);
   const { handlePostChange } = useActivePostHome();
 
-  const fetchPost = async () => {
-    try {
-      setIsLoadingPost(true);
-      const data = await getGrowPost(Number(id));
-      setPost(data);
-      handlePostChange(data.post_id);
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Opss',
-        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
-      });
-
-      router.back();
-    } finally {
-      setIsLoadingPost(false);
-    }
-  };
-
-  const fetchPostComments = async () => {
-    try {
-      setIsLoadingPostComments(true);
-      const data = await getPostComments({ postId: Number(id), skip: 0, limit: 4 });
-      setComments(data);
-    } catch (error) {
-
-      Toast.show({
-        type: 'error',
-        text1: 'Opss',
-        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
-      });
-
-      router.back();
-      
-    } finally {
-      setIsLoadingPostComments(false);
-    }
-  }
-
-  const fetchPostLikes = async () => {
-    try {
-      setIsLoadingPostLikes(true);
-      const data = await getPostLikes({ postId: Number(id), skip: 0, limit: 4  });
-      setLikes(data);
-    } catch (error) {
-
-      Toast.show({
-        type: 'error',
-        text1: 'Opss',
-        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
-      });
-
-      router.back();
-      
-    } finally {
-      setIsLoadingPostLikes(false);
-    }
-  }
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["grow-post-data", id],
+    queryFn: async () => {
+      const numberId = Number(id)
+      const [post, comments, likes] = await Promise.all([
+        getGrowPost(numberId),
+        getPostComments({ postId: numberId, skip: 0, limit: 4 }),
+        getPostLikes({ postId: numberId, skip: 0, limit: 4 }),
+      ]);
+      return { post, comments, likes };
+    },
+    enabled: !!id,
+  });
 
   const loadComments = async () => {
-    await Promise.all([fetchPost(), fetchPostLikes(), fetchPostComments()])
+    // await Promise.all([fetchPost(), fetchPostLikes(), fetchPostComments()])
+    // brendo
   }
 
-  useEffect(() => {    
-    fetchPost();
-    fetchPostLikes();
-    fetchPostComments();
-  }, [id]);
+  useEffect(() => {
+    if (data?.post) {
+      handlePostChange(data.post.post_id);
+    }
+  }, [data, handlePostChange]);
+
+  if (error) {
+    showErrorToast("Aconteceu um erro ao buscar as informações. Tente novamente mais tarde.");
+    router.back();
+  }
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-black-100">
+        <Loader isLoading />
+      </View>
+    );
+  }
+
+  const { post, comments = [], likes = [] } = data || {};
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -112,9 +87,7 @@ export default function Post() {
         </View>
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {!isLoadingPost && !isLoadingPostComments && !isLoadingPostLikes && (
-          post && <GrowPostCard loadComments={loadComments} post={post} comments={comments} likes={likes} />
-        )}
+        {post && <GrowPostCard loadComments={loadComments} post={post} comments={comments} likes={likes} />}
       </ScrollView>
     </View>
     </SafeAreaView>

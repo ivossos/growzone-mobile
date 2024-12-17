@@ -11,6 +11,8 @@ import "@/styles/global.css"
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthContextProvider } from '@/context/auth-context';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/lib/react-query';
 import UpdateAppModal from './update-app';
 
 SplashScreen.preventAutoHideAsync();
@@ -38,25 +40,30 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AuthContextProvider>      
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="notifications" options={{ headerShown: false }} />
-            <Stack.Screen name="profile" options={{ headerShown: false }} />
-            <Stack.Screen name="followers" options={{ headerShown: false }} />
-            <Stack.Screen name="following" options={{ headerShown: false }} />
-            <Stack.Screen name="post" options={{ headerShown: false }} />
-            <Stack.Screen name="user" options={{ headerShown: false }} />
-            <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-          <Toast />
-          <UpdateAppModal />
-        </GestureHandlerRootView>
-      </AuthContextProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthContextProvider>      
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="notifications" options={{ headerShown: false }} />
+              <Stack.Screen name="profile" options={{ headerShown: false }} />
+              <Stack.Screen name="followers" options={{ headerShown: false }} />
+              <Stack.Screen name="following" options={{ headerShown: false }} />
+              <Stack.Screen name="post" options={{ headerShown: false }} />
+              <Stack.Screen name="edit-post" options={{ headerShown: false }} />
+              <Stack.Screen name="edit-reels-post" options={{ headerShown: false }} />
+              <Stack.Screen name="edit-grow-post" options={{ headerShown: false }} />
+              <Stack.Screen name="edit-user-profile" options={{ headerShown: false }} />
+              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+            <Toast />
+            <UpdateAppModal />
+          </GestureHandlerRootView>
+        </AuthContextProvider>
+      </QueryClientProvider>
     </ThemeProvider>
   );
 }

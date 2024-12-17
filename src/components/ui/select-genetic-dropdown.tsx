@@ -1,13 +1,13 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { colors } from "@/styles/colors";
 import debounce from "lodash/debounce";
 import { createGenetic, getGenetics } from "@/api/social/genetic";
-import { find } from "lodash";
-import Button from "./button";
+import { find, uniqBy } from "lodash";
 import { CreateGenetic } from "@/api/@types/models";
 import Toast from "react-native-toast-message";
+import Button from "./button";
 
 interface Genetic {
   name: string;
@@ -18,6 +18,7 @@ interface SelectGeneticDropdownProps {
   title?: string;
   placeholder: string;
   error?: string;
+  initialValue?: { id?: number; label?: string };
   handleChangeText: (text: string) => void;
   onFocus?: () => void;
   onBlur?: () => void;
@@ -27,6 +28,7 @@ const SelectGeneticDropdown = ({
   title,
   placeholder,
   error,
+  initialValue,
   handleChangeText,
   onBlur = () => {},
   onFocus = () => {},
@@ -71,27 +73,59 @@ const SelectGeneticDropdown = ({
     300
   );
 
+  useEffect(() => {
+    setSkip(0);
+    fetchSuggestions(searchQuery);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const loadInitialValue = async () => {
+      if (!initialValue || !initialValue.id || value === initialValue.id)
+        return;
+
+      if (data.some((item) => item.id === initialValue.id)) return;
+
+      try {
+        setIsLoading(true);
+        const genetics = await getGenetics({ query: initialValue.label });
+        const genetic = genetics.find((item) => item.id === initialValue.id);
+
+        if (genetic) {
+          setData((prev) =>
+            uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], "id")
+          );
+          setValue(initialValue.id);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar o item inicial:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadInitialValue();
+  }, [initialValue?.id, value, data]);
+
   const addNewGenetic = useCallback(async () => {
     setIsLoading(true);
 
     const createGeneticData: CreateGenetic = {
-      name: searchQuery.toUpperCase()
-    }
+      name: searchQuery.toUpperCase(),
+    };
 
     try {
-      await createGenetic(createGeneticData)
+      await createGenetic(createGeneticData);
 
       Toast.show({
-        type: 'success',
-        text1: 'Sucesso',
-        text2: 'Genética adicionada com sucesso',
+        type: "success",
+        text1: "Sucesso",
+        text2: "Genética adicionada com sucesso",
       });
-
     } catch (error) {
       Toast.show({
-        type: 'error',
-        text1: 'Erro',
-        text2: 'Não foi possível adicionar a genética',
+        type: "error",
+        text1: "Erro",
+        text2: "Não foi possível adicionar a genética",
       });
     }
 
@@ -117,11 +151,6 @@ const SelectGeneticDropdown = ({
       </View>
     );
   }, []);
-
-  useEffect(() => {
-    setSkip(0);
-    fetchSuggestions(searchQuery);
-  }, [searchQuery]);
 
   const loadMoreData = () => {
     if (hasMore && !isLoading) {

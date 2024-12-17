@@ -12,7 +12,11 @@ type BottomSheetType =
   | "block-user"
   | "unlock-user"
   | "report-comment"
-  | "profile-cover";
+  | "profile-cover"
+  | "post-bottom-sheet"
+  | "reel-post-bottom-sheet"
+  | "grow-post-bottom-sheet"
+  | "delete-post-bottom-sheet";
 
 type BottomSheetContextType = {
   postId: number | null;

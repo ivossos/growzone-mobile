@@ -22,6 +22,8 @@ export default function Layout() {
   const reportUserSheetRef = useRef<BottomSheet>(null);
   const blockUserSheetRef = useRef<BottomSheet>(null);
   const unlockUserSheetRef = useRef<BottomSheet>(null);
+  const postSheetRef = useRef<BottomSheet>(null);
+  const deletePostSheetRef = useRef<BottomSheet>(null);
   const reportCommentSheetRef = useRef<BottomSheet>(null);
 
   const closeReportBottomSheet = () => {
@@ -50,6 +52,10 @@ export default function Layout() {
 
   const closeReportCommentBottomSheet = () => {
     reportCommentSheetRef.current?.close()
+  };
+
+  const closeDeletePostBottomSheet = () => {
+    deletePostSheetRef.current?.close()
   };
 
   return (
