@@ -19,6 +19,7 @@ import RateProfileBottomSheet from '@/components/ui/rate-profile-bottom-sheet';
 import ProfileBottomSheet from '@/components/ui/profile/bottom-sheet/profile-bottom-sheet';
 import PostBottomSheet from '@/components/ui/post/post-bottom-sheet';
 import DeletePostBottomSheet from '@/components/ui/post/delete-post-bottom-sheet';
+import { useProgress } from '@/hooks/use-progress';
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -73,6 +74,7 @@ export default function TabLayout() {
 
   const { scrollToTop } = useScrollToTop();
   const { user } = useAuth();
+  const { isProcessing, toggleVibration } = useProgress();
 
   const openBottomSheet = () => {
     bottomSheetRef.current?.snapToIndex(1)
@@ -173,6 +175,10 @@ export default function TabLayout() {
               listeners={{
                 tabPress: (e) => {
                   e.preventDefault();
+                  if(isProcessing) {
+                    toggleVibration();  
+                    return;
+                  }
                   openBottomSheet();
                 },
               }}
