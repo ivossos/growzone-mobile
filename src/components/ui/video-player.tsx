@@ -41,8 +41,24 @@ const VideoPlayer = ({ source, postId, isActive }: { source: string, postId: num
   }, [isActive, activePostId, postId, source]);
 
   useEffect(() => {
-    managePlayback();
-  }, [managePlayback]);
+    if (!video.current) {
+      return;
+    }
+
+    if (activePostId === null) {
+      video.current.pauseAsync();
+      video.current.unloadAsync();
+      setIsVideoLoaded(false);
+      return;
+    }
+
+    if (activePostId === postId) {
+      managePlayback();
+    } else {
+      video.current.pauseAsync();
+    }
+
+  }, [activePostId, postId, managePlayback]);
 
   const onPress = async () => {
     if (!video.current) return;

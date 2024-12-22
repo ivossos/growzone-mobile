@@ -26,8 +26,7 @@ import { NotificationProvider } from '@/context/notification-context';
 import { ActivePostHomeProvider } from '@/context/active-post-home-context';
 import PostBottomSheet from '@/components/ui/post/post-bottom-sheet';
 import DeletePostBottomSheet from '@/components/ui/post/delete-post-bottom-sheet';
-import FloatingPostProgressBar from '@/components/ui/floating-post-progress-bar';
-import { ProgressProvider } from '@/context/progress-context';
+
 
 export default function DrawerLayout() {
   const { user, signOut, isLoadingUserStorage } = useAuth();
@@ -96,167 +95,164 @@ export default function DrawerLayout() {
   }
 
   return (
-    <ProgressProvider>
-      <NotificationProvider>
-        <ActivePostHomeProvider>
-          <BottomSheetProvider>
-            <ScrollToTopProvider>
-              <Drawer
-                screenOptions={{
-                  headerShown: false,
-                  drawerType: 'front',
-                  drawerPosition: 'right',
-                  drawerStyle: {
-                    width: '100%'
+    <NotificationProvider>
+      <ActivePostHomeProvider>
+        <BottomSheetProvider>
+          <ScrollToTopProvider>
+            <Drawer
+              screenOptions={{
+                headerShown: false,
+                drawerType: 'front',
+                drawerPosition: 'right',
+                drawerStyle: {
+                  width: '100%'
+                },
+                swipeEnabled: false,
+              }}
+              drawerContent={(props) => <DrawerContent {...props} />}
+            >
+              <Drawer.Screen name='(tabs)' />
+
+              <Drawer.Screen
+                name="edit-profile"
+                options={
+                  {
+                    title: 'Dados gerais',
+                    iconName: ProfileIcon,
+                    isDivider: true,
+                    animationEnabled: true,
+                  } as CustomOptions
+                }
+              />
+
+              {/* <Drawer.Screen
+                name="event"
+                options={
+                  {
+                    title: 'Eventos',
+                    iconName: CalenderIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              /> */}
+
+
+              <Drawer.Screen
+                name="security"
+                options={
+                  {
+                    title: 'Segurança',
+                    iconName: PadlockIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              />
+
+              {/* <Drawer.Screen
+                name="preference-center"
+                options={
+                  {
+                    title: 'Central de preferências',
+                    iconName: SettingsIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              /> */}
+
+              <Drawer.Screen
+                name="terms-conditions"
+                options={
+                  {
+                    title: 'Termos e condições',
+                    iconName: FileIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              />
+
+              <Drawer.Screen
+                name="help"
+                options={
+                  {
+                    title: 'Ajuda',
+                    iconName: QuestionIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              />
+
+              <Drawer.Screen
+                name="blocked-users"
+                options={
+                  {
+                    title: 'Usuários bloqueados',
+                    iconName: BanIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              />
+
+              <Drawer.Screen
+                name="delete-account"
+                options={
+                  {
+                    title: 'Excluir conta',
+                    iconName: UserRoundXIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              />
+
+              {/* <Drawer.Screen
+                name="user-category"
+                options={
+                  {
+                    title: 'Perfil Grower',
+                    iconName: FileIcon,
+                    isDivider: true,
+                  } as CustomOptions
+                }
+              /> */}
+
+              {/* <Drawer.Screen
+                name="privacy-policy"
+                options={
+                  {
+                    title: 'Política de privacidade',
+                    iconName: SecurityIcon,
+                    isDivider: true
+                  } as CustomOptions
+                }
+              /> */}
+
+              <Drawer.Screen
+                listeners={{
+                  drawerItemPress: (e) => {
+                    e.preventDefault();
+                    logout();
                   },
-                  swipeEnabled: false,
                 }}
-                drawerContent={(props) => <DrawerContent {...props} />}
-              >
-                <Drawer.Screen name='(tabs)' />
-
-                <Drawer.Screen
-                  name="edit-profile"
-                  options={
-                    {
-                      title: 'Dados gerais',
-                      iconName: ProfileIcon,
-                      isDivider: true,
-                      animationEnabled: true,
-                    } as CustomOptions
-                  }
-                />
-
-                {/* <Drawer.Screen
-                  name="event"
-                  options={
-                    {
-                      title: 'Eventos',
-                      iconName: CalenderIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
-
-
-                <Drawer.Screen
-                  name="security"
-                  options={
-                    {
-                      title: 'Segurança',
-                      iconName: PadlockIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                />
-
-                {/* <Drawer.Screen
-                  name="preference-center"
-                  options={
-                    {
-                      title: 'Central de preferências',
-                      iconName: SettingsIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
-
-                <Drawer.Screen
-                  name="terms-conditions"
-                  options={
-                    {
-                      title: 'Termos e condições',
-                      iconName: FileIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                />
-
-                <Drawer.Screen
-                  name="help"
-                  options={
-                    {
-                      title: 'Ajuda',
-                      iconName: QuestionIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                />
-
-                <Drawer.Screen
-                  name="blocked-users"
-                  options={
-                    {
-                      title: 'Usuários bloqueados',
-                      iconName: BanIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                />
-
-                <Drawer.Screen
-                  name="delete-account"
-                  options={
-                    {
-                      title: 'Excluir conta',
-                      iconName: UserRoundXIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                />
-
-                {/* <Drawer.Screen
-                  name="user-category"
-                  options={
-                    {
-                      title: 'Perfil Grower',
-                      iconName: FileIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
-
-                {/* <Drawer.Screen
-                  name="privacy-policy"
-                  options={
-                    {
-                      title: 'Política de privacidade',
-                      iconName: SecurityIcon,
-                      isDivider: true
-                    } as CustomOptions
-                  }
-                /> */}
-
-                <Drawer.Screen
-                  listeners={{
-                    drawerItemPress: (e) => {
-                      e.preventDefault();
-                      logout();
-                    },
-                  }}
-                  name="logout"
-                  options={{
-                    title: 'Encerrar sessão',
-                    iconName: CloseIcon,
-                  } as CustomOptions}
-                />
-                
-              </Drawer>
-            <FloatingPostProgressBar />
-            <CommentBottomSheet ref={commentSheetRef} />
-            <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
-            <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
-            <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>
-            <ReportUserBottomSheet ref={reportUserSheetRef} onClose={reportUserBottomSheet} />
-            <BlockUserBottomSheet ref={blockUserSheetRef} onClose={blockUserBottomSheet} />
-            <UnlockUserBottomSheet ref={unlockUserSheetRef} onClose={unlockUserBottomSheet} />
-            <PostBottomSheet ref={postSheetRef} onClose={closePostBottomSheet} />
-            <DeletePostBottomSheet ref={deletePostSheetRef} onClose={closeDeletePostBottomSheet} />
-            <StatusBar backgroundColor={colors.black[100]} style="light" />
-            </ScrollToTopProvider>
-          </BottomSheetProvider>
-        </ActivePostHomeProvider>
-      </NotificationProvider>
-    </ProgressProvider>
+                name="logout"
+                options={{
+                  title: 'Encerrar sessão',
+                  iconName: CloseIcon,
+                } as CustomOptions}
+              />
+              
+            </Drawer>
+          <CommentBottomSheet ref={commentSheetRef} />
+          <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+          <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
+          <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>
+          <ReportUserBottomSheet ref={reportUserSheetRef} onClose={reportUserBottomSheet} />
+          <BlockUserBottomSheet ref={blockUserSheetRef} onClose={blockUserBottomSheet} />
+          <UnlockUserBottomSheet ref={unlockUserSheetRef} onClose={unlockUserBottomSheet} />
+          <PostBottomSheet ref={postSheetRef} onClose={closePostBottomSheet} />
+          <DeletePostBottomSheet ref={deletePostSheetRef} onClose={closeDeletePostBottomSheet} />
+          <StatusBar backgroundColor={colors.black[100]} style="light" />
+          </ScrollToTopProvider>
+        </BottomSheetProvider>
+      </ActivePostHomeProvider>
+    </NotificationProvider>
   )
 }

@@ -2,7 +2,7 @@
   "expo": {
     "name": "Growzone",
     "slug": "growzone",
-    "version": "1.1.0",
+    "version": "1.0.10",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "growzone",
@@ -18,25 +18,20 @@
       "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
-        "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
-        "NSDocumentsUsageDescription": "Precisamos de acesso para salvar arquivos no seu dispositivo.",
-        "NSFileProtectionKey": "NSFileProtectionComplete"
+        "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
       },
       "locales": {
         "pt-BR": {
           "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
-          "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
-          "NSDocumentsUsageDescription": "Precisamos de acesso para salvar arquivos no seu dispositivo."
+          "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
         },
         "es": {
           "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
-          "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para capturar fotos y videos.",
-          "NSDocumentsUsageDescription": "Necesitamos acceso para guardar archivos en su dispositivo."
+          "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para capturar fotos y videos."
         },
         "en": {
           "NSPhotoLibraryUsageDescription": "We need access to your photo library to select photos and videos.",
-          "NSCameraUsageDescription": "We need access to your camera to capture photos and videos.",
-          "NSDocumentsUsageDescription": "We need access to save files to your device."
+          "NSCameraUsageDescription": "We need access to your camera to capture photos and videos."
         }
       }
     },
@@ -44,19 +39,13 @@
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
         "backgroundColor": "#000000",
-        "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"],
+        "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"],
         "permissions": {
           "READ_EXTERNAL_STORAGE": {
             "message": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos."
           },
           "CAMERA": {
             "message": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
-          },
-          "READ_EXTERNAL_STORAGE": {
-            "message": "Precisamos de acesso para leitura de arquivos"
-          },
-          "WRITE_EXTERNAL_STORAGE": {
-            "message": "Precisamos de acesso para gravação de arquivos"
           }
         }
       },

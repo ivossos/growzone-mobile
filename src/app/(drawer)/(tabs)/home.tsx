@@ -119,6 +119,14 @@ export default function HomeScreen() {
       }, [posts, loadingMore])
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        handlePostChange(null);
+      };
+    }, [])
+  );
+
   const loadMorePosts = () => {
     if (!loadingMore && hasMorePosts) {
       setSkip((prevSkip) => prevSkip + limit);
