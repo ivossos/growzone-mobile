@@ -11,9 +11,8 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { getPost } from "@/api/social/post/get-post";
-import { getPostComments } from "@/api/social/post/comment/get-comments";
-import { getPostLikes } from "@/api/social/post/like/get-likes";
 import Loader from "@/components/ui/loader";
+import { queryClient } from "@/lib/react-query";
 
 const showErrorToast = (message: string) => {
   Toast.show({
@@ -41,18 +40,18 @@ export default function Post() {
     queryKey: ["post-data", id],
     queryFn: async () => {
       const postId = Number(id);
-      const [post, comments, likes] = await Promise.all([
+      const [post] = await Promise.all([
         getPost(postId),
-        getPostComments({ postId, skip: 0, limit: 4 }),
-        getPostLikes({ postId, skip: 0, limit: 4 }),
       ]);
-      return { post, comments, likes };
+      return { post };
     },
     enabled: !!id,
   });
 
   const loadComments = async () => {
-    // brendo
+    await queryClient.invalidateQueries({
+      queryKey: ["post-data", id]
+    })
   };
 
   useEffect(() => {
@@ -68,6 +67,8 @@ export default function Post() {
     router.back();
   }
 
+  // TODO: remover depois
+
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-black-100">
@@ -76,7 +77,7 @@ export default function Post() {
     );
   }
 
-  const { post, comments = [], likes = [] } = data || {};
+  const { post } = data || {};
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
@@ -87,8 +88,6 @@ export default function Post() {
             <PostCard
               loadComments={loadComments}
               post={post}
-              comments={comments}
-              likes={likes}
             />
           )}
         </ScrollView>

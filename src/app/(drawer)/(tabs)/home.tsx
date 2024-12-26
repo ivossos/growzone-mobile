@@ -109,7 +109,7 @@ export default function HomeScreen() {
     if (item.type === 'social') {
       return <PostCard loadComments={loadComments} post={item.post as PostDetail} />;
     } else {
-      return <GrowPostCard loadComments={loadComments} post={item.post as GrowPostDetail} />;
+      return <GrowPostCard post={item.post as GrowPostDetail} />;
     }
   }, [activePostId, posts]);
 

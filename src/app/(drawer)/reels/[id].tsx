@@ -64,7 +64,7 @@ export default function Reels() {
         </TouchableOpacity> */}
       </View>
       
-    {post && <ReelsPost post={post} activePostId={post.post_id} resizeMode={ResizeMode.COVER} isTab={false}/>}
+    {post && <ReelsPost post={post} activePostId={post.post_id} resizeMode={ResizeMode.COVER} />}
     </SafeAreaView>
   </View>
   )

@@ -19,12 +19,10 @@ import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   post: PostDetail;
-  comments?: Comment[];
-  likes?: PostLike[];
   loadComments: () => Promise<void>;
 }
 
-const PostCard = ({ post, comments = [], likes = [], loadComments }: Props) => {
+const PostCard = ({ post, loadComments }: Props) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
@@ -61,22 +59,6 @@ const PostCard = ({ post, comments = [], likes = [], loadComments }: Props) => {
       setIsLoadingLiked(false);
     }
   };
-
-  const commentsScreen = useMemo(() => {
-    return (
-      comments.length > 0 && (
-        <View className="pt-6">
-          {comments.map((comment) => (
-            <CommentCard
-              loadComments={loadComments}
-              key={comment.id}
-              comment={comment}
-            />
-          ))}
-        </View>
-      )
-    );
-  }, [comments]);
 
   const handlerOpenCommentSheet = useCallback(() => {
     openBottomSheet({
@@ -119,12 +101,23 @@ const PostCard = ({ post, comments = [], likes = [], loadComments }: Props) => {
           <Text className="text-brand-grey text-sm">
             {formatDistance(post.created_at)}
           </Text>
-          {user.id !== post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
-            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-          </TouchableOpacity>}
+
+          {user.id !== post.user.id && (
+            <TouchableOpacity
+              onPress={() =>
+                openBottomSheet({ type: "report", id: post.post_id })
+              }
+            >
+              <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+            </TouchableOpacity>
+          )}
 
           {user.id === post.user.id && (
-            <TouchableOpacity onPress={() => openBottomSheet({ type: "post-bottom-sheet", id: post.post_id })}>
+            <TouchableOpacity
+              onPress={() =>
+                openBottomSheet({ type: "post-bottom-sheet", id: post.post_id })
+              }
+            >
               <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
             </TouchableOpacity>
           )}
@@ -191,9 +184,7 @@ const PostCard = ({ post, comments = [], likes = [], loadComments }: Props) => {
           </>
         )}
 
-        {commentsScreen}
-
-        {post.comment_count > 0 && post.comment_count > comments.length && (
+        {post.comment_count > 0 ? (
           <TouchableOpacity
             className="flex flex-row items-end gap-1 pt-3 mb-3 bg-black-100"
             onPress={handlerOpenCommentSheet}
@@ -203,7 +194,7 @@ const PostCard = ({ post, comments = [], likes = [], loadComments }: Props) => {
             </Text>
             <ChevronRight width={16} height={16} color={colors.brand.grey} />
           </TouchableOpacity>
-        )}
+        ) : null}
       </View>
     </View>
   );

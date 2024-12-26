@@ -1,4 +1,4 @@
-import { GlobalSearchType } from "./enums";
+import { GlobalSearchType, TimelineType } from "./enums";
 
 export interface User {
   id: number;
@@ -166,44 +166,11 @@ export interface Follower {
 
 export interface GlobalSearchUser {
   id: number;
-  image: {
-    id: number;
-    image: string;
-    created_at: string;
-  };
+  image: UserImage;
   name: string;
   username: string;
   created_at: string;
   is_following: boolean;
-}
-
-export interface GlobalSearchGrowPost {
-  id: number;
-  post_id: number;
-  file: {
-    id: number;
-    file: string;
-    type: string;
-    created_at: string;
-  };
-  strain: {
-    id: number;
-    name: string;
-    created_at: string;
-  };
-  phase: {
-    id: number;
-    name: string;
-    created_at: string;
-  };
-  day: number;
-  created_at: string;
-  is_compressing: boolean;
-}
-
-export interface GlobalSearchResponse {
-  users: Array<GlobalSearchUser>;
-  grow_posts: Array<GlobalSearchGrowPost>;
 }
 
 export interface SocialPostFile {
@@ -486,7 +453,22 @@ export interface GetPostCommentsProps {
 
 export interface GlobalSearchParams {
   type: GlobalSearchType;
+  strain_id: number;
+  phase_id: number;
   query: string;
   skip: number;
   limit: number;
+}
+
+export interface TimelineParams {
+  type: TimelineType;
+  skip: number;
+  limit: number;
+  userId: number;
+}
+
+export interface VideoPlayerHandle {
+  play: () => Promise<void>;
+  pause: () => Promise<void>;
+  seek: (position: number) => Promise<void>;
 }

@@ -1,14 +1,11 @@
 import { TouchableOpacity, Text } from "react-native";
 import { router } from "expo-router";
 
-interface EditProfileUserProps {
-  userId: number
-}
 
-export function EditProfileButton({ userId }: EditProfileUserProps) {
+export function EditProfileButton() {
 
   const handlerOpenScreenEditUser = () => {
-    router.push({ pathname: "/user/[userId]/edit", params: { userId } });
+    router.push({ pathname: "/profile/edit" });
   }
 
   return (

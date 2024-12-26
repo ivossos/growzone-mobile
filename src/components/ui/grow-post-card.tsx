@@ -13,22 +13,18 @@ import LikedIcon from "@/assets/icons/liked.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
 import { router } from "expo-router";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
-import { Comment, GrowPostDetail, PostLike } from "@/api/@types/models";
+import { GrowPostDetail} from "@/api/@types/models";
 import { formatDistance, getInitials } from "@/lib/utils";
 import Toast from "react-native-toast-message";
-import CommentCard from "./comment-card";
 import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   post: GrowPostDetail;
-  comments?: Comment[];
-  likes?: PostLike[];
-  loadComments: () => Promise<void>
 }
 
-const GrowPostCard = ({ post, comments = [], likes = [], loadComments }: Props) => {
+const GrowPostCard = ({ post }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -65,18 +61,6 @@ const GrowPostCard = ({ post, comments = [], likes = [], loadComments }: Props) 
       setIsLoadingLiked(false);
     }
   };
-
-  const commentsScreen = useMemo(() => {
-    return (
-      comments.length > 0 && (
-        <View className="pt-6">
-          {comments.map((comment) => (
-            <CommentCard loadComments={loadComments} key={comment.id} comment={comment} />
-          ))}
-        </View>
-      )
-    );
-  }, [comments]);
 
   return (
     <View className="flex gap-6 mx-6 my-3">
@@ -192,9 +176,7 @@ const GrowPostCard = ({ post, comments = [], likes = [], loadComments }: Props) 
           </>
         )}
 
-        {commentsScreen}
-
-        {post.comment_count > 0 && post.comment_count > comments.length && (
+        {post.comment_count > 0 && (
           <TouchableOpacity
             className="flex flex-row items-end gap-1 pt-3 mb-3 bg-black-100"
             onPress={() =>

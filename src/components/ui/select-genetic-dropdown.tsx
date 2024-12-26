@@ -8,6 +8,7 @@ import { find, uniqBy } from "lodash";
 import { CreateGenetic } from "@/api/@types/models";
 import Toast from "react-native-toast-message";
 import Button from "./button";
+import { ArrowDown, X } from "lucide-react-native";
 
 interface Genetic {
   name: string;
@@ -19,7 +20,8 @@ interface SelectGeneticDropdownProps {
   placeholder: string;
   error?: string;
   initialValue?: { id?: number; label?: string };
-  handleChangeText: (text: string) => void;
+  showClearIcon?: boolean;
+  handleChangeText: (text: string, data: { id: number; label: string }) => void;
   onFocus?: () => void;
   onBlur?: () => void;
 }
@@ -29,6 +31,7 @@ const SelectGeneticDropdown = ({
   placeholder,
   error,
   initialValue,
+  showClearIcon = false,
   handleChangeText,
   onBlur = () => {},
   onFocus = () => {},
@@ -78,33 +81,44 @@ const SelectGeneticDropdown = ({
     fetchSuggestions(searchQuery);
   }, [searchQuery]);
 
-  useEffect(() => {
-    const loadInitialValue = async () => {
-      if (!initialValue || !initialValue.id || value === initialValue.id)
-        return;
+  const loadInitialValue = async () => {
+      
+      
+    if (!initialValue || !initialValue.id || value === initialValue.id) {
+      return;
+    }
 
-      if (data.some((item) => item.id === initialValue.id)) return;
+    if (data.some((item) => item.id === initialValue.id)){ 
+      return;
+    }
 
-      try {
-        setIsLoading(true);
-        const genetics = await getGenetics({ query: initialValue.label });
-        const genetic = genetics.find((item) => item.id === initialValue.id);
+    try {
+      setIsLoading(true);
+      console.log('initialValue ', initialValue);
+      const genetics = await getGenetics({ query: initialValue.label });
 
-        if (genetic) {
-          setData((prev) =>
-            uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], "id")
-          );
-          setValue(initialValue.id);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar o item inicial:", error);
-      } finally {
-        setIsLoading(false);
+      console.log('genetics ', JSON.stringify(genetics));
+      const genetic = genetics.find((item) => item.id === initialValue.id);
+      console.log('encontrou ', genetic);
+      if (genetic) {
+        
+        setData((prev) =>
+          uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], "id")
+        );
+        setValue(initialValue.id);
       }
-    };
+    } catch (error) {
+      console.error("Erro ao carregar o item inicial:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+
 
     loadInitialValue();
-  }, [initialValue?.id, value, data]);
+  }, [initialValue, value, data]);
 
   const addNewGenetic = useCallback(async () => {
     setIsLoading(true);
@@ -160,6 +174,11 @@ const SelectGeneticDropdown = ({
     }
   };
 
+  const cleanSelect = useCallback(() => {
+    setValue(null);
+    handleChangeText(null as any, {} as any);
+  }, []);
+
   return (
     <View style={styles.container}>
       {title && (
@@ -206,7 +225,7 @@ const SelectGeneticDropdown = ({
         onChange={(item) => {
           setValue(item.value);
           setIsFocus(false);
-          handleChangeText(String(item.value));
+          handleChangeText(String(item.value), item);
         }}
         onChangeText={(text) => setSearchQuery(text)}
         flatListProps={{
@@ -222,6 +241,23 @@ const SelectGeneticDropdown = ({
               />
             </View>
           ) : null,
+        }}
+        renderRightIcon={() => {
+          if (showClearIcon) {
+            return (
+              <View className="justify-end">
+                {value ? (
+                  <X
+                    size={24}
+                    color={colors.brand.grey}
+                    onPress={cleanSelect}
+                  />
+                ) : (
+                  <ArrowDown size={24} color={colors.brand.grey} />
+                )}
+              </View>
+            );
+          }
         }}
         renderLeftIcon={(isVisible) => {
           if (isVisible && isLoading) {

@@ -1,3 +1,4 @@
+import { TimelineType } from "@/api/@types/enums";
 import { GrowPost } from "@/api/@types/models";
 import { getUserGrowPosts } from "@/api/social/post/get-user-grow-posts";
 import { useAuth } from "@/hooks/use-auth";
@@ -71,7 +72,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
 
     const plants = data?.pages.flat() ?? [];
 
-    const renderItem = ({ item, index }: { index: number; item: GrowPost }) => {
+    const renderItem = ({ item }: { item: GrowPost }) => {
       if (item.is_compressing) {
         if (user.id != userId) return null;
         return (
@@ -116,8 +117,12 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
         <TouchableOpacity
           onPress={() =>
             router.push({
-              pathname: "/post/[id]/grow",
-              params: { id: item.post_id },
+              pathname: "/post/[id]/timeline/[userId]",
+              params: {
+                id: item.post_id,
+                userId: userId,
+                type: TimelineType.GROW,
+              },
             })
           }
           className="flex flex-col gap-2 mb-6"

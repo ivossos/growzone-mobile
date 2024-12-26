@@ -5,10 +5,6 @@ import GrowPostCard from "@/components/ui/grow-post-card";
 import { useActivePostHome } from "@/hooks/use-active-post-home";
 import { colors } from "@/styles/colors";
 import { useQuery } from "@tanstack/react-query";
-<<<<<<< HEAD
-import { useRoute } from "@react-navigation/native";
-=======
->>>>>>> main
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useEffect } from "react";
@@ -17,6 +13,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import Loader from "@/components/ui/loader";
+import { queryClient } from "@/lib/react-query";
 
 const showErrorToast = (message: string) => {
   Toast.show({
@@ -37,18 +34,11 @@ export default function Post() {
       const numberId = Number(id)
       const [post, comments, likes] = await Promise.all([
         getGrowPost(numberId),
-        getPostComments({ postId: numberId, skip: 0, limit: 4 }),
-        getPostLikes({ postId: numberId, skip: 0, limit: 4 }),
       ]);
       return { post, comments, likes };
     },
     enabled: !!id,
   });
-
-  const loadComments = async () => {
-    // await Promise.all([fetchPost(), fetchPostLikes(), fetchPostComments()])
-    // brendo
-  }
 
   useEffect(() => {
     if (data?.post) {
@@ -69,7 +59,7 @@ export default function Post() {
     );
   }
 
-  const { post, comments = [], likes = [] } = data || {};
+  const { post } = data || {};
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -88,7 +78,7 @@ export default function Post() {
         </View>
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {post && <GrowPostCard loadComments={loadComments} post={post} comments={comments} likes={likes} />}
+        {post && <GrowPostCard post={post} />}
       </ScrollView>
     </View>
     </SafeAreaView>

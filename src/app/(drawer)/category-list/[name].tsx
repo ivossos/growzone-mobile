@@ -1,10 +1,8 @@
-import { GlobalSearchType } from "@/api/@types/enums";
-import { GlobalSearchResponse, GlobalSearchUser } from "@/api/@types/models";
+import { UserGlobalSearchResponse } from "@/api/@types/models";
 import { createFollow } from "@/api/social/follow/create-follow";
 import { deleteFollow } from "@/api/social/follow/delete-follow";
-import { searchGlobal } from "@/api/social/global-search/seach-global";
+import { searchGlobal } from "@/api/social/global-search/search-global";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
-import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { useAuth } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/utils";
 import { colors } from "@/styles/colors";
@@ -22,7 +20,7 @@ const CategoryList = () => {
   const categoryName = decodeURIComponent(
     (route.params as { name: string })?.name
   );
-  const [searchResponse, setSearchResponse] = useState<Array<GlobalSearchUser>>(
+  const [searchResponse, setSearchResponse] = useState<Array<UserGlobalSearchResponse>>(
     []
   );
   const [skip, setSkip] = useState(0);
@@ -42,13 +40,12 @@ const CategoryList = () => {
         skip: skipValue,
         limit: limitValue,
         query: categoryName,
-        type: GlobalSearchType.USER,
       });
 
-      if (res.users.length === 0) {
+      if (res.length === 0) {
         setHasMore(false);
       } else {
-        setSearchResponse((prev) => [...prev, ...res.users]);
+        setSearchResponse((prev) => [...prev, ...res]);
       }
     } catch (error) {
       console.error(
@@ -67,7 +64,7 @@ const CategoryList = () => {
     }
   };
 
-  async function handleFollower(user: GlobalSearchUser) {
+  async function handleFollower(user: UserGlobalSearchResponse) {
     try {
       setIsLoadingHandleFollower(true);
 
@@ -106,7 +103,7 @@ const CategoryList = () => {
     fetchUsersCategory(skip, limit);
   }, [skip, limit, categoryName]);
 
-  const renderItem = ({ item }: { item: GlobalSearchUser }) => (
+  const renderItem = ({ item }: { item: UserGlobalSearchResponse }) => (
     <View
       key={item.id}
       className="flex flex-row items-center justify-between w-full"

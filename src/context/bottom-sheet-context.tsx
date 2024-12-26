@@ -3,7 +3,7 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 type BottomSheetType =
   | "comment"
   | "report"
-  | "search"
+  | "search-genetic"
   | "rate-profile"
   | "reviews-profile"
   | "create-post"

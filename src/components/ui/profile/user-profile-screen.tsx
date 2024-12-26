@@ -15,15 +15,13 @@ import { NavigationContainer } from "@react-navigation/native";
 import { router, useNavigation } from "expo-router";
 import { Ellipsis } from "lucide-react-native";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { queryClient } from "@/lib/react-query";
-
 import { TouchableOpacity } from "react-native-gesture-handler";
 import Toast from "react-native-toast-message";
 
 import React, {
   ElementType,
   memo,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -71,6 +69,8 @@ import ConnectionPostList from "@/components/ui/profile/connection-post-list";
 import ConnectionReelstList from "@/components/ui/profile/connection-reels-list";
 import ConnectionGrowPostList from "@/components/ui/profile/connection-grow-post-list";
 import { EditProfileButton } from "@/components/ui/profile/edit-profile-button";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/react-query";
 import Loader from "../loader";
 
 const TAB_BAR_HEIGHT = 48;
@@ -110,9 +110,11 @@ interface Props {
 
 const UserProfileScreen = ({ userId, Header }: Props) => {
   const navigation = useNavigation();
+  // const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { openBottomSheet } = useBottomSheetContext();
 
+  //_________________________________________________________________
   const { top, bottom } = useSafeAreaInsets();
 
   const { height: screenHeight } = useWindowDimensions();
@@ -344,10 +346,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   }
 
   const handleEditProfile = () => {
-    router.push({
-      pathname: "/user/[userId]/edit",
-      params: { userId: user.id },
-    });
+    router.push({ pathname: "/profile/edit" });
   };
 
   const handleReviewsPress = (id: number) => {
@@ -407,25 +406,11 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
     }
   };
 
-  if (isLoadingProfile) {
+  if (isLoadingProfile || !profile) {
     return <Loader isLoading />;
   }
 
-  if (!profile) return null;
-
   const { cover, image, info, metric } = profile;
-
-  const avatarSection = useMemo(() => {
-    return (
-      <AvatarSection
-        imageUri={image?.image}
-        coverUri={cover?.cover}
-        name={info?.name || info?.username}
-        isLoggerUser={user.id === userId}
-        onEditProfile={handleEditProfile}
-      />
-    );
-  }, [profile, user, userId]);
 
   return (
     <View style={styles.container}>
@@ -438,7 +423,13 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
         style={[headerContainerStyle]}
       >
         <Header />
-        {avatarSection}
+        <AvatarSection
+          imageUri={image?.image}
+          coverUri={cover?.cover}
+          name={info?.name || info?.username}
+          isLoggerUser={user?.id === userId}
+          onEditProfile={handleEditProfile}
+        />
         <ProfileInfo
           name={info?.name}
           username={info?.username}
@@ -489,7 +480,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
         )}
         {user && user.id == userId && (
           <View className="flex flex-row flex-1 px-6 mt-6 w-full">
-            <EditProfileButton userId={user.id} />
+            <EditProfileButton />
           </View>
         )}
       </Animated.View>
