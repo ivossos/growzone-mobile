@@ -1,3 +1,5 @@
+import { GlobalSearchType, TimelineType } from "./enums";
+
 export interface User {
   id: number;
   email: string;
@@ -5,8 +7,8 @@ export interface User {
   is_active: boolean;
   is_verified: boolean;
   hashed_password: string;
-  created_at: string
-  "updated_at": "2019-08-24T14:15:22Z"
+  created_at: string;
+  updated_at: "2019-08-24T14:15:22Z";
 }
 
 export interface DefaultResponse {
@@ -48,9 +50,9 @@ export interface UserInfo {
   biography?: string;
   created_at: string;
   category?: {
-    id: number,
-    name: string
-  } 
+    id: number;
+    name: string;
+  };
 }
 
 export interface UserImage {
@@ -111,10 +113,10 @@ export interface CreateUserCover {
 
 export interface Follow {
   is_active: boolean;
-  id: number;        
+  id: number;
   follower_id: number;
   followed_id: number;
-  created_at: string; 
+  created_at: string;
   updated_at?: string;
 }
 
@@ -124,7 +126,7 @@ export interface UserDTO {
   username: string;
   created_at: string;
   is_active: boolean;
-  image?:UserImage;
+  image?: UserImage;
   is_following: boolean;
 }
 
@@ -151,24 +153,23 @@ export interface ReadReview {
 export interface Following {
   id: number;
   followed: UserDTO;
-  created_at: string; 
+  created_at: string;
   is_active: boolean;
 }
 
 export interface Follower {
   id: number;
   follower: UserDTO;
-  created_at: string; 
+  created_at: string;
   is_active: boolean;
 }
 
-export interface GlobalSearchResponse {
+export interface GlobalSearchUser {
   id: number;
-  image?: UserImage;
+  image: UserImage;
   name: string;
   username: string;
   created_at: string;
-  is_active: boolean;
   is_following: boolean;
 }
 
@@ -184,7 +185,7 @@ export interface SocialPost {
   post_id: number;
   file: SocialPostFile;
   view_count: number;
-  description?: string,
+  description?: string;
   created_at: string;
   is_compressing: boolean;
 }
@@ -240,20 +241,21 @@ export interface ReelsDetail {
 
 export interface Comment {
   id: number;
-  user: UserDTO; 
+  user: UserDTO;
   content: string;
   like_count: number;
   reply_count: number;
   created_at: string;
-  is_liked: boolean
+  is_liked: boolean;
+  subComments?: Array<Comment>;
+  parentId?: number | null;
 }
 
 export interface PostLike {
   id: number;
-  user: UserDTO
+  user: UserDTO;
   created_at: string;
 }
-
 
 export interface Like {
   id: number;
@@ -338,7 +340,7 @@ export interface GrowPostDetail {
   description: string;
   like_count: number;
   comment_count: number;
-  created_at: string; 
+  created_at: string;
   is_liked: boolean;
   is_viewed: boolean;
   is_compressing: boolean;
@@ -363,7 +365,6 @@ export interface SenderImage {
   created_at: string;
 }
 
-
 export interface Sender {
   id: number;
   image: SenderImage;
@@ -375,7 +376,12 @@ export interface Sender {
 
 export interface NotificationType {
   id: number;
-  name: 'Review Profile' | 'Report Post' | 'Comment Post' | 'Like Post' | 'Follow Profile';
+  name:
+    | "Review Profile"
+    | "Report Post"
+    | "Comment Post"
+    | "Like Post"
+    | "Follow Profile";
   description: string;
   created_at: string;
 }
@@ -383,13 +389,13 @@ export interface NotificationType {
 export interface PostFile {
   id: number;
   file: File;
-  type: 'image' | 'video';
+  type: "image" | "video";
   created_at: string;
 }
 
 export interface Post {
   id: number;
-  type: 'grow' | 'social' | 'reel';
+  type: "grow" | "social" | "reel";
   file: File;
   created_at: string;
 }
@@ -420,4 +426,49 @@ export interface Blocked {
   id: number;
   blocked: UserDTO;
   created_at: string;
+}
+
+export interface MediaUpload {
+  uri: string;
+  fileName: string;
+  type: string;
+}
+
+export interface CreateGenetic {
+  name: string;
+}
+
+export interface CreateCommentBody {
+  postId: number;
+  content: string;
+  parentId?: number;
+}
+
+export interface GetPostCommentsProps {
+  postId: number;
+  parentId?: number;
+  skip?: number;
+  limit?: number;
+}
+
+export interface GlobalSearchParams {
+  type: GlobalSearchType;
+  strain_id: number;
+  phase_id: number;
+  query: string;
+  skip: number;
+  limit: number;
+}
+
+export interface TimelineParams {
+  type: TimelineType;
+  skip: number;
+  limit: number;
+  userId: number;
+}
+
+export interface VideoPlayerHandle {
+  play: () => Promise<void>;
+  pause: () => Promise<void>;
+  seek: (position: number) => Promise<void>;
 }

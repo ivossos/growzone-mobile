@@ -23,8 +23,6 @@ export default function Post() {
   const [isLoadingPostComments, setIsLoadingPostComments] = useState(false);
   const [isLoadingPostLikes, setIsLoadingPostLikes] = useState(false);
   const [post, setPost] = useState<PostDetail>();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [likes, setLikes] = useState<PostLike[]>([]);
   const { handlePostChange } = useActivePostHome();
 
   const fetchPost = async () => {
@@ -46,50 +44,13 @@ export default function Post() {
     }
   };
 
-  const fetchPostComments = async () => {
-    try {
-      setIsLoadingPostComments(true);
-      const data = await getPostComments({ postId: id, skip: 0, limit: 4 });
-      setComments(data);
-    } catch (error) {
 
-      Toast.show({
-        type: 'error',
-        text1: 'Opss',
-        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
-      });
-
-      router.back();
-      
-    } finally {
-      setIsLoadingPostComments(false);
-    }
-  }
-
-  const fetchPostLikes = async () => {
-    try {
-      setIsLoadingPostLikes(true);
-      const data = await getPostLikes({ postId: id, skip: 0, limit: 4  });
-      setLikes(data);
-    } catch (error) {
-
-      Toast.show({
-        type: 'error',
-        text1: 'Opss',
-        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
-      });
-
-      router.back();
-      
-    } finally {
-      setIsLoadingPostLikes(false);
-    }
+  const loadComments = async () => {
+    await Promise.all([fetchPost()])
   }
 
   useEffect(() => {
     fetchPost();
-    fetchPostLikes();
-    fetchPostComments();
   }, [id]);
 
   return (
@@ -105,7 +66,7 @@ export default function Post() {
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
         {!isLoadingPost && !isLoadingPostComments && !isLoadingPostLikes && (
-          post && <PostCard post={post} comments={comments} likes={likes} />
+          post && <PostCard loadComments={loadComments} post={post} />
         )}
       </ScrollView>
     </View>

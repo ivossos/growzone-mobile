@@ -12,6 +12,7 @@ import ReportUserBottomSheet from '@/components/ui/profile/bottom-sheet/report-u
 import BlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/block-user-bottom-sheet';
 import UnlockUserBottomSheet from '@/components/ui/profile/bottom-sheet/unlock-user-bottom-sheet';
 import { ActivePostHomeProvider } from '@/context/active-post-home-context';
+import ReportCommentBottomSheet from '@/components/ui/report-comment-bottom-sheet';
 import PostBottomSheet from '@/components/ui/post/post-bottom-sheet';
 import DeletePostBottomSheet from '@/components/ui/post/delete-post-bottom-sheet';
 
@@ -25,6 +26,7 @@ export default function Layout() {
   const unlockUserSheetRef = useRef<BottomSheet>(null);
   const postSheetRef = useRef<BottomSheet>(null);
   const deletePostSheetRef = useRef<BottomSheet>(null);
+  const reportCommentSheetRef = useRef<BottomSheet>(null);
 
   const closeReportBottomSheet = () => {
     reportSheetRef.current?.close()
@@ -50,6 +52,10 @@ export default function Layout() {
     unlockUserSheetRef.current?.close()
   };
 
+  const closeReportCommentBottomSheet = () => {
+    reportCommentSheetRef.current?.close()
+  }
+
   const closePostBottomSheet = () => {
     postSheetRef.current?.close()
   };
@@ -58,14 +64,13 @@ export default function Layout() {
     deletePostSheetRef.current?.close()
   };
 
-
-
   return (
     <BottomSheetProvider>
       <ActivePostHomeProvider>
         <Slot />
         <CommentBottomSheet ref={commentSheetRef} />
         <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
+        <ReportCommentBottomSheet ref={reportCommentSheetRef} onClose={closeReportCommentBottomSheet} />
         <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
         <ProfileBottomSheet ref={profileSheetRef} onClose={profileBottomSheet}/>
         <ReportUserBottomSheet ref={reportUserSheetRef} onClose={reportUserBottomSheet} />

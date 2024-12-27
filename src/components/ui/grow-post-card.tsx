@@ -1,6 +1,10 @@
-import React, { memo, useCallback, useState } from "react";
+import React, { memo, useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import { CalendarDaysIcon, ChevronRight, EllipsisIcon } from "lucide-react-native";
+import {
+  CalendarDaysIcon,
+  ChevronRight,
+  EllipsisIcon,
+} from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { colors } from "@/styles/colors";
 import MediaSlider from "./media-slider";
@@ -9,23 +13,18 @@ import LikedIcon from "@/assets/icons/liked.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
 import { router } from "expo-router";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
-import { Comment, GrowPostDetail, PostLike } from "@/api/@types/models";
+import { GrowPostDetail} from "@/api/@types/models";
 import { formatDistance, getInitials } from "@/lib/utils";
 import Toast from "react-native-toast-message";
-import CommentCard from "./comment-card";
 import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
 
-const MAX_DESCRIPTION_LENGTH = 150;
-
 interface Props {
   post: GrowPostDetail;
-  comments?: Comment[];
-  likes?: PostLike[];
 }
 
-const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
+const GrowPostCard = ({ post }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -54,7 +53,9 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
       Toast.show({
         type: "error",
         text1: "Opss",
-        text2: `Aconteceu um erro no ${liked ? "deslike" : "like"} do post. Tente novamente mais tarde.`,
+        text2: `Aconteceu um erro no ${
+          liked ? "deslike" : "like"
+        } do post. Tente novamente mais tarde.`,
       });
     } finally {
       setIsLoadingLiked(false);
@@ -66,7 +67,12 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
       <View className="flex flex-row items-center justify-between gap-2 w-full">
         <TouchableOpacity
           className="flex flex-row items-center gap-2"
-          onPress={() => router.push({ pathname: '/profile/[id]', params: { id: post.user.id }})}
+          onPress={() =>
+            router.push({
+              pathname: "/profile/[id]",
+              params: { id: post.user.id },
+            })
+          }
         >
           <Avatar className="w-10 h-10 bg-black-80">
             {post?.user?.image?.image && (
@@ -106,11 +112,15 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
       <View className="flex flex-col gap-2">
         <View className="flex flex-row justify-between gap-1">
           <View className="border border-black-80 bg-black-100 px-2 py-1 rounded-full">
-            <Text className="text-brand-green text-base ">{post.strain.name}</Text>
+            <Text className="text-brand-green text-base ">
+              {post.strain.name}
+            </Text>
           </View>
           <View className="flex flex-row item-center justify-center gap-1 border border-black-80 bg-black-100 px-2 py-1 rounded-full">
             <CalendarDaysIcon size={16} color={colors.brand.green} />
-            <Text className="text-brand-green text-base ">{post.day === 1 ? `${post.day} dia` : `${post.day} dias` }</Text>
+            <Text className="text-brand-green text-base ">
+              {post.day === 1 ? `${post.day} dia` : `${post.day} dias`}
+            </Text>
           </View>
         </View>
         <View className="flex flex-row items-center gap-3">
@@ -134,7 +144,9 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
 
           <TouchableOpacity
             className="flex flex-row items-center gap-1"
-            onPress={() => openBottomSheet({ type: "comment", id: post.post_id })}
+            onPress={() =>
+              openBottomSheet({ type: "comment", id: post.post_id })
+            }
           >
             <CommentIcon width={24} height={24} />
             {post.comment_count > 0 && (
@@ -163,20 +175,13 @@ const GrowPostCard = ({ post, comments = [], likes = [] }: Props) => {
             )}
           </>
         )}
-        
 
-        {comments.length > 0 && (
-          <View className="pt-6">
-            {comments.map((comment) => (
-              <CommentCard key={comment.id} comment={comment} />
-            ))}
-          </View>
-        )}
-
-        {post.comment_count > 0 && post.comment_count > comments.length && (
+        {post.comment_count > 0 && (
           <TouchableOpacity
             className="flex flex-row items-end gap-1 pt-3 mb-3 bg-black-100"
-            onPress={() => openBottomSheet({ type: "comment", id: post.post_id })}
+            onPress={() =>
+              openBottomSheet({ type: "comment", id: post.post_id })
+            }
           >
             <Text className="text-base text-brand-grey font-semibold">
               {`Ver todos os ${post.comment_count} comentários`}

@@ -16,6 +16,7 @@ import {
 import Animated from "react-native-reanimated";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
+import { TimelineType } from "@/api/@types/enums";
 
 const numColumns = 3;
 const w = Dimensions.get("window").width;
@@ -85,7 +86,7 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       return (
         <TouchableOpacity
           onPress={() =>
-            router.push({ pathname: "/post/[id]", params: { id: item.post_id } })
+            router.push({ pathname: "/post/[id]/timeline/[userId]", params: { id: item.post_id, userId: userId, type: TimelineType.SOCIAL } })
           }
           className="mb-1"
         >

@@ -13,6 +13,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import Loader from "@/components/ui/loader";
+import { queryClient } from "@/lib/react-query";
 
 const showErrorToast = (message: string) => {
   Toast.show({
@@ -24,16 +25,15 @@ const showErrorToast = (message: string) => {
 
 export default function Post() {
   const params = useLocalSearchParams();
-  const { id } = (params  as { id: number }) || {};
+  const { id } = (params  as { id: string }) || {};
   const { handlePostChange } = useActivePostHome();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["grow-post-data", id],
     queryFn: async () => {
+      const numberId = Number(id)
       const [post, comments, likes] = await Promise.all([
-        getGrowPost(id),
-        getPostComments({ postId: id, skip: 0, limit: 4 }),
-        getPostLikes({ postId: id, skip: 0, limit: 4 }),
+        getGrowPost(numberId),
       ]);
       return { post, comments, likes };
     },
@@ -59,7 +59,7 @@ export default function Post() {
     );
   }
 
-  const { post, comments = [], likes = [] } = data || {};
+  const { post } = data || {};
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={['top']}>
@@ -78,7 +78,7 @@ export default function Post() {
         </View>
       </View>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {post && <GrowPostCard post={post} comments={comments} likes={likes} />}
+        {post && <GrowPostCard post={post} />}
       </ScrollView>
     </View>
     </SafeAreaView>

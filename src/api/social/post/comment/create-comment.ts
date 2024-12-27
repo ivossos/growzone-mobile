@@ -1,10 +1,5 @@
+import { CreateCommentBody } from "@/api/@types/models";
 import { socialApi } from "@/lib/axios";
-
-interface CreateCommentBody {
-  postId: number;
-  content: string;
-  parentId?: number;
-}
 
 interface CreateCommentResponse {
   content: string;

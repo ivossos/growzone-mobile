@@ -107,7 +107,7 @@ export default function Reels() {
       <FlatList
         data={posts}
         renderItem={({ item }) => (
-          <ReelsPost post={item} activePostId={activePostId!} resizeMode={ResizeMode.COVER} isTab/>
+          <ReelsPost post={item} activePostId={activePostId!} resizeMode={ResizeMode.COVER} />
         )}
         keyExtractor={(item, index) => `${item.id}-${index}`}
         snapToInterval={ScreenHeight}

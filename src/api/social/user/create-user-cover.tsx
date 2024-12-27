@@ -1,13 +1,16 @@
 import { socialApi } from '@/lib/axios';
 import { CreateUserCover } from '@/api/@types/models';
 import { ImagePickerAsset } from 'expo-image-picker';
+import { Platform } from 'react-native';
 
 export async function createUserCover(cover: ImagePickerAsset) {  
   const formData = new FormData();
+  const isAndroid = Platform.OS === 'android'
+
   formData.append('cover', {
     uri: cover.uri,
     name: cover.fileName || 'cover.jpg',
-    type: cover.type || 'image/jpeg'
+    type: (isAndroid ? cover.mimeType : cover.type) || 'image/jpeg'
   } as any );
 
 

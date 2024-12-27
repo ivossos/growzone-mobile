@@ -1,19 +1,18 @@
 import { Comment, PostDetail, PostLike } from "@/api/@types/models";
 import PostCard from "@/components/ui/post-card";
 import { useActivePostHome } from "@/hooks/use-active-post-home";
+import { useQuery } from "@tanstack/react-query";
 import { colors } from "@/styles/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect} from "react";
 import { ScrollView, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import { useEffect } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { getPost } from "@/api/social/post/get-post";
-import { getPostComments } from "@/api/social/post/comment/get-comments";
-import { getPostLikes } from "@/api/social/post/like/get-likes";
 import Loader from "@/components/ui/loader";
+import { queryClient } from "@/lib/react-query";
 
 const showErrorToast = (message: string) => {
   Toast.show({
@@ -34,21 +33,26 @@ const PostHeader = ({ onBack }: { onBack: () => void }) => (
 
 export default function Post() {
   const params = useLocalSearchParams();
-  const { id } = (params as { id: number }) || {};
+  const { id } = (params as { id: string }) || {};
   const { handlePostChange } = useActivePostHome();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["post-data", id],
     queryFn: async () => {
-      const [post, comments, likes] = await Promise.all([
-        getPost(id),
-        getPostComments({ postId: id, skip: 0, limit: 4 }),
-        getPostLikes({ postId: id, skip: 0, limit: 4 }),
+      const postId = Number(id);
+      const [post] = await Promise.all([
+        getPost(postId),
       ]);
-      return { post, comments, likes };
+      return { post };
     },
     enabled: !!id,
   });
+
+  const loadComments = async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ["post-data", id]
+    })
+  };
 
   useEffect(() => {
     if (data?.post) {
@@ -57,9 +61,13 @@ export default function Post() {
   }, [data, handlePostChange]);
 
   if (error) {
-    showErrorToast("Aconteceu um erro ao buscar as informações. Tente novamente mais tarde.");
+    showErrorToast(
+      "Aconteceu um erro ao buscar as informações. Tente novamente mais tarde."
+    );
     router.back();
   }
+
+  // TODO: remover depois
 
   if (isLoading) {
     return (
@@ -69,14 +77,19 @@ export default function Post() {
     );
   }
 
-  const { post, comments = [], likes = [] } = data || {};
+  const { post } = data || {};
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       <View className="flex-1 bg-black-100 overflow-hidden">
         <PostHeader onBack={() => router.back()} />
         <ScrollView showsVerticalScrollIndicator={false}>
-          {post && <PostCard post={post} comments={comments} likes={likes} />}
+          {post && (
+            <PostCard
+              loadComments={loadComments}
+              post={post}
+            />
+          )}
         </ScrollView>
       </View>
     </SafeAreaView>

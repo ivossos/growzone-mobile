@@ -39,10 +39,10 @@ import { z } from "zod";
 import createGrowPost from "@/api/social/post/create-grow-post";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormField } from "./form-field";
 import SelectGeneticDropdown from "./select-genetic-dropdown";
 import SelectPhaseDropdown from "./select-phase-dropdown";
 import { FormFieldBottomSheetText } from "./form-field-bottom-sheet";
+import { MediaUpload } from "@/api/@types/models";
 
 export const GrowPostValidation = z.object({
   day: z.string().min(1, "Adicione os dias desse cultivo"),
@@ -82,11 +82,12 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
       "90%",
     ]);
     const [postDescription, setPostDescription] = useState("");
-    const [selectedImages, setSelectedImages] = useState<{uri: string; fileName: string, type: string}[]>([]);
-    const [selectedVideos, setSelectedVideos] = useState<{uri: string; fileName: string, type: string}[]>([]);
+    const [selectedImages, setSelectedImages] = useState<MediaUpload[]>([]);
+    const [selectedVideos, setSelectedVideos] = useState<MediaUpload[]>([]);
     const [isLoadingCreatePost, setIsLoadingCreatePost] = useState(false);
     const [isLoadingCreateReels, setIsLoadingCreateReels] = useState(false);
-    const [isLoadingCreateGrowPost, setIsLoadingCreateGrowPost] = useState(false);
+    const [isLoadingCreateGrowPost, setIsLoadingCreateGrowPost] =
+      useState(false);
 
     const form = useForm({
       resolver: zodResolver(GrowPostValidation),
@@ -94,7 +95,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
         day: '10',
         genetic: { id: null },
         phase: { id: null },
-      }
+      },
     });
 
     const renderBackdrop = useCallback(
@@ -113,8 +114,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
         form.reset();
         setSelectedImages([]);
         setSelectedVideos([]);
-        setPostDescription('');
-        
+        setPostDescription("");
       }
     }, []);
 
@@ -164,7 +164,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
         form.reset();
         setSelectedImages([]);
         setSelectedVideos([]);
-        setPostDescription('');
+        setPostDescription("");
         setSnapPoints(["40%", "60%", "90%"]);
 
         onClose();
@@ -205,66 +205,81 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
       }
     }, [selectedVideos, postDescription, onClose]);
 
-    const handleCreateSocialGrowPost = useCallback(async (values: z.infer<typeof GrowPostValidation>) => {
-      if (!selectedImages.length && !selectedVideos.length) {
-        Toast.show({
-          type: "info",
-          text1: "Ops!",
-          text2: "Você precisa adicionar pelo menos uma imagem ou video no seu post",
-        });
-        return;
-      }
-
-      setIsLoadingCreateGrowPost(true);
-      try {
-        
-        const post = await createGrowPost({
-          images: selectedImages,
-          video_count: selectedVideos.length,
-          description: postDescription,
-          day: Number(values.day),
-          strain_id: values.genetic.id!,
-          phase_id: values.phase.id!,
-        });
-
-        for (const video of selectedVideos) {
-          try {
-            await uploadVideo(post.post_id, video);
-          } catch (error) {
-            console.error(`Erro ao enviar o vídeo ${video}`, error);
-          }
+    const handleCreateSocialGrowPost = useCallback(
+      async (values: z.infer<typeof GrowPostValidation>) => {
+        if (!selectedImages.length && !selectedVideos.length) {
+          Toast.show({
+            type: "info",
+            text1: "Ops!",
+            text2:
+              "Você precisa adicionar pelo menos uma imagem ou video no seu post",
+          });
+          return;
         }
-        
-        setSelectedImages([]);
-        setSelectedVideos([]);
-        form.reset();
-        setPostDescription('');
-        setSnapPoints(["40%", "60%", "90%"]);
-        onClose();
-      } catch (error) {
-        console.error("Erro ao criar grow post:", error);
-        Toast.show({
-          type: "error",
-          text1: "Ops!",
-          text2: "Não foi possivel criar seu post, tente novamente.",
-        });
-      } finally {
-        setIsLoadingCreateGrowPost(false);
-      }
-    }, [selectedImages, selectedVideos, postDescription, onClose]);
 
-    
+        setIsLoadingCreateGrowPost(true);
+        try {
+          const post = await createGrowPost({
+            images: selectedImages,
+            video_count: selectedVideos.length,
+            description: postDescription,
+            day: Number(values.day),
+            strain_id: values.genetic.id!,
+            phase_id: values.phase.id!,
+          });
+
+          for (const video of selectedVideos) {
+            try {
+              await uploadVideo(post.post_id, video);
+            } catch (error) {
+              console.error(`Erro ao enviar o vídeo ${video}`, error);
+            }
+          }
+
+          setSelectedImages([]);
+          setSelectedVideos([]);
+          form.reset();
+          setPostDescription("");
+          setSnapPoints(["40%", "60%", "90%"]);
+          onClose();
+        } catch (error) {
+          console.error("Erro ao criar grow post:", error);
+          Toast.show({
+            type: "error",
+            text1: "Ops!",
+            text2: "Não foi possivel criar seu post, tente novamente.",
+          });
+        } finally {
+          setIsLoadingCreateGrowPost(false);
+        }
+      },
+      [selectedImages, selectedVideos, postDescription, onClose]
+    );
+
     return (
       <BottomSheet
         ref={ref}
         index={isCreatePost || isCreateReels || isCreateGrowPost ? 0 : -1}
-        snapPoints={(isCreatePost || isCreateReels || isCreateGrowPost) ? ["85%"] : snapPoints}
-        enablePanDownToClose={!isCreatePost || !isCreateReels || !isCreateGrowPost}
+        snapPoints={
+          isCreatePost || isCreateReels || isCreateGrowPost
+            ? ["85%"]
+            : snapPoints
+        }
+        enablePanDownToClose={
+          !isCreatePost || !isCreateReels || !isCreateGrowPost
+        }
         handleIndicatorStyle={{
-          backgroundColor: (isCreatePost || isCreateReels || isCreateGrowPost) ? colors.black[100] : colors.black[70],
+          backgroundColor:
+            isCreatePost || isCreateReels || isCreateGrowPost
+              ? colors.black[100]
+              : colors.black[70],
         }}
         backgroundStyle={{ backgroundColor: colors.black[100] }}
-        backdropComponent={isCreatePost || isCreateReels || isCreateGrowPost ? null : renderBackdrop}
+        backdropComponent={
+          isCreatePost || isCreateReels || isCreateGrowPost
+            ? null
+            : renderBackdrop
+        }
         onChange={handleSheetChange}
       >
         {!isCreatePost && !isCreateReels && !isCreateGrowPost && (
@@ -326,9 +341,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                 </AvatarFallback>
               </Avatar>
               <View className="flex flex-row flex-1 items-center justify-between">
-                <Text
-                  className="text-white text-base text-center font-semibold"
-                >
+                <Text className="text-white text-base text-center font-semibold">
                   {user.name || user.username}
                 </Text>
                 <TouchableOpacity onPress={() => handleSheetChange(-1)}>
@@ -355,7 +368,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
               <BottomSheetView className="flex flex-col flex-1 justify-end gap-6">
                 <MediaPicker
                   onMediaSelected={(media) => {
-                    if (media?.type?.includes('video')) {
+                    if (media?.type?.includes("video")) {
                       setSelectedVideos((prev) => [...prev, media]);
                     } else {
                       setSelectedImages((prev) => [...prev, media]);
@@ -369,7 +382,6 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                   isLoading={isLoadingCreatePost}
                 />
               </BottomSheetView>
-
             </TouchableWithoutFeedback>
           </BottomSheetView>
         )}
@@ -379,116 +391,124 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
           //   behavior={Platform.OS === "ios" ? "padding" : "height"}
           //   style={{ flex: 1 }}
           // >
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <BottomSheetScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-                <BottomSheetView className="flex flex-col gap-6 flex-1 px-6 pb-10 mb-20">
-                  <BottomSheetView className="flex flex-row items-center gap-2">
-                    <Avatar className="w-10 h-10 bg-black-80">
-                      {user.image?.image && (
-                        <AvatarImage
-                          className="rounded-full"
-                          source={{ uri: user.image?.image }}
-                        />
-                      )}
-                      <AvatarFallback>
-                        {getInitials(user?.name || user?.username)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <View className="flex flex-row flex-1 items-center justify-between">
-                      <Text
-                        className="text-white text-base text-center font-semibold"
-                        onPress={() => Keyboard.dismiss()}
-                      >
-                        {user.name || user.username}
-                      </Text>
-                      <TouchableOpacity onPress={() => handleSheetChange(-1)}>
-                        <X color={colors.black[70]} size={18} />
-                      </TouchableOpacity>
-                    </View>
-                  </BottomSheetView>
-
-                  <BottomSheetView className="flex flex-row flex-1 items-start justify-start">
-                    <TextInput
-                      numberOfLines={3}
-                      multiline
-                      placeholder="Como está seu cultivo?"
-                      placeholderTextColor={colors.black[30]}
-                      selectionColor={colors.brand.green}
-                      value={postDescription}
-                      onChangeText={setPostDescription}
-                      className="text-white text-lg"
-                      style={{ flex: 1, borderBottomWidth: 0 }}
-                    />
-                  </BottomSheetView>
-
-                  <BottomSheetView className="flex flex-col gap-6">
-                    <MediaPicker
-                        onMediaSelected={(media) => {
-                          if (media?.type?.includes('video')) {
-                            setSelectedVideos((prev) => [...prev, media]);
-                          } else {
-                            setSelectedImages((prev) => [...prev, media]);
-                          }
-                        }}
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <BottomSheetScrollView
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
+              showsVerticalScrollIndicator={false}
+            >
+              <BottomSheetView className="flex flex-col gap-6 flex-1 px-6 pb-10 mb-20">
+                <BottomSheetView className="flex flex-row items-center gap-2">
+                  <Avatar className="w-10 h-10 bg-black-80">
+                    {user.image?.image && (
+                      <AvatarImage
+                        className="rounded-full"
+                        source={{ uri: user.image?.image }}
                       />
-
-                    <Controller
-                      control={form.control}
-                      name="genetic"
-                      render={({ field: { onChange, value }, fieldState }) => (
-                        <SelectGeneticDropdown
-                          title="Genética"
-                          placeholder="Selecione uma genética"
-                          handleChangeText={(selectedId) => onChange({ id: selectedId })}
-                          error={fieldState.error?.['genetic']?.message}
-                        />
-                      )}
-                    />
-
-                    <Controller
-                      control={form.control}
-                      name="phase"
-                      render={({ field: { onChange, value }, fieldState }) => (
-                        <SelectPhaseDropdown 
-                          title="Fase"
-                          placeholder="Selecione uma fase"
-                          handleChangeText={(selectedId) => onChange({ id: selectedId })}
-                          error={fieldState.error?.['phase']?.message}
-                        />
-                      )}
-                    />
-
-                    <Controller
-                      control={form.control}
-                      name="day"
-                      render={({ fieldState, field: { onChange, onBlur, value } }) => (
-                        <FormFieldBottomSheetText
-                          title="Dias"
-                          placeholder="Ex: 120"
-                          keyboardType="numeric"
-                          otherStyles="w-full"
-                          onBlur={onBlur}
-                          value={value}
-                          handleChangeText={onChange}
-                          error={fieldState.error?.message}
-                        />
-                      )}
-                    />
-
-
-                    <Button
-                      containerStyles="w-full"
-                      title="Publicar"
-                      handlePress={form.handleSubmit(handleCreateSocialGrowPost)}
-                      isLoading={isLoadingCreateGrowPost}
-                    />
-                  </BottomSheetView>
+                    )}
+                    <AvatarFallback>
+                      {getInitials(user?.name || user?.username)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <View className="flex flex-row flex-1 items-center justify-between">
+                    <Text
+                      className="text-white text-base text-center font-semibold"
+                      onPress={() => Keyboard.dismiss()}
+                    >
+                      {user.name || user.username}
+                    </Text>
+                    <TouchableOpacity onPress={() => handleSheetChange(-1)}>
+                      <X color={colors.black[70]} size={18} />
+                    </TouchableOpacity>
+                  </View>
                 </BottomSheetView>
-              </BottomSheetScrollView>
-             </TouchableWithoutFeedback>
+
+                <BottomSheetView className="flex flex-row flex-1 items-start justify-start">
+                  <TextInput
+                    numberOfLines={3}
+                    multiline
+                    placeholder="Como está seu cultivo?"
+                    placeholderTextColor={colors.black[30]}
+                    selectionColor={colors.brand.green}
+                    value={postDescription}
+                    onChangeText={setPostDescription}
+                    className="text-white text-lg"
+                    style={{ flex: 1, borderBottomWidth: 0 }}
+                  />
+                </BottomSheetView>
+
+                <BottomSheetView className="flex flex-col gap-6">
+                  <MediaPicker
+                    onMediaSelected={(media) => {
+                      if (media?.type?.includes("video")) {
+                        setSelectedVideos((prev) => [...prev, media]);
+                      } else {
+                        setSelectedImages((prev) => [...prev, media]);
+                      }
+                    }}
+                  />
+
+                  <Controller
+                    control={form.control}
+                    name="genetic"
+                    render={({ field: { onChange, value }, fieldState }) => (
+                      <SelectGeneticDropdown
+                        title="Genética"
+                        placeholder="Selecione uma genética"
+                        handleChangeText={(selectedId) =>
+                          onChange({ id: selectedId })
+                        }
+                        error={fieldState.error?.["genetic"]?.message}
+                      />
+                    )}
+                  />
+
+                  <Controller
+                    control={form.control}
+                    name="phase"
+                    render={({ field: { onChange, value }, fieldState }) => (
+                      <SelectPhaseDropdown
+                        title="Fase"
+                        placeholder="Selecione uma fase"
+                        handleChangeText={(selectedId) =>
+                          onChange({ id: selectedId })
+                        }
+                        error={fieldState.error?.["phase"]?.message}
+                      />
+                    )}
+                  />
+
+                  <Controller
+                    control={form.control}
+                    name="day"
+                    render={({
+                      fieldState,
+                      field: { onChange, onBlur, value },
+                    }) => (
+                      <FormFieldBottomSheetText
+                        title="Dias"
+                        placeholder="Ex: 120"
+                        keyboardType="numeric"
+                        otherStyles="w-full"
+                        onBlur={onBlur}
+                        value={value.toString()}
+                        handleChangeText={onChange}
+                        error={fieldState.error?.message}
+                      />
+                    )}
+                  />
+
+                  <Button
+                    containerStyles="w-full"
+                    title="Publicar"
+                    handlePress={form.handleSubmit(handleCreateSocialGrowPost)}
+                    isLoading={isLoadingCreateGrowPost}
+                  />
+                </BottomSheetView>
+              </BottomSheetView>
+            </BottomSheetScrollView>
+          </TouchableWithoutFeedback>
           //  </KeyboardAvoidingView>
         )}
-
 
         {isCreateReels && (
           <BottomSheetView className="flex flex-col gap-6 flex-1 px-6 pb-10 mb-20">
@@ -534,7 +554,9 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <BottomSheetView className="flex flex-col flex-1 justify-end gap-6">
                 <VideoPicker
-                  onMediaSelected={(media) => setSelectedVideos((prev) => [...prev, media])}
+                  onMediaSelected={(media) =>
+                    setSelectedVideos((prev) => [...prev, media])
+                  }
                 />
 
                 <Button
@@ -544,7 +566,6 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
                   isLoading={isLoadingCreateReels}
                 />
               </BottomSheetView>
-
             </TouchableWithoutFeedback>
           </BottomSheetView>
         )}

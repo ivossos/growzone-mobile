@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, ActivityIndicator } from 'react-native';
-import { Dropdown } from 'react-native-element-dropdown';
-import { colors } from '@/styles/colors';
-import debounce from 'lodash/debounce';
-import { getGenetics } from '@/api/social/genetic';
-import { find, uniqBy } from 'lodash';
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { StyleSheet, Text, View, ActivityIndicator } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
+import { colors } from "@/styles/colors";
+import debounce from "lodash/debounce";
+import { createGenetic, getGenetics } from "@/api/social/genetic";
+import { find, uniqBy } from "lodash";
+import { CreateGenetic } from "@/api/@types/models";
+import Toast from "react-native-toast-message";
+import Button from "./button";
+import { ArrowDown, X } from "lucide-react-native";
 
 interface Genetic {
   name: string;
@@ -15,78 +19,152 @@ interface SelectGeneticDropdownProps {
   title?: string;
   placeholder: string;
   error?: string;
-  initialValue?: { id?: number, label?: string },
-  handleChangeText: (text: string) => void;
+  initialValue?: { id?: number; label?: string };
+  showClearIcon?: boolean;
+  handleChangeText: (text: string, data: { id: number; label: string }) => void;
   onFocus?: () => void;
   onBlur?: () => void;
 }
 
-const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, initialValue, onBlur = () => {}, onFocus = () => {} }: SelectGeneticDropdownProps) => {
+const SelectGeneticDropdown = ({
+  title,
+  placeholder,
+  error,
+  initialValue,
+  showClearIcon = false,
+  handleChangeText,
+  onBlur = () => {},
+  onFocus = () => {},
+}: SelectGeneticDropdownProps) => {
   const [value, setValue] = useState<number | null>(null);
   const [isFocus, setIsFocus] = useState(false);
   const [data, setData] = useState<Genetic[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const limit = 20;
 
-  const fetchSuggestions = debounce(async (query: string = '', skip: number = 0) => {
-    setIsLoading(true);
-    try {
-      const geneticSelected = find(data, d => d.id === value);
-      
-      const genetics = await getGenetics({ query, skip, limit });
-      const updatedData = [...genetics];
-      if (geneticSelected && !updatedData.some(d => d.id === geneticSelected.id)) {
-        updatedData.unshift(geneticSelected); 
+  const fetchSuggestions = debounce(
+    async (query: string = "", skip: number = 0) => {
+      setIsLoading(true);
+      try {
+        const geneticSelected = find(data, (d) => d.id === value);
+        const genetics = await getGenetics({ query, skip, limit });
+        const updatedData = [...genetics];
+
+        if (
+          geneticSelected &&
+          !updatedData.some((d) => d.id === geneticSelected.id)
+        ) {
+          updatedData.unshift(geneticSelected as any);
+        }
+
+        if (genetics.length < limit) {
+          setHasMore(false);
+        }
+
+        setData((prev) =>
+          skip === 0 ? updatedData : [...prev, ...updatedData]
+        );
+      } catch (error) {
+        console.error("Erro ao buscar sugestões:", error);
+      } finally {
+        setIsLoading(false);
       }
-
-      if (genetics.length < limit) {
-        setHasMore(false); 
-      }
-
-      setData(prev => (skip === 0 ? updatedData : [...prev, ...updatedData]));
-
-    } catch (error) {
-      console.error('Erro ao buscar sugestões:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, 300);
+    },
+    300
+  );
 
   useEffect(() => {
     setSkip(0);
     fetchSuggestions(searchQuery);
   }, [searchQuery]);
 
-  useEffect(() => {
-    const loadInitialValue = async () => {
-      if (!initialValue || !initialValue.id || value === initialValue.id) return;
-  
-      if (data.some(item => item.id === initialValue.id)) return;
-  
-      try {
-        setIsLoading(true);
-        const genetics = await getGenetics({ query: initialValue.label });
-        const genetic = genetics.find(item => item.id === initialValue.id);
-  
-        if (genetic) {
-          setData(prev => 
-            uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], 'id')
-          );
-          setValue(initialValue.id);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar o item inicial:', error);
-      } finally {
-        setIsLoading(false);
+  const loadInitialValue = async () => {
+      
+      
+    if (!initialValue || !initialValue.id || value === initialValue.id) {
+      return;
+    }
+
+    if (data.some((item) => item.id === initialValue.id)){ 
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      console.log('initialValue ', initialValue);
+      const genetics = await getGenetics({ query: initialValue.label });
+
+      console.log('genetics ', JSON.stringify(genetics));
+      const genetic = genetics.find((item) => item.id === initialValue.id);
+      console.log('encontrou ', genetic);
+      if (genetic) {
+        
+        setData((prev) =>
+          uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], "id")
+        );
+        setValue(initialValue.id);
       }
-    };
-  
+    } catch (error) {
+      console.error("Erro ao carregar o item inicial:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+
+
     loadInitialValue();
-  }, [initialValue?.id, value, data]);
-  
+  }, [initialValue, value, data]);
+
+  const addNewGenetic = useCallback(async () => {
+    setIsLoading(true);
+
+    const createGeneticData: CreateGenetic = {
+      name: searchQuery.toUpperCase(),
+    };
+
+    try {
+      await createGenetic(createGeneticData);
+
+      Toast.show({
+        type: "success",
+        text1: "Sucesso",
+        text2: "Genética adicionada com sucesso",
+      });
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Erro",
+        text2: "Não foi possível adicionar a genética",
+      });
+    }
+
+    setIsLoading(false);
+  }, [searchQuery]);
+
+  const buttonAddNewGenetic = useMemo(() => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          padding: 16,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Button
+          handlePress={addNewGenetic}
+          title="Adicionar"
+          variant="outline"
+          containerStyles="w-full"
+        />
+      </View>
+    );
+  }, []);
 
   const loadMoreData = () => {
     if (hasMore && !isLoading) {
@@ -94,16 +172,30 @@ const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, in
       setSkip(nextSkip);
       fetchSuggestions(searchQuery, nextSkip);
     }
-  }
- 
+  };
+
+  const cleanSelect = useCallback(() => {
+    setValue(null);
+    handleChangeText(null as any, {} as any);
+  }, []);
 
   return (
     <View style={styles.container}>
-      {title && <Text className={`text-base font-medium ${error ? 'text-red-500' : 'text-white'}`}>
+      {title && (
+        <Text
+          className={`text-base font-medium ${
+            error ? "text-red-500" : "text-white"
+          }`}
+        >
           {title}
-        </Text>}
+        </Text>
+      )}
       <Dropdown
-        style={[styles.dropdown, isFocus && { borderColor: colors.brand.green }, !!error && { borderColor: '#ef4444' }]}
+        style={[
+          styles.dropdown,
+          isFocus && { borderColor: colors.brand.green },
+          !!error && { borderColor: "#ef4444" },
+        ]}
         placeholderStyle={styles.placeholderStyle}
         selectedTextStyle={styles.selectedTextStyle}
         inputSearchStyle={styles.inputSearchStyle}
@@ -112,16 +204,16 @@ const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, in
         itemTextStyle={styles.itemTextStyle}
         iconStyle={styles.iconStyle}
         activeColor={colors.black[70]}
-        data={data.map(item => ({ label: item.name, value: item.id }))}
+        data={data.map((item) => ({ label: item.name, value: item.id }))}
         search
         maxHeight={300}
         labelField="label"
         valueField="value"
-        placeholder={!isFocus ? placeholder : '...'}
+        placeholder={!isFocus ? placeholder : "..."}
         keyboardAvoiding
-        mode='auto'
+        mode="auto"
         searchPlaceholder="Pesquisar.."
-        value={value}
+        value={value as any}
         onFocus={() => {
           setIsFocus(true);
           onFocus();
@@ -130,24 +222,56 @@ const SelectGeneticDropdown = ({ title, placeholder, error, handleChangeText, in
           setIsFocus(false);
           onBlur();
         }}
-        onChange={item => {
+        onChange={(item) => {
           setValue(item.value);
           setIsFocus(false);
-          handleChangeText(item.value);
+          handleChangeText(String(item.value), item);
         }}
-        onChangeText={text => setSearchQuery(text)}
+        onChangeText={(text) => setSearchQuery(text)}
         flatListProps={{
           onEndReached: loadMoreData,
+          ListEmptyComponent: buttonAddNewGenetic,
           onEndReachedThreshold: 0.5,
           ListFooterComponent: isLoading ? (
             <View className="flex flex-row justify-center items-center ">
-              <ActivityIndicator color={colors.brand.green} size="small" className="w-7 h-7" />
+              <ActivityIndicator
+                color={colors.brand.green}
+                size="small"
+                className="w-7 h-7"
+              />
             </View>
-          ) : null
+          ) : null,
         }}
-        renderLeftIcon={(isVisible) => isVisible && (isLoading && <ActivityIndicator size="small" color={colors.brand.green} />)}
+        renderRightIcon={() => {
+          if (showClearIcon) {
+            return (
+              <View className="justify-end">
+                {value ? (
+                  <X
+                    size={24}
+                    color={colors.brand.grey}
+                    onPress={cleanSelect}
+                  />
+                ) : (
+                  <ArrowDown size={24} color={colors.brand.grey} />
+                )}
+              </View>
+            );
+          }
+        }}
+        renderLeftIcon={(isVisible) => {
+          if (isVisible && isLoading) {
+            return (
+              <ActivityIndicator size="small" color={colors.brand.green} />
+            );
+          }
+
+          return null;
+        }}
       />
-      {error && <Text className="text-red-500 text-base font-medium">{error}</Text>}
+      {error && (
+        <Text className="text-red-500 text-base font-medium">{error}</Text>
+      )}
     </View>
   );
 };
@@ -156,8 +280,8 @@ export default SelectGeneticDropdown;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'transparent',
-    flexDirection: 'column',
+    backgroundColor: "transparent",
+    flexDirection: "column",
     gap: 8,
   },
   dropdown: {
