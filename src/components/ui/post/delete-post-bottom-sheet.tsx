@@ -5,7 +5,6 @@ import { colors } from '@/styles/colors';
 import { Trash2, TriangleAlert } from 'lucide-react-native';
 import { useBottomSheetContext } from '@/context/bottom-sheet-context';
 import Toast from 'react-native-toast-message';
-import Loader from '../loader';
 import AnimatedSuccess from '../animated-success';
 import { deletePost } from '@/api/social/post/delete-post';
 import { queryClient } from '@/lib/react-query';

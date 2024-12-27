@@ -145,6 +145,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
       }
 
       setIsLoadingCreatePost(true);
+
       try {
         const post = await createSocialPost({
           images: selectedImages,
@@ -159,7 +160,7 @@ const CreateBottomSheet = React.forwardRef<BottomSheet, CreateBottomSheetProps>(
             console.error(`Erro ao enviar o vídeo ${video}`, error);
           }
         }
-
+      
         form.reset();
         setSelectedImages([]);
         setSelectedVideos([]);

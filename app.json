@@ -2,7 +2,7 @@
   "expo": {
     "name": "Growzone",
     "slug": "growzone",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "growzone",
@@ -12,6 +12,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
+    "sdkVersion": "51.0.0",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.growzone.growzonesocial",

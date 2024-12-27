@@ -29,6 +29,7 @@ import PostBottomSheet from '@/components/ui/post/post-bottom-sheet';
 import DeletePostBottomSheet from '@/components/ui/post/delete-post-bottom-sheet';
 import GlobalSearchBottomSheet from '@/components/ui/global-search-bottom-sheet';
 
+
 export default function DrawerLayout() {
   const { user, signOut, isLoadingUserStorage } = useAuth();
   const router = useRouter();
