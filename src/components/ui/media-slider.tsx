@@ -1,36 +1,65 @@
-import {StyleSheet, Image } from 'react-native';
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Carousel from 'pinar';
+import { StyleSheet, Image } from "react-native";
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import Carousel from "pinar";
 
-import { colors } from '@/styles/colors';
-import VideoPlayer from './video-player';
-import { SocialPostFile } from '@/api/@types/models';
+import { colors } from "@/styles/colors";
+import { SocialPostFile, VideoPlayerHandle } from "@/api/@types/models";
+import VideoPlayer from "../VideoPlayer";
+import { View } from "lucide-react-native";
 
 interface MediaSliderProps {
   items: SocialPostFile[];
   postId: number;
 }
 
-const MediaSlider = ({ items, postId }: MediaSliderProps) => {
+const MediaSlider = ({ items }: MediaSliderProps) => {
+  const videoRef = useRef<VideoPlayerHandle>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [audioMute, setAudioMute] = useState(false);
 
-  const handleIndexChange = useCallback(({ index }: {index: number}) => {
-    if (index < 0 || index >= items.length) return;
+  const handleIndexChange = useCallback(
+    ({ index }: { index: number }) => {
+      if (index < 0 || index >= items.length) return;
 
-    const item = items[index];
+      const item = items[index];
 
-    if (item?.type === 'video') {
-      setActiveIndex(index);
-    }
-  }, [items, setActiveIndex]);
+      if (item?.type === "video") {
+        setActiveIndex(index);
+      }
+    },
+    [items, setActiveIndex]
+  );
 
-  const RenderItem = ({ item, index }: { item: SocialPostFile, index: number }) => {
-    const isActive = activeIndex === index;
-    if (item.type === 'image') {
+  const handlerMutedVideo = useCallback(() => {
+    const mutedValue = !audioMute;
+    videoRef.current?.mutedVideo(mutedValue);
+    setAudioMute(mutedValue);
+  }, [audioMute]);
+
+  const RenderItem = ({
+    item,
+    index,
+  }: {
+    item: SocialPostFile;
+    index: number;
+  }) => {
+    const styleComponent: any = {
+      width: "100%",
+      height: 350,
+      borderRadius: 16,
+    };
+    if (item.type === "image") {
       return (
         <Image
           source={{ uri: item.file }}
-          style={{ width: '100%', height: 350, borderRadius: 16 }}
+          style={styleComponent}
           resizeMode="cover"
         />
       );
@@ -38,22 +67,24 @@ const MediaSlider = ({ items, postId }: MediaSliderProps) => {
 
     return (
       <VideoPlayer
-        source={item.file}
-        postId={postId}
-        isActive={isActive}
+        ref={videoRef}
+        styleContainer={styleComponent}
+        resizeMode="cover"
+        source={{ uri: item.file }}
+        loop
+        controls={{
+          showMutedButton: false,
+          handlerMutedVideo,
+          muted: audioMute,
+        }}
+        muted={audioMute}
       />
     );
   };
 
-  if(items.length === 1) {
-    return <RenderItem item={items[0]} index={0}  />
+  if (items.length === 1) {
+    return <RenderItem item={items[0]} index={0} />;
   }
-
-  const renderedItems = useMemo(() => {
-    return items.map((item, index) => (
-      <RenderItem key={item.id} item={item} index={index} />
-    ));
-  }, [items]);
 
   return (
     <Carousel
@@ -84,7 +115,7 @@ const styles = StyleSheet.create({
   carousel: {
     height: 350,
     minHeight: 350,
-    width: '100%',
+    width: "100%",
     borderRadius: 16,
   },
 });

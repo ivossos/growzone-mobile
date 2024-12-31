@@ -21,7 +21,6 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthContextProvider } from "@/context/auth-context";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
-import UpdateAppModal from "./update-app";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -76,7 +75,6 @@ export default function RootLayout() {
               <Stack.Screen name="+not-found" />
             </Stack>
             <Toast />
-            <UpdateAppModal />
           </GestureHandlerRootView>
         </AuthContextProvider>
       </QueryClientProvider>

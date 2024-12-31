@@ -11,6 +11,8 @@ import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetFooter,
   BottomSheetFooterProps,
+  BottomSheetTextInput,
+  BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { colors } from "@/styles/colors";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
@@ -23,11 +25,16 @@ import {
 } from "@/api/@types/models";
 import CommentCard from "./comment-card";
 import Loader from "./loader";
-import { Platform, Text, View } from "react-native";
+import {
+  Platform,
+  Text,
+  View,
+} from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import createComment from "@/api/social/post/comment/create-comment";
-import CommentInput from "./comment-input";
 import { orderBy, uniqBy } from "lodash";
+import { Controller, useForm } from "react-hook-form";
+import CommentInput from "./comment-input";
 
 const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const { user } = useAuth();
@@ -37,15 +44,13 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const [loading, setLoading] = useState(false);
   const [isLoadingAddComment, setIsLoadingAddComment] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [newComment, setNewComment] = useState("");
   const [newCommentData, setNewCommentData] = useState<CreateCommentBody>(
     {} as CreateCommentBody
   );
+  const snapPoints = useMemo(() => ["60%", "80%"], []);
 
   const { postId, isVisible, currentType, closeBottomSheet, callback } =
     useBottomSheetContext();
-
-  const snapPoints = useMemo(() => ["60%", "80%"], []);
 
   const handlerNewCommentData = useCallback(
     (data: Partial<CreateCommentBody>) => {
@@ -113,7 +118,6 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
       const { skipValue } = options;
 
       try {
-        console.log("postId ", { postId, loading });
         if (!postId || loading) return;
 
         setLoading(true);
@@ -138,7 +142,6 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
             data
           );
 
-          console.log("comments ", JSON.stringify(comments));
           setSkip(skipCurrent + limit);
 
           setComments((prevComments) => {
@@ -175,18 +178,18 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const handleClose = useCallback(() => {
     setComments([]);
     setSkip(0);
-    setNewComment("");
     handlerNewCommentData({});
     closeBottomSheet();
   }, [closeBottomSheet, handlerNewCommentData]);
 
-  const handleCommentSubmit = useCallback(async () => {
-    if (newComment.trim()) {
+  const handleCommentSubmit = useCallback(async (value: { comment: string }) => {
+    const { comment } = value
+
       try {
         setIsLoadingAddComment(true);
         const res = await createComment({
           postId: postId!,
-          content: newComment,
+          content: comment,
           parentId: newCommentData.parentId,
         });
 
@@ -205,7 +208,6 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         }
 
         handlerNewCommentData({});
-        setNewComment("");
         if (callback) {
           await callback(true);
         }
@@ -218,14 +220,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
       } finally {
         setIsLoadingAddComment(false);
       }
-    } else {
-      Toast.show({
-        type: "info",
-        text1: "Opss",
-        text2: "Você precisa digitar um comentário.",
-      });
-    }
-  }, [newComment, postId, newCommentData]);
+  }, [postId, newCommentData]);
 
   const removeSubComments = useCallback(
     (
@@ -321,13 +316,15 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const renderItem = useCallback(
     ({ item }: { item: Comment }) => {
       return (
-        <CommentCard
-          canAcceptSubcomments
-          handlerAddParentComment={handlerAddParentComment}
-          loadComments={loadComments}
-          handlerParentComment={handlerParentComment}
-          comment={item}
-        />
+        <BottomSheetView>
+          <CommentCard
+            canAcceptSubcomments
+            handlerAddParentComment={handlerAddParentComment}
+            loadComments={loadComments}
+            handlerParentComment={handlerParentComment}
+            comment={item}
+          />
+        </BottomSheetView>
       );
     },
     [handlerAddParentComment, loadComments, handlerParentComment]
@@ -342,18 +339,26 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
 
   const renderFooter = useCallback(
     (props: BottomSheetFooterProps) => (
-      <BottomSheetFooter {...props}>
+      <BottomSheetFooter
+        style={{
+          paddingHorizontal: 8,
+        }}
+        {...props}
+      >
         <CommentInput
           ref={commentInputRef}
           user={user}
-          newComment={newComment}
-          setNewComment={setNewComment}
           handleCommentSubmit={handleCommentSubmit}
           isLoadingAddComment={isLoadingAddComment}
         />
       </BottomSheetFooter>
     ),
-    [newComment, isLoadingAddComment, user, commentInputRef]
+    [
+      commentInputRef,
+      user,
+      isLoadingAddComment,
+      handleCommentSubmit,
+    ]
   );
 
   const bottomSheetList = useMemo(() => {
@@ -363,8 +368,10 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         keyExtractor={(item) => "key-" + item.id}
         renderItem={renderItem}
         contentContainerStyle={{ padding: 20 }}
-        keyboardDismissMode="none"
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        keyboardDismissMode="none"
+        nestedScrollEnabled
         enableFooterMarginAdjustment
         ListEmptyComponent={() => {
           if (!loading) {
@@ -382,19 +389,19 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
     );
   }, [comments, loading, renderItem, handleLoadMore]);
 
-  const bottomSheet = useMemo(() => {
-    return (
+  const bottomSheet = useMemo(
+    () => (
       <BottomSheet
         ref={ref}
         index={1}
         snapPoints={snapPoints}
         enablePanDownToClose
-        enableDynamicSizing={false}
+        enableDynamicSizing={true}
         handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
         backgroundStyle={{ backgroundColor: colors.black[100] }}
         backdropComponent={renderBackdrop}
         onClose={handleClose}
-        keyboardBehavior={Platform.OS === "ios" ? "extend" : "interactive"}
+        keyboardBehavior={Platform.OS === "ios" ? "interactive" : "interactive"}
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
         footerComponent={renderFooter}
@@ -402,18 +409,18 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         <Loader isLoading={loading} />
         {bottomSheetList}
       </BottomSheet>
-    );
-  }, [
-    ref,
-    snapPoints,
-    colors.black,
-    renderBackdrop,
-    handleClose,
-    Platform.OS,
-    bottomSheetList,
-    loading,
-    renderFooter,
-  ]);
+    ),
+    [
+      ref,
+      snapPoints,
+      colors.black,
+      renderBackdrop,
+      handleClose,
+      bottomSheetList,
+      renderFooter,
+      loading,
+    ]
+  );
 
   return isVisible && currentType === "comment" ? bottomSheet : null;
 });

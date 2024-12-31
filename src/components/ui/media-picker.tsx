@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { View, StyleSheet, Image, TouchableOpacity, Text } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Video } from "expo-av";
 import { ImageIcon, XIcon, Camera } from "lucide-react-native"; // Usando ícone de exclusão XCircleIcon
 import { colors } from "@/styles/colors";
 import { Modal } from "../Modal";
@@ -150,6 +149,7 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
             onPress={() => removeMedia(index)}
             style={styles.mediaWrapper}
           >
+            {/* brendo */}
             {media.type === "video" ? (
               <Video
                 source={{ uri: media.uri }}

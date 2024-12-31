@@ -106,11 +106,7 @@ export default function HomeScreen() {
   };
 
   const renderItem = useCallback(({ item }: any) => {    
-    if (item.type === 'social') {
-      return <PostCard loadComments={loadComments} post={item.post as PostDetail} />;
-    } else {
-      return <GrowPostCard post={item.post as GrowPostDetail} />;
-    }
+    return <PostCard loadComments={loadComments} post={item.post as PostDetail} />;
   }, [activePostId, posts]);
 
   useEffect(() => {  

@@ -17,9 +17,6 @@ const Modal = forwardRef<
     <TouchableWithoutFeedback onPress={closeModal}>
       <View style={styles.overlay}>
         <BlurView
-          experimentalBlurMethod={
-            Platform.OS === "ios" ? "none" : "dimezisBlurView"
-          }
           intensity={50}
           style={StyleSheet.absoluteFill}
         />

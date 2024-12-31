@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { ResizeMode, Video } from "expo-av";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { uniqBy } from "lodash";
@@ -27,142 +26,57 @@ import Toast from "react-native-toast-message";
 const numColumns = 2;
 const w = Dimensions.get("window").width;
 
-type Props = Omit<FlatListProps<SocialPost>, "renderItem"> & {
+type Props = {
   userId: number;
+  data: SocialPost;
 };
 
 const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
-  ({ userId, ...rest }, ref) => {
-    const limit = 10;
+  ({ userId, data }, ref) => {
     const { user } = useAuth();
 
-    const {
-      data,
-      fetchNextPage,
-      hasNextPage,
-      isFetchingNextPage,
-      isLoading,
-      refetch,
-      error,
-    } = useInfiniteQuery({
-      queryKey: ["profile-reels", userId.toString()],
-      queryFn: async ({ pageParam = 0 }) => {
-        return await getUserReelsPosts({
-          id: userId,
-          skip: pageParam,
-          limit,
-        });
-      },
-      enabled: !!userId,
-      getNextPageParam: (lastPage, allPages) => {
-        if (lastPage.length < limit) return undefined;
-        return allPages.length * limit;
-      },
-      initialPageParam: 0,
-    });
-
-    if (error) {
-      console.error("Erro ao buscar as postagens: ", error);
-      Toast.show({
-        type: "error",
-        text1: "Opss",
-        text2:
-          "Aconteceu um erro ao buscar as Weedz desse perfil. Tente novamente mais tarde.",
-      });
-      return null;
-    }
-
-    const reels = data?.pages.flat() ?? [];
-
-    const renderItem = ({
-      item,
-      index,
-    }: {
-      index: number;
-      item: SocialPost;
-    }) => {
-      if (item.is_compressing) {
-        if (user.id != userId) return null;
-
-        return (
-          <View
-            className="flex flex-row justify-center items-center bg-black-90"
-            style={styles.image}
-          >
-            <ActivityIndicator size="small" color={colors.brand.green} />
-          </View>
-        );
-      }
+    if (data.is_compressing) {
+      if (user.id != userId) return null;
 
       return (
-        <TouchableOpacity
-          onPress={() =>
-            router.push({
-              pathname: "/post/[id]/timeline/[userId]",
-              params: {
-                id: item.post_id,
-                userId: userId,
-                type: TimelineType.WEEDZ,
-              },
-            })
-          }
-          className="flex flex-col gap-2"
+        <View
+          className="flex flex-row justify-center items-center bg-black-90 mt-10"
+          style={styles.image}
         >
-          <Image
-            source={{ uri: replaceMediaUrl(item?.file?.file) }}
-            style={styles.image}
-            resizeMode="cover"
-          />
-          <LinearGradient
-            colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
-            style={styles.blurContainer}
-          >
-            <Eye size={18} color={colors.brand.white} />
-            <Text className="text-white text-base font-medium">
-              {item.view_count}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+          <ActivityIndicator size="small" color={colors.brand.green} />
+        </View>
       );
-    };
+    }
 
     return (
-      <Animated.FlatList
-        ref={ref}
-        {...rest}
-        data={reels}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.post_id.toString()}
-        numColumns={numColumns}
-        showsVerticalScrollIndicator={false}
-        contentContainerClassName="bg-black-100 px-6 mt-2"
-        columnWrapperClassName="flex gap-2 w-full"
-        onEndReached={() => hasNextPage && fetchNextPage()}
-        onEndReachedThreshold={0.5}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={5}
-        // onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={{
-          itemVisiblePercentThreshold: 50,
-        }}
-        // refreshControl={
-        //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        // }
-        refreshing={isLoading}
-        onRefresh={refetch}
-        ListFooterComponent={
-          isFetchingNextPage ? (
-            <View className="flex flex-row justify-center items-center py-4">
-              <ActivityIndicator
-                color="#fff"
-                size="small"
-                className="w-7 h-7"
-              />
-            </View>
-          ) : null
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/post/[id]/timeline/[userId]",
+            params: {
+              id: data.post_id,
+              userId: userId,
+              type: TimelineType.WEEDZ,
+            },
+          })
         }
-      />
+        className="m-1"
+      >
+        <Image
+          source={{ uri: replaceMediaUrl(data?.file?.file) }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <LinearGradient
+          colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}
+          style={styles.blurContainer}
+        >
+          <Eye size={18} color={colors.brand.white} />
+          <Text className="text-white text-base font-medium">
+            {data.view_count}
+          </Text>
+        </LinearGradient>
+      </TouchableOpacity>
     );
   }
 );
@@ -173,7 +87,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.black[100],
   },
   image: {
-    width: w / numColumns - 24,
+    width: "100%",
     height: 224,
     borderRadius: 16,
   },
@@ -194,7 +108,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.16,
     shadowRadius: 16,
-
     elevation: 4,
   },
 });

@@ -527,7 +527,7 @@ export default function SearchScreen() {
                         </Text>
                         <TouchableOpacity
                           className="flex items-center flex-row gap-1"
-                          onPress={() => router.navigate("/reels")}
+                          onPress={() => router.navigate("/(drawer)/(tabs)/reels")}
                         >
                           <Text className="text-primary text-base font-medium">
                             ver mais

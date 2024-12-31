@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { CalendarDaysIcon, Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { GrowPost, SocialPost } from "@/api/@types/models";
-import { Video } from "expo-av";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { getUserGrowPosts } from "@/api/social/post/get-user-grow-posts";
@@ -103,7 +102,7 @@ export default function PlantGrid({ userId }: PlantGridProps) {
 
     return (
       <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]/grow', params: { id: item.post_id }})} className="flex flex-col gap-2 mb-6">
-         
+         {/* brendo */}
          <View className="relative">
           {item.file.type === 'image' ? (
             <Image

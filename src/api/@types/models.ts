@@ -1,3 +1,4 @@
+import { VideoSource } from "expo-video";
 import { GlobalSearchType, TimelineType } from "./enums";
 
 export interface User {
@@ -468,7 +469,8 @@ export interface TimelineParams {
 }
 
 export interface VideoPlayerHandle {
-  play: () => Promise<void>;
-  pause: () => Promise<void>;
-  seek: (position: number) => Promise<void>;
+  play: () => void;
+  pause: () => void;
+  replace: (source: VideoSource) => void;
+  mutedVideo: (mutedVideo: boolean) => void;
 }

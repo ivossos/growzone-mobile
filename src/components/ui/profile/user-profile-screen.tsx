@@ -1,4 +1,3 @@
-import { Follow, UserProfile } from "@/api/@types/models";
 import { createFollow, deleteFollow, isFollower } from "@/api/social/follow";
 import { getProfileUser } from "@/api/social/profile/get-profile-user";
 import {
@@ -11,8 +10,7 @@ import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDateToMonthYear } from "@/lib/utils";
 import { colors } from "@/styles/colors";
-import { NavigationContainer } from "@react-navigation/native";
-import { router, useNavigation } from "expo-router";
+import { router } from "expo-router";
 import { Ellipsis } from "lucide-react-native";
 
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -21,44 +19,21 @@ import Toast from "react-native-toast-message";
 import React, {
   ElementType,
   memo,
-  ReactNode,
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import {
-  createMaterialTopTabNavigator,
-  MaterialTopTabBarProps,
-} from "@react-navigation/material-top-tabs";
-import {
   FlatList,
-  FlatListProps,
-  StyleProp,
+  RefreshControl,
   StyleSheet,
+  Text,
   View,
-  ViewProps,
-  ViewStyle,
   useWindowDimensions,
-  Dimensions,
 } from "react-native";
-import Animated, {
-  interpolate,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useDerivedValue,
-  useSharedValue,
-} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  Connection,
-  HeaderConfig,
-  ScrollPair,
-  Visibility,
-} from "@/components/ui/profile/types";
-import useScrollSync from "@/hooks/use-scroll-sync";
-import TabBar from "@/components/ui/profile/tab-bar";
+import { HeaderConfig, ItemData, TabData } from "@/components/ui/profile/types";
 import PostIcon from "@/assets/icons/post.svg";
 import PostGreenIcon from "@/assets/icons/post-green.svg";
 import ReelsIcon from "@/assets/icons/reels.svg";
@@ -72,36 +47,21 @@ import { EditProfileButton } from "@/components/ui/profile/edit-profile-button";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import Loader from "../loader";
+// import {
+//   FlashList,
+//   ListRenderItemInfo,
+// } from "@shopify/flash-list";
+
+import {
+  MasonryFlashList,
+  MasonryListRenderItemInfo,
+} from "@shopify/flash-list";
+import { TimelineType } from "@/api/@types/enums";
+import useProfile from "@/hooks/useProfile";
+import { GrowPost, SocialPost } from "@/api/@types/models";
 
 const TAB_BAR_HEIGHT = 48;
 const HEADER_HEIGHT = 0;
-
-const OVERLAY_VISIBILITY_OFFSET = 30;
-
-const icons = {
-  posts: (focused: boolean) =>
-    focused ? (
-      <PostGreenIcon width={24} height={24} />
-    ) : (
-      <PostIcon width={24} height={24} />
-    ),
-  wellz: (focused: boolean) =>
-    focused ? (
-      <ReelsGreenIcon width={24} height={24} />
-    ) : (
-      <ReelsIcon width={24} height={24} />
-    ),
-  plantas: (focused: boolean) =>
-    focused ? (
-      <GrowGreenIcon width={24} height={24} />
-    ) : (
-      <GrowIcon width={24} height={24} />
-    ),
-};
-
-const w = Dimensions.get("screen").width;
-
-const Tab = createMaterialTopTabNavigator();
 
 interface Props {
   userId: number;
@@ -109,211 +69,98 @@ interface Props {
 }
 
 const UserProfileScreen = ({ userId, Header }: Props) => {
-  const navigation = useNavigation();
-  // const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<TimelineType>(TimelineType.SOCIAL);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const { user } = useAuth();
   const { openBottomSheet } = useBottomSheetContext();
 
-  //_________________________________________________________________
-  const { top, bottom } = useSafeAreaInsets();
-
-  const { height: screenHeight } = useWindowDimensions();
+  const data = useProfile({ userId, type: activeTab });
 
   const postRef = useRef<FlatList>(null);
   const reelsRef = useRef<FlatList>(null);
   const growPostsRef = useRef<FlatList>(null);
 
-  const [tabIndex, setTabIndex] = useState(0);
-
-  const [headerHeight, setHeaderHeight] = useState(0);
-
-  const defaultHeaderHeight = HEADER_HEIGHT;
-
-  const headerConfig = useMemo<HeaderConfig>(
-    () => ({
-      heightCollapsed: defaultHeaderHeight,
-      heightExpanded: headerHeight,
-    }),
-    [defaultHeaderHeight, headerHeight]
-  );
-
-  const { heightCollapsed, heightExpanded } = headerConfig;
-
-  const headerDiff = heightExpanded - heightCollapsed;
-
-  const rendered = headerHeight > 0;
-
-  const handleHeaderLayout = useCallback<NonNullable<ViewProps["onLayout"]>>(
-    (event) => setHeaderHeight(event.nativeEvent.layout.height),
-    []
-  );
-
-  const postScrollValue = useSharedValue(0);
-
-  const postScrollHandler = useAnimatedScrollHandler(
-    (event) => (postScrollValue.value = event.contentOffset.y)
-  );
-
-  const reelsScrollValue = useSharedValue(0);
-
-  const reelsScrollHandler = useAnimatedScrollHandler(
-    (event) => (reelsScrollValue.value = event.contentOffset.y)
-  );
-
-  const growPostScrollValue = useSharedValue(0);
-
-  const growPostScrollHandler = useAnimatedScrollHandler(
-    (event) => (growPostScrollValue.value = event.contentOffset.y)
-  );
-
-  const scrollPairs = useMemo<ScrollPair[]>(
-    () => [
-      { list: postRef, position: postScrollValue },
-      { list: reelsRef, position: reelsScrollValue },
-      { list: growPostsRef, position: growPostScrollValue },
-    ],
-    [
-      postRef,
-      postScrollValue,
-      reelsRef,
-      reelsScrollValue,
-      growPostsRef,
-      growPostScrollValue,
-    ]
-  );
-
-  const { sync } = useScrollSync(scrollPairs, headerConfig);
-
-  const currentScrollValue = useDerivedValue(() => {
-    if (tabIndex === 0) {
-      return postScrollValue.value;
-    } else if (tabIndex === 1) {
-      return reelsScrollValue.value;
-    } else {
-      return growPostScrollValue.value;
-    }
-  }, [tabIndex, postScrollValue, reelsScrollValue, growPostScrollValue]);
-
-  const translateY = useDerivedValue(() => {
-    if (currentScrollValue.value <= 0) {
-      return 0;
-    }
-    return -Math.min(currentScrollValue.value, headerDiff);
-  });
-  const tabBarAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  const headerAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: interpolate(
-      translateY.value,
-      [-headerDiff, 0],
-      [Visibility.Hidden, Visibility.Visible]
-    ),
-  }));
-
-  const contentContainerStyle = useMemo<StyleProp<ViewStyle>>(
-    () => ({
-      paddingTop: rendered ? headerHeight + TAB_BAR_HEIGHT : 0,
-      paddingBottom: bottom,
-      minHeight: screenHeight + headerDiff,
-    }),
-    [rendered, headerHeight, bottom, screenHeight, headerDiff]
-  );
-
-  const sharedProps = useMemo<Partial<FlatListProps<Connection>>>(
-    () => ({
-      contentContainerStyle,
-      onMomentumScrollEnd: sync,
-      onScrollEndDrag: sync,
-      scrollEventThrottle: 16,
-      scrollIndicatorInsets: { top: heightExpanded },
-    }),
-    [contentContainerStyle, sync, heightExpanded]
-  );
-
   const renderPosts = useCallback(
-    () => (
-      <ConnectionPostList
-        ref={postRef}
-        userId={userId}
-        onScroll={postScrollHandler}
-        {...sharedProps}
-      />
+    (data: SocialPost) => (
+      <ConnectionPostList ref={postRef as any} userId={userId} data={data} />
     ),
-    [userId, postRef, postScrollHandler, sharedProps]
+    [userId, postRef]
   );
 
   const renderReels = useCallback(
-    () => (
-      <ConnectionReelstList
-        ref={reelsRef}
-        userId={userId}
-        onScroll={reelsScrollHandler}
-        {...sharedProps}
-      />
+    (data: SocialPost) => (
+      <ConnectionReelstList ref={reelsRef as any} userId={userId} data={data} />
     ),
-    [reelsRef, reelsScrollHandler, sharedProps]
+    [userId, reelsRef]
   );
 
   const renderGrowPost = useCallback(
-    () => (
+    (data: GrowPost) => (
       <ConnectionGrowPostList
-        ref={growPostsRef}
+        ref={growPostsRef as any}
         userId={userId}
-        onScroll={growPostScrollHandler}
-        {...sharedProps}
+        data={data}
       />
     ),
-    [growPostScrollValue, growPostScrollHandler, sharedProps]
+    [growPostsRef, userId]
   );
 
-  const tabBarStyle = useMemo<StyleProp<ViewStyle>>(
-    () => [
-      rendered ? styles.tabBarContainer : undefined,
-      { top: rendered ? headerHeight : undefined },
-      tabBarAnimatedStyle,
-    ],
-    [rendered, headerHeight, tabBarAnimatedStyle]
-  );
+  const handleRefresh = useCallback(async () => {
+    try {
+      setIsRefreshing(true);
+      await queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      await queryClient.invalidateQueries({ queryKey: ["follow", userId] });
+      await queryClient.invalidateQueries({
+        queryKey: ["profile-posts", userId],
+      });
+    } catch (error) {
+      console.error("Erro ao atualizar dados:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [userId]);
 
-  const renderTabBar = useCallback<
-    (props: MaterialTopTabBarProps) => React.ReactElement
-  >(
-    (props) => (
-      <Animated.View
-        style={[tabBarStyle, { backgroundColor: colors.black[100] }]}
-      >
-        <TabBar onIndexChange={setTabIndex} {...props} />
-      </Animated.View>
-    ),
-    [tabBarStyle]
-  );
+  const handlerChangeTab = useCallback((tabValue: TimelineType) => {
+    setActiveTab(tabValue);
+  }, []);
 
-  const headerContainerStyle = useMemo<StyleProp<ViewStyle>>(
-    () => [rendered ? styles.headerContainer : undefined, headerAnimatedStyle],
+  const tabData = useMemo(() => {
+    const data: TabData[] = [
+      {
+        isActive: activeTab === TimelineType.SOCIAL,
+        icon:
+          activeTab === TimelineType.SOCIAL ? (
+            <PostGreenIcon width={24} height={24} />
+          ) : (
+            <PostIcon width={24} height={24} />
+          ),
+        value: TimelineType.SOCIAL,
+      },
+      {
+        isActive: activeTab === TimelineType.WEEDZ,
+        icon:
+          activeTab === TimelineType.WEEDZ ? (
+            <ReelsGreenIcon width={24} height={24} />
+          ) : (
+            <ReelsIcon width={24} height={24} />
+          ),
+        value: TimelineType.WEEDZ,
+      },
+      {
+        isActive: activeTab === TimelineType.GROW,
+        icon:
+          activeTab === TimelineType.GROW ? (
+            <GrowGreenIcon width={24} height={24} />
+          ) : (
+            <GrowIcon width={24} height={24} />
+          ),
+        value: TimelineType.GROW,
+      },
+    ];
 
-    [rendered, top, headerAnimatedStyle]
-  );
-
-  const collapsedOverlayAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      translateY.value,
-      [-headerDiff, OVERLAY_VISIBILITY_OFFSET - headerDiff, 0],
-      [Visibility.Visible, Visibility.Hidden, Visibility.Hidden]
-    ),
-  }));
-
-  const collapsedOverlayStyle = useMemo<StyleProp<ViewStyle>>(
-    () => [
-      styles.collapsedOvarlay,
-      collapsedOverlayAnimatedStyle,
-      { height: heightCollapsed },
-    ],
-    [collapsedOverlayAnimatedStyle, heightCollapsed, top]
-  );
-  //_________________________________________________________________
+    return data;
+  }, [activeTab]);
 
   const {
     data: profile,
@@ -358,7 +205,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
       type: "profile",
       userId: id,
       callbackFn: async () =>
-        queryClient.invalidateQueries({ queryKey: ["profile", userId] }),
+        await queryClient.invalidateQueries({ queryKey: ["profile", userId] }),
     });
   };
 
@@ -399,29 +246,36 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
         await createFollowFn(id);
       }
 
-      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-      queryClient.invalidateQueries({ queryKey: ["follow", userId] });
+      await queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      await queryClient.invalidateQueries({ queryKey: ["follow", userId] });
     } catch (error) {
       console.error("Erro na ação de follow", error);
     }
   };
 
-  if (isLoadingProfile || !profile) {
-    return <Loader isLoading />;
-  }
+  const renderItem = ({ item }: MasonryListRenderItemInfo<ItemData>) => {
+    const screens = {
+      [TimelineType.SOCIAL]: renderPosts,
+      [TimelineType.WEEDZ]: renderReels,
+      [TimelineType.GROW]: renderGrowPost,
+    };
 
-  const { cover, image, info, metric } = profile;
+    const Component = screens[activeTab];
+    return Component(item as any);
+  };
 
-  return (
-    <View style={styles.container}>
-      {/* <View style={styles.fixedHeader}>
-      <Header onBack={() => router.back()} />
-    </View> */}
+  const getColumnFlex = useCallback(() => {
+    return [TimelineType.WEEDZ, TimelineType.GROW].includes(activeTab) ? 2 : 3;
+  }, [activeTab]);
 
-      <Animated.View
-        onLayout={handleHeaderLayout}
-        style={[headerContainerStyle]}
-      >
+  const userHeader = useMemo(() => {
+    if (!profile) {
+      return null;
+    }
+
+    const { info, metric, image, cover } = profile;
+    return (
+      <>
         <Header />
         <AvatarSection
           imageUri={image?.image}
@@ -445,7 +299,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
             socialCount={metric?.social_count}
             reelCount={metric?.reel_count}
             averageReview={metric?.average_review}
-            onReviewsPress={() => handleReviewsPress(profile.info.id)}
+            onReviewsPress={() => handleReviewsPress(info.id)}
           />
         )}
         {user && user.id != userId && (
@@ -458,11 +312,11 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
                 isDeleteFollowLoading
               }
               onFollowPress={() =>
-                handleFollowAction(!!follow?.is_active, profile.info.id)
+                handleFollowAction(!!follow?.is_active, info.id)
               }
             />
             <TouchableOpacity
-              onPress={() => handleRateProfilePress(profile.info.id)}
+              onPress={() => handleRateProfilePress(info.id)}
               style={{
                 alignItems: "center",
                 justifyContent: "center",
@@ -483,89 +337,92 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
             <EditProfileButton />
           </View>
         )}
-      </Animated.View>
-      {/* {info && <Animated.View style={collapsedOverlayStyle}>
-        <HeaderOverlay name={info.name || info.username}  imageUri={image?.image} onBack={() => navigation.goBack()} />
-      </Animated.View>} */}
-      {profile && (
-        <NavigationContainer independent={true}>
-          <Tab.Navigator
-            tabBar={renderTabBar}
-            style={{ backgroundColor: colors.black[100] }}
-            screenOptions={({ route }) => ({
-              tabBarContentContainerStyle: {
-                justifyContent: "center",
-                alignItems: "center",
-              },
-              tabBarIndicatorContainerStyle: {
-                backgroundColor: colors.black[100],
-              },
-              tabBarIndicatorStyle: {
-                backgroundColor: colors.brand.green,
-                height: 2.5,
-                // borderBottomColor: colors.black[100], borderBottomWidth: 1
-              },
-              tabBarIcon: ({ focused }) => {
-                return icons[route.name](focused);
-              },
-              tabBarIconStyle: {
-                width: w / 3,
-                justifyContent: "center",
-                alignItems: "center",
-              },
-              tabBarShowLabel: false,
-            })}
+      </>
+    );
+  }, [
+    profile,
+    follow,
+    user,
+    userId,
+    isLoadingFollow,
+    isCreateFollowLoading,
+    isDeleteFollowLoading,
+  ]);
+
+  if (isLoadingProfile || !profile) {
+    return <Loader isLoading />;
+  }
+
+  return (
+    <MasonryFlashList
+      key={`list_${activeTab}`}
+      data={data.data}
+      renderItem={renderItem}
+      keyExtractor={(item) => `tab_${item.id}`}
+      estimatedItemSize={100}
+      showsVerticalScrollIndicator={false}
+      numColumns={getColumnFlex()}
+      getColumnFlex={getColumnFlex}
+      contentContainerStyle={{ backgroundColor: colors.black[100]  }}
+      onEndReached={() => data.hasNextPage && data.fetchNextPage()}
+      onEndReachedThreshold={0.5}
+      refreshControl={
+        <RefreshControl
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          colors={[colors.primary]}
+        />
+      }
+      ListFooterComponent={() => {
+        if (data.isLoading) {
+          return <Loader isLoading />;
+        }
+      }}
+      ListEmptyComponent={() => {
+        if (!data.isLoading && data.data.length === 0) {
+          return (
+            <View className="flex flex-col justify-center items-center py-6">
+              <Text className="text-base text-brand-grey">
+                Nenhum publicação realizada
+              </Text>
+            </View>
+          );
+        }
+      }}
+      ListHeaderComponent={() => (
+        <View className="gap-6">
+          <View>{userHeader}</View>
+
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-around",
+            }}
           >
-            <Tab.Screen name="posts">{renderPosts}</Tab.Screen>
-            <Tab.Screen name="wellz">{renderReels}</Tab.Screen>
-            <Tab.Screen name="plantas">{renderGrowPost}</Tab.Screen>
-          </Tab.Navigator>
-        </NavigationContainer>
+            {tabData.map((tab, index) => (
+              <TouchableOpacity
+                key={`item_${index}`}
+                onPress={() => handlerChangeTab(tab.value)}
+                style={{
+                  alignItems: "center",
+                  width: 100,
+                  maxWidth: 100,
+                  paddingVertical: 8,
+                  borderBottomWidth: 3,
+                  marginBottom: 10,
+                  borderBottomColor: tab.isActive
+                    ? colors.primary
+                    : "transparent",
+                }}
+              >
+                {tab.icon}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
       )}
-    </View>
+    />
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.black[100],
-  },
-  fixedHeader: {
-    position: "absolute",
-    top: 0,
-    width: "100%",
-    zIndex: 50,
-    backgroundColor: colors.black[100],
-  },
-  overlayName: {
-    fontSize: 24,
-  },
-  collapsedOvarlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: colors.black[100],
-    justifyContent: "center",
-    zIndex: 1,
-  },
-  headerContainer: {
-    top: 0,
-    left: 0,
-    right: 0,
-    position: "absolute",
-    zIndex: 1,
-    backgroundColor: colors.black[100],
-  },
-  tabBarContainer: {
-    top: 0,
-    left: 0,
-    right: 0,
-    position: "absolute",
-    zIndex: 1,
-    backgroundColor: colors.black[100],
-  },
-});
 
 export default memo(UserProfileScreen);

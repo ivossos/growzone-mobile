@@ -3,7 +3,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { SocialPost } from "@/api/@types/models";
-import { ResizeMode, Video } from "expo-av";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import Toast from "react-native-toast-message";
@@ -104,6 +103,7 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
 
     return (
       <TouchableOpacity onPress={() => router.push({ pathname: '/reels/[id]', params: { id: item.post_id} })} className="flex flex-col gap-2">
+        {/* brendo */}
          <Video
           ref={ref => (videoRefs.current[index] = ref)} 
           source={{ uri: item?.file?.file}}
@@ -112,7 +112,6 @@ export default function ReelsGrid({ userId }: ReelsGridProps) {
           isLooping={false}
           isMuted={true} 
           useNativeControls={false}
-          resizeMode={ResizeMode.COVER}
         />
         <LinearGradient
           colors={["rgba(255, 255, 255, 0.16)", "rgba(255, 255, 255, 0.32)"]}

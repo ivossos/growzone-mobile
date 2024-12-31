@@ -15,7 +15,6 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { getReel } from "@/api/social/post/get-reel";
-import { ResizeMode } from "expo-av";
 import { useQuery } from "@tanstack/react-query";
 
 export default function Reels() {
@@ -77,7 +76,6 @@ export default function Reels() {
           <ReelsPost
             post={post}
             activePostId={post.post_id}
-            resizeMode={ResizeMode.COVER}
           />
         )}
       </View>

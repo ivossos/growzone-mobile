@@ -94,14 +94,10 @@ const SelectGeneticDropdown = ({
 
     try {
       setIsLoading(true);
-      console.log('initialValue ', initialValue);
       const genetics = await getGenetics({ query: initialValue.label });
 
-      console.log('genetics ', JSON.stringify(genetics));
       const genetic = genetics.find((item) => item.id === initialValue.id);
-      console.log('encontrou ', genetic);
       if (genetic) {
-        
         setData((prev) =>
           uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], "id")
         );
@@ -120,6 +116,10 @@ const SelectGeneticDropdown = ({
     loadInitialValue();
   }, [initialValue, value, data]);
 
+  const handlerValue = (value: string) => {
+    setSearchQuery(value)
+  }
+
   const addNewGenetic = useCallback(async () => {
     setIsLoading(true);
 
@@ -135,7 +135,10 @@ const SelectGeneticDropdown = ({
         text1: "Sucesso",
         text2: "Genética adicionada com sucesso",
       });
+
+      setSearchQuery('')
     } catch (error) {
+      console.error('error ', error)
       Toast.show({
         type: "error",
         text1: "Erro",
@@ -160,11 +163,12 @@ const SelectGeneticDropdown = ({
           handlePress={addNewGenetic}
           title="Adicionar"
           variant="outline"
+          isDisabled={searchQuery == null}
           containerStyles="w-full"
         />
       </View>
     );
-  }, []);
+  }, [addNewGenetic, searchQuery]);
 
   const loadMoreData = () => {
     if (hasMore && !isLoading) {
@@ -227,7 +231,7 @@ const SelectGeneticDropdown = ({
           setIsFocus(false);
           handleChangeText(String(item.value), item);
         }}
-        onChangeText={(text) => setSearchQuery(text)}
+        onChangeText={handlerValue}
         flatListProps={{
           onEndReached: loadMoreData,
           ListEmptyComponent: buttonAddNewGenetic,
@@ -285,7 +289,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dropdown: {
-    height: 56,
+    height: 68,
     borderRadius: 8,
     paddingHorizontal: 8,
     backgroundColor: colors.black[90],

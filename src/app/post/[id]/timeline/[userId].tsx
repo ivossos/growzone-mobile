@@ -1,5 +1,10 @@
 import { TimelineType } from "@/api/@types/enums";
-import { GrowPostDetail, PostDetail, ReelsDetail } from "@/api/@types/models";
+import {
+  GrowPostDetail,
+  PostDetail,
+  ReelsDetail,
+  VideoPlayerHandle,
+} from "@/api/@types/models";
 import Divider from "@/components/ui/divider";
 import GrowPostCard from "@/components/ui/grow-post-card";
 import Loader from "@/components/ui/loader";
@@ -7,17 +12,13 @@ import PostCard from "@/components/ui/post-card";
 import ReelsPost from "@/components/ui/reels-post";
 import useTimeline from "@/hooks/useTimeline";
 import { colors } from "@/styles/colors";
-import { ResizeMode, Video } from "expo-av";
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft } from "lucide-react-native";
 import {
   ActivityIndicator,
   Dimensions,
-  PixelRatio,
   Platform,
   StatusBar,
   StyleSheet,
-  Text,
   View,
   ViewabilityConfig,
   ViewToken,
@@ -33,13 +34,15 @@ import {
   useRef,
   useState,
 } from "react";
-import VideoPlayer from "@/components/VideoPlayer";
 import HeaderGoBack from "@/components/ui/HeaderGoBack";
-import { FlashList } from "@shopify/flash-list";
 
 const w = Dimensions.get("window").width;
 
-const heightScreen = Dimensions.get("window").height;
+const statusBarHeight =
+  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
+const screenHeight =
+  Dimensions.get("window").height -
+  (Platform.OS === "ios" ? 78 : statusBarHeight);
 
 type TimelineParams = {
   id: string;
@@ -55,10 +58,10 @@ export default function Timeline() {
   const postId = Number(params.id);
 
   const flatListRef = useRef<FlatList>(null);
-  const videoRefs = useRef<Record<string, any>>({});
+  const videoRefs = useRef<Record<number, any>>({} as any);
 
   const [currentVideoId, setCurrentVideoId] = useState<number | null>(null);
-  const [statusVideo, setStatusVideo] = useState({});
+  const [mutedVideo, setMutedVideo] = useState(false);
 
   const { data, isLoading, hasNextPage, fetchNextPage } = useTimeline({
     userId,
@@ -69,65 +72,67 @@ export default function Timeline() {
     return {
       itemVisiblePercentThreshold: 50,
       waitForInteraction: true,
-    }
-  }, [])
+    };
+  }, []);
+
+  const isWeedzScreen = useMemo(() => {
+    return params.type === TimelineType.WEEDZ;
+  }, [params.type]);
 
   const loadComments = async () => {};
 
   const onViewableItemsChanged = useCallback(
-    async (info: {
-      viewableItems: ViewToken<PostDetail | ReelsDetail | GrowPostDetail>[],
-      changed: ViewToken<PostDetail | ReelsDetail | GrowPostDetail>[],
+    (info: {
+      viewableItems: ViewToken<PostDetail | ReelsDetail | GrowPostDetail>[];
+      changed: ViewToken<PostDetail | ReelsDetail | GrowPostDetail>[];
     }) => {
       const { viewableItems, changed } = info;
 
-      console.log('viewableItems ', { viewableItems: JSON.stringify(viewableItems) });
+      if (viewableItems.length > 0 && isWeedzScreen) {
+        const [visibleItem] = viewableItems;
+        const [_, oldVisibleItem] = changed;
 
-      console.log('changed ', { changed: JSON.stringify(changed) });
+        const oldItem = oldVisibleItem?.item ?? null;
+        const currentItem = visibleItem?.item ?? null;
+        const currentId = currentItem?.id
 
-      if (viewableItems.length > 0 && params.type === TimelineType.WEEDZ) {
-        const [firstVisibleItem] = viewableItems;
+        setCurrentVideoId(currentId);
 
-        console.log('currentVideoId ', currentVideoId);
+        videoRefs.current[currentId]?.mutedVideo(mutedVideo);
 
-        if (currentVideoId && videoRefs.current[currentVideoId]) {
-          // console.log("Pausing current video:", currentVideoId);
-          await videoRefs.current[currentVideoId]?.pause();
+        if (oldItem && oldItem.id) {
+          videoRefs.current[oldItem.id]?.mutedVideo(mutedVideo);
         }
 
-        console.log("brendoooooooooooo  ", firstVisibleItem.item.id);
-        setCurrentVideoId(firstVisibleItem.item.id); // Atualiza o estado
+        if (oldItem && videoRefs.current[`${oldItem.id}`]) {
+          videoRefs.current[`${oldItem.id}`]?.pause();
+        }
 
-        if (videoRefs.current[firstVisibleItem.item.id]) {
-          //console.log("Playing new current video:", newCurrentId);
-          await videoRefs.current[firstVisibleItem.item.id]?.play();
+        if (currentItem && videoRefs.current[currentId]) {
+          videoRefs.current[currentId]?.play();
         }
       }
     },
-    [currentVideoId, params.type]
+    [isWeedzScreen, mutedVideo]
   );
 
   const stickyHeaderHiddenOnScroll = useMemo(() => {
-    if (params.type === TimelineType.WEEDZ) {
+    if (isWeedzScreen) {
       return undefined;
     }
 
     return [TimelineType.GROW, TimelineType.SOCIAL].includes(params.type);
-  }, [params.type]);
+  }, [isWeedzScreen, params.type]);
 
   const stickyHeaderIndices = useMemo(() => {
-    if (params.type === TimelineType.WEEDZ) {
-      return undefined;
-    }
-
-    return [0];
-  }, [params.type]);
+    return isWeedzScreen ? undefined : [0];
+  }, [isWeedzScreen]);
 
   const getItemLayout = useCallback(
     (data: any[], index: number) => {
       const typeHeights = {
         [TimelineType.SOCIAL]: { itemHeight: 400 },
-        [TimelineType.WEEDZ]: { itemHeight: heightScreen },
+        [TimelineType.WEEDZ]: { itemHeight: screenHeight },
         [TimelineType.GROW]: { itemHeight: 550 },
       };
       const { itemHeight } = typeHeights[params.type];
@@ -136,12 +141,15 @@ export default function Timeline() {
     [params.type]
   );
 
-  const viewabilityConfigCallbackPairs = useRef([
-    {
-      viewabilityConfig: viewabilityConfig,
-      onViewableItemsChanged: onViewableItemsChanged,
-    },
-  ]);
+  const handlerMutedVideo = useCallback(() => {
+    const value = !mutedVideo;
+
+    if (currentVideoId && videoRefs.current[`${currentVideoId}`]) {
+      videoRefs.current[`${currentVideoId}`].mutedVideo(value);
+    }
+
+    setMutedVideo(value);
+  }, [mutedVideo, currentVideoId]);
 
   const renderItem = ({ item, index }: { index: number; item: Item }) => {
     if (item.is_compressing) {
@@ -172,7 +180,7 @@ export default function Timeline() {
         <Fragment key={`weedz_card_${index}`}>
           <HeaderGoBack
             onBack={() => router.back()}
-            title={`Publicações ${item.id}`}
+            title="Publicações"
             containerStyle={styles.header}
           />
 
@@ -183,8 +191,11 @@ export default function Timeline() {
                   videoRefs.current[item.id] = ref;
                 }
               }}
+              video={{
+                handlerMutedVideo,
+                muted: mutedVideo,
+              }}
               activePostId={currentVideoId || 0}
-              resizeMode={ResizeMode.COVER}
               post={item as ReelsDetail}
             />
           </View>
@@ -224,7 +235,7 @@ export default function Timeline() {
         numColumns={1}
         getItemLayout={getItemLayout as any}
         ListHeaderComponent={() => {
-          if (params.type === TimelineType.WEEDZ) {
+          if (isWeedzScreen) {
             return null;
           }
 
@@ -235,9 +246,9 @@ export default function Timeline() {
         contentContainerClassName="bg-black-500"
         onEndReached={() => hasNextPage && fetchNextPage()}
         onEndReachedThreshold={0.5}
-        snapToInterval={heightScreen}
+        snapToInterval={isWeedzScreen ? screenHeight : undefined}
         ItemSeparatorComponent={() => {
-          if (params.type === TimelineType.WEEDZ) {
+          if (isWeedzScreen) {
             return null;
           }
 
@@ -245,12 +256,13 @@ export default function Timeline() {
         }}
         stickyHeaderIndices={stickyHeaderIndices}
         stickyHeaderHiddenOnScroll={stickyHeaderHiddenOnScroll}
-        decelerationRate="fast"
-        snapToAlignment="start"
+        decelerationRate={isWeedzScreen ? "fast" : undefined}
+        snapToAlignment={isWeedzScreen ? "start" : undefined}
         initialNumToRender={5}
         windowSize={5}
-        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
-        pagingEnabled={params.type === TimelineType.WEEDZ}
+        viewabilityConfig={viewabilityConfig}
+        onViewableItemsChanged={onViewableItemsChanged}
+        pagingEnabled={isWeedzScreen}
         ListFooterComponent={
           isLoading ? (
             <View className="flex-1 justify-center items-center bg-black-100">
@@ -265,7 +277,7 @@ export default function Timeline() {
 
 const styles = StyleSheet.create({
   fullscreenItem: {
-    height: heightScreen,
+    height: screenHeight,
   },
   image: {
     width: w,

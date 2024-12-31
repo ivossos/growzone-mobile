@@ -1,12 +1,12 @@
 import { TimelineType } from "@/api/@types/enums";
 import { TimelineParams } from "@/api/@types/models";
-import { getAllGrowPost } from "@/api/social/post/timeline/get-all-grow-post";
-import { getAllSocialPost } from "@/api/social/post/timeline/get-all-social-post";
-import { getAllWeedzPost } from "@/api/social/post/timeline/get-all-weedz-post";
+import { getUserGrowPosts } from "@/api/social/post/get-user-grow-posts";
+import { getUserPosts } from "@/api/social/post/get-user-posts";
+import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
-const useTimeline = (props: Omit<TimelineParams, 'limit' | 'skip'>) => {
+const useProfile = (props: { userId: number, type: TimelineType }) => {
   const limit = 10;
 
   const fetchData = async ({ pageParam = 0, queryKey }: any) => {
@@ -14,13 +14,16 @@ const useTimeline = (props: Omit<TimelineParams, 'limit' | 'skip'>) => {
 
     const typeValue = params.type;
 
+    const paramsValue = {
+      id: params.userId,
+      skip: pageParam,
+      limit,
+    };
+
     const handlers = {
-      [TimelineType.SOCIAL]: () =>
-        getAllSocialPost({ ...params, skip: pageParam, limit }),
-      [TimelineType.WEEDZ]: () =>
-        getAllWeedzPost({ ...params, skip: pageParam, limit }),
-      [TimelineType.GROW]: () =>
-        getAllGrowPost({ ...params, skip: pageParam, limit }),
+      [TimelineType.SOCIAL]: () => getUserPosts(paramsValue),
+      [TimelineType.WEEDZ]: () => getUserReelsPosts(paramsValue),
+      [TimelineType.GROW]: () => getUserGrowPosts(paramsValue),
     };
 
     const handler = handlers[typeValue as TimelineType];
@@ -40,7 +43,7 @@ const useTimeline = (props: Omit<TimelineParams, 'limit' | 'skip'>) => {
     isLoading,
     isSuccess,
   } = useInfiniteQuery({
-    queryKey: ["timeline", props],
+    queryKey: [`profile-posts`, props],
     queryFn: fetchData,
     enabled: !!props?.userId,
     getNextPageParam: (lastPage, allPages) => {
@@ -51,12 +54,12 @@ const useTimeline = (props: Omit<TimelineParams, 'limit' | 'skip'>) => {
   });
 
   if (error) {
-    console.error("Erro ao carregar a timeline: ", error);
+    console.error("Erro ao carregar os posts: ", error);
     Toast.show({
       type: "error",
       text1: "Opss",
       text2:
-        "Aconteceu um erro ao abrir a timeline. Tente novamente mais tarde.",
+        "Aconteceu um erro ao carregar os posts. Tente novamente mais tarde.",
     });
   }
 
@@ -70,4 +73,4 @@ const useTimeline = (props: Omit<TimelineParams, 'limit' | 'skip'>) => {
   };
 };
 
-export default useTimeline
+export default useProfile;

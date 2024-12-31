@@ -1,7 +1,6 @@
 import { FlatList, Image, StyleSheet, Dimensions, TouchableOpacity, View, ActivityIndicator, RefreshControl, ViewToken } from "react-native";
 import { router } from "expo-router";
 import { SocialPost } from "@/api/@types/models";
-import { Video } from "expo-av";
 import { useEffect, useRef, useState } from "react";
 import { getUserPosts } from "@/api/social/post/get-user-posts";
 import Toast from "react-native-toast-message";
@@ -101,6 +100,7 @@ export default function PostGrid({ userId }: PostGridProps) {
     
     return (
       <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]', params: { id: item.post_id }})} className="mb-1">
+        {/* brendo */}
         {item?.file?.type === 'image' ? (
           <Image source={{ uri: item?.file?.file }} style={styles.image} resizeMode="contain" />
         ) : (

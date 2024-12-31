@@ -209,7 +209,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   dropdown: {
-    height: 56,
+    height: 68,
     borderRadius: 8,
     paddingHorizontal: 8,
     backgroundColor: colors.black[90],

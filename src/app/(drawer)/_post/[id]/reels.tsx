@@ -11,9 +11,7 @@ import { View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { getReel } from "@/api/social/post/get-reel";
-import { ResizeMode } from "expo-av";
 
 export default function Reels() {
   const params = useLocalSearchParams();
@@ -66,7 +64,7 @@ export default function Reels() {
       
     </SafeAreaView>
     <View style={{ flex: 1 }}>
-      {post && <ReelsPost post={post} activePostId={post.post_id} resizeMode={ResizeMode.COVER} />}
+      {post && <ReelsPost post={post} activePostId={post.post_id} />}
     </View>
   </View>
   )

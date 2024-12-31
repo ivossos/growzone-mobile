@@ -1,5 +1,17 @@
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, RefreshControl, TouchableOpacity, View, ViewabilityConfigCallbackPair, StatusBar, Dimensions, Platform } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  TouchableOpacity,
+  View,
+  ViewabilityConfigCallbackPair,
+  StatusBar,
+  Dimensions,
+  Platform,
+  ViewabilityConfig,
+  ViewToken,
+  StyleSheet,
+} from "react-native";
 import { router, Stack } from "expo-router";
 import { colors } from "@/styles/colors";
 
@@ -9,10 +21,18 @@ import LogoIcon from "@/assets/icons/logo-small-white.svg";
 import Toast from "react-native-toast-message";
 import { getReels } from "@/api/social/post/get-reels";
 import { ReelsDetail } from "@/api/@types/models";
-import { ResizeMode } from "expo-av";
 import { uniqBy } from "lodash";
+import { FlatList } from "react-native-gesture-handler";
+
+const statusBarHeight =
+  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
+const ScreenHeight =
+  Dimensions.get("window").height -
+  (Platform.OS === "ios" ? 72 : statusBarHeight);
 
 export default function Reels() {
+  const videoRefs = useRef<Record<number, any>>({} as any);
+
   const [refreshing, setRefreshing] = useState(false);
   const [activePostId, setActivePostId] = useState<number>();
   const [posts, setPosts] = useState<ReelsDetail[]>([]);
@@ -20,7 +40,14 @@ export default function Reels() {
   const [limit] = useState(10);
   const [hasMorePosts, setHasMorePosts] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [mutedVideo, setMutedVideo] = useState(false);
 
+  const viewabilityConfig: ViewabilityConfig = useMemo(() => {
+    return {
+      itemVisiblePercentThreshold: 80,
+      waitForInteraction: true,
+    };
+  }, []);
 
   const fetchPostsData = async (skipValue: number, limitValue: number) => {
     try {
@@ -32,19 +59,20 @@ export default function Reels() {
       if (data.length === 0) {
         setHasMorePosts(false);
       } else {
-        setPosts((prevPosts) => uniqBy([...prevPosts, ...data], 'post_id'));
+        setPosts((prevPosts) => uniqBy([...prevPosts, ...data], "post_id"));
       }
     } catch (error) {
-      console.error('Erro ao buscar os reels:', error);
+      console.error("Erro ao buscar os reels:", error);
       Toast.show({
-        type: 'error',
-        text1: 'Ops!',
-        text2: 'Aconteceu um erro ao buscar os reels. Tente novamente mais tarde.'
+        type: "error",
+        text1: "Ops!",
+        text2:
+          "Aconteceu um erro ao buscar os reels. Tente novamente mais tarde.",
       });
     } finally {
-      setLoadingMore(false);
       setRefreshing(false);
     }
+    setLoadingMore(false);
   };
 
   const onRefresh = async () => {
@@ -53,6 +81,38 @@ export default function Reels() {
     setHasMorePosts(true);
     setPosts([]);
     await fetchPostsData(0, limit);
+  };
+
+  const onViewableItemsChanged = (info: {
+    viewableItems: ViewToken<ReelsDetail>[];
+    changed: ViewToken<ReelsDetail>[];
+  }) => {
+    const { viewableItems, changed } = info;
+
+    if (viewableItems.length > 0) {
+      const [visibleItem] = viewableItems;
+      const [_, oldVisibleItem] = changed;
+
+      const oldItem = posts[visibleItem.index ? visibleItem.index - 1 : 0] ?? null;
+      const currentItem = visibleItem?.item ?? null;
+      const currentId = currentItem?.id;
+
+      setActivePostId(currentId);
+
+      videoRefs.current[currentId]?.mutedVideo(mutedVideo);
+
+      if (oldItem && oldItem.id) {
+        videoRefs.current[oldItem.id]?.mutedVideo(mutedVideo);
+      }
+
+      if (oldItem && videoRefs.current[oldItem.id]) {
+        videoRefs.current[oldItem.id]?.pause();
+      }
+
+      if (currentItem && videoRefs.current[currentId]) {
+        videoRefs.current[currentId]?.play();
+      }
+    }
   };
 
   useEffect(() => {
@@ -67,65 +127,53 @@ export default function Reels() {
     }
   };
 
-  const viewabilityConfigCallbackPairs = useRef<ViewabilityConfigCallbackPair[]>([
-    {
-      viewabilityConfig: { itemVisiblePercentThreshold: 80 },
-      onViewableItemsChanged: ({ viewableItems }) => {
-        if (viewableItems?.length > 0 && viewableItems[0].isViewable) {
-          setActivePostId(viewableItems[0].item.post_id);
-        }
-      },
-    },
-  ]);
+  const handlerMutedVideo = useCallback(() => {
+    const value = !mutedVideo;
 
+    if (activePostId && videoRefs.current[activePostId]) {
+      videoRefs.current[activePostId].mutedVideo(value);
+    }
 
-  const statusBarHeight = Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0;
-  const ScreenHeight = Dimensions.get('window').height - (Platform.OS === 'ios' ? 72 : statusBarHeight);
+    setMutedVideo(value);
+  }, [mutedVideo, activePostId]);
 
   return (
     <View>
-      {/* <Stack.Screen options={{ headerShown: false }} />*/}
-      <StatusBar translucent backgroundColor={'transparent'} /> 
-
-      
-        <View className="flex flex-row items-center justify-between h-[72px] pt-20 px-6 absolute z-20">
-          <View className="flex flex-row items-center gap-2">
-            <TouchableOpacity
-              className="p-2 rounded-lg border border-brand-white"
-              style={{ borderColor: 'rgba(255, 255, 255, 0.16)' }}
-              onPress={() => router.back()}
-            >
-              <ChevronLeft className="w-8 h-8" color={colors.brand.white} />
-            </TouchableOpacity>
-            <LogoIcon width={107} height={30} />
-          </View>
-          {/* <TouchableOpacity>
-            <Camera className="w-8 h-8" color={colors.brand.white} />
-          </TouchableOpacity> */}
-        </View>
+      <StatusBar translucent backgroundColor={"transparent"} />
 
       <FlatList
         data={posts}
         renderItem={({ item }) => (
-          <ReelsPost post={item} activePostId={activePostId!} resizeMode={ResizeMode.COVER} />
+          <View style={styles.fullscreenItem}>
+            <ReelsPost
+              ref={(ref) => {
+                if (ref) {
+                  videoRefs.current[item.id] = ref;
+                }
+              }}
+              post={item}
+              activePostId={activePostId || 0}
+              video={{
+                handlerMutedVideo,
+                muted: mutedVideo,
+              }}
+            />
+          </View>
         )}
         keyExtractor={(item, index) => `${item.id}-${index}`}
         snapToInterval={ScreenHeight}
-        snapToAlignment="center"
-        decelerationRate="fast"       
+        snapToAlignment="start"
+        decelerationRate="fast"
         pagingEnabled
-        viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+        viewabilityConfig={viewabilityConfig}
+        onViewableItemsChanged={onViewableItemsChanged}
         showsVerticalScrollIndicator={false}
+        numColumns={1}
         onEndReached={loadMorePosts}
         onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        ListFooterComponent={loadingMore ? (
-          <View className="flex flex-row justify-center items-center py-4">
-            <ActivityIndicator color="#fff" size="small" className="w-7 h-7" />
-          </View>
-        ) : null}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
         windowSize={5}
@@ -133,3 +181,9 @@ export default function Reels() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  fullscreenItem: {
+    height: ScreenHeight,
+  },
+});

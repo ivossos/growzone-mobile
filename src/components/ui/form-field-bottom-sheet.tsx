@@ -39,7 +39,7 @@ export function FormFieldBottomSheetText({
     <View className={`flex flex-col gap-2 ${otherStyles} ${!editable && 'opacity-80'}`}>
       {title && <Text className={`text-base font-medium ${error ? 'text-red-500' : 'text-white'} ${!editable && 'text-black-60'}`}>{title}</Text>}
 
-      <View className={`w-full h-16 p-4 bg-black-90 rounded-lg flex flex-row gap-2
+      <View className={`w-ful p-4 bg-black-90 rounded-lg flex flex-row gap-2
         ${containerStyles} 
         ${isFocused && 'border border-brand-green'}
         ${error && 'border border-red-500'}`}>

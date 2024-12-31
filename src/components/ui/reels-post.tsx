@@ -1,4 +1,12 @@
-import React, { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  memo,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
   View,
   Text,
@@ -11,16 +19,15 @@ import {
   StatusBar,
   Image,
 } from "react-native";
-import {
-  Video,
-  ResizeMode,
-  AVPlaybackStatus,
-  AVPlaybackStatusSuccess,
-} from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
-import { EllipsisIcon, MessageCircleMore } from "lucide-react-native";
+import {
+  EllipsisIcon,
+  MessageCircleMore,
+  VolumeX,
+  Volume2,
+} from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Link, router, useFocusEffect } from "expo-router";
 import ExpandableText from "./expandable-text";
@@ -42,24 +49,21 @@ import VideoPlayer from "../VideoPlayer";
 type ReelsPostProps = {
   post: ReelsDetail;
   activePostId: number;
-  resizeMode?: ResizeMode;
+  video: {
+    handlerMutedVideo: () => void;
+    muted: boolean;
+  }
 };
 
-const ReelsPost =  forwardRef(({ activePostId, post, resizeMode }: ReelsPostProps, ref) => {
+const ReelsPost = forwardRef(({ activePostId, post, video }: ReelsPostProps, ref) => {
   const { user } = useAuth();
-  const video = useRef<VideoPlayerHandle>(null);
-  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
-  const [status, setStatus] = useState<AVPlaybackStatus>();
   const [follow, setFollow] = useState<boolean>(post.user.is_following);
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [commentCount, setCommentCount] = useState(post.comment_count);
-  const [isLoadingLiked, setIsLoadingLiked] = useState(false);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
   const [isViewed, setIsViewed] = useState(post.is_viewed);
   const { openBottomSheet } = useBottomSheetContext();
-
-  const isPlaying = status?.isLoaded && status.isPlaying;
 
   const handleBottomSheet = (postId: any) => {
     openBottomSheet({
@@ -109,7 +113,6 @@ const ReelsPost =  forwardRef(({ activePostId, post, resizeMode }: ReelsPostProp
 
   const handleLike = async () => {
     try {
-      setIsLoadingLiked(true);
       if (liked) {
         await deleteLike(post.post_id);
         setLiked(false);
@@ -128,80 +131,25 @@ const ReelsPost =  forwardRef(({ activePostId, post, resizeMode }: ReelsPostProp
           liked ? "remover like" : "dar like"
         } no post. Tente novamente mais tarde.`,
       });
-    } finally {
-      setIsLoadingLiked(false);
     }
   };
 
-  // const managePlayback = async () => {
-  //   if (video.current) {
-  //     try {
-  //       if (activePostId === post.post_id) {
-  //         await video.current.loadAsync(
-  //           { uri: post.file.file },
-  //           { shouldPlay: true }
-  //         );
-  //         await viewVideo(post);
-  //       } else {
-  //         await video.current.pauseAsync();
-  //         await video.current.unloadAsync();
-  //         setIsVideoLoaded(false);
-  //       }
-  //     } catch (error) {
-  //       console.error("Erro ao gerenciar a reprodução:", error);
-  //     }
-  //   }
-  // };
-
-  // const debouncedManagePlayback = useCallback(debounce(managePlayback, 300), [
-  //   activePostId,
-  //   post.post_id,
-  // ]);
-
-  async function handlePlaybackStatus(newStatus: AVPlaybackStatus) {
-    setStatus(newStatus);
-
-    // if (newStatus.isLoaded) {
-    //   if ((newStatus as AVPlaybackStatusSuccess).didJustFinish) {
-    //     if (video.current) {
-    //       await video.current.playFromPositionAsync(0);
-    //     }
-    //   }
-    // }
-  }
-
-  // useImperativeHandle(ref, () => ({
-  //   play: async () => {
-  //     await video.current?.playAsync();
-  //   },
-  //   pause: async () => {
-  //     await video.current?.pauseAsync();
-  //   },
-  //   stop: async () => {
-  //     await video.current?.pauseAsync();
-  //     await video.current?.setPositionAsync(0);
-  //   },
-  // }));
-
-  // useEffect(() => {
-  //   if (!video.current) return;
-
-  //   debouncedManagePlayback();
-
-  //   return () => {
-  //     debouncedManagePlayback.cancel();
-  //   };
-  // }, [activePostId, post.post_id]);
+  const startPlay = (postData: ReelsDetail) => {
+    viewVideo(postData).then();
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
       <VideoPlayer
         ref={ref as any}
         loop
+        data={post}
+        startPlay={startPlay}
+        controls={{
+          showProgressBar: true
+        }}
         autoplay={activePostId === post.id}
         source={{ uri: post.file.file }}
-        onPlaybackStatusUpdate={handlePlaybackStatus}
-        resizeMode={ResizeMode.COVER}
       />
 
       <View style={[styles.footer]}>
@@ -283,6 +231,24 @@ const ReelsPost =  forwardRef(({ activePostId, post, resizeMode }: ReelsPostProp
 
         <View style={styles.rightColumn}>
           <View className="flex flex-col items-center justify-center gap-2">
+            <TouchableOpacity onPress={video.handlerMutedVideo}>
+              <LinearGradient
+                colors={[
+                  "rgba(255, 255, 255, 0.16)",
+                  "rgba(255, 255, 255, 0.32)",
+                ]}
+                style={styles.blurContainer}
+              >
+                {video.muted ? (
+                  <VolumeX size={20} color={colors.brand.white} />
+                ) : (
+                  <Volume2 size={20} color={colors.brand.white} />
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+
+          <View className="flex flex-col items-center justify-center gap-2">
             <TouchableOpacity onPress={handleLike}>
               <LinearGradient
                 colors={[
@@ -309,6 +275,7 @@ const ReelsPost =  forwardRef(({ activePostId, post, resizeMode }: ReelsPostProp
               </Link>
             )}
           </View>
+
           <View className="flex flex-col items-center justify-center gap-2">
             <TouchableOpacity onPress={() => handleBottomSheet(post.post_id)}>
               <LinearGradient

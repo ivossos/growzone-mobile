@@ -12,7 +12,6 @@ import { formatDistance, getInitials, replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { orderBy, uniqBy } from "lodash";
 import { useAuth } from "@/hooks/use-auth";
-import { ResizeMode, Video } from "expo-av";
 
 
 export default function NotificationsScreen() {
