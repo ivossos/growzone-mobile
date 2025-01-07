@@ -18,7 +18,7 @@ interface Props {
 const DeletePostBottomSheet = React.forwardRef<BottomSheet, Props>(({ onClose }, ref) => {
   const [reportSubmitted, setReportSubmitted] = useState(false);
 
-  const snapPoints = useMemo(() => ['50%'], []);
+  const snapPoints = useMemo(() => ['60%'], []);
   const { user } = useAuth(); 
   const { postId, isVisible, currentType, closeBottomSheet, callback } = useBottomSheetContext();
   
@@ -123,9 +123,8 @@ const DeletePostBottomSheet = React.forwardRef<BottomSheet, Props>(({ onClose },
   return (
     <BottomSheet
       ref={ref}
-      index={0}
+      index={1}
       snapPoints={snapPoints}
-      enableOverDrag={false} 
       enablePanDownToClose={!reportSubmitted}
       handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
       backgroundStyle={{ backgroundColor: colors.black[100]}}

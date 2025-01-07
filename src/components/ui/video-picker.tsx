@@ -5,17 +5,16 @@ import { ImageIcon } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import VideoPlayer from "../VideoPlayer";
 import { MediaUpload } from "@/api/@types/models";
+import { createVideoPlayer, VideoPlayer as VideoPlayerType } from "expo-video";
 
 interface VideoPickerProps {
   onMediaSelected: (media: MediaUpload) => void;
 }
 
 const VideoPicker = ({ onMediaSelected }: VideoPickerProps) => {
-  const [mediaUri, setMediaUri] = useState<{
-    uri: string;
-    fileName: string;
-    type: string;
-  } | null>(null);
+  const [mediaUri, setMediaUri] = useState<
+    (MediaUpload & { player: VideoPlayerType }) | null
+  >(null);
 
   const pickMedia = async () => {
     const permissionResult =
@@ -27,7 +26,7 @@ const VideoPicker = ({ onMediaSelected }: VideoPickerProps) => {
     }
 
     const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      mediaTypes: ["videos"],
       allowsEditing: true,
       quality: 1,
     });
@@ -37,14 +36,27 @@ const VideoPicker = ({ onMediaSelected }: VideoPickerProps) => {
     }
 
     if (pickerResult.assets && pickerResult.assets.length > 0) {
-      const asset = pickerResult.assets[0];
-      const newMedia: any = {
+      const [asset] = pickerResult.assets;
+      const newMedia: MediaUpload = {
         uri: asset.uri,
-        type: asset.mimeType,
-        fileName: asset.fileName,
+        fileName: asset.fileName || `media-file-${Date.now()}`,
+        type: asset.type as string,
       };
 
-      setMediaUri(newMedia);
+      const player = createVideoPlayer({
+        uri: newMedia.uri,
+        metadata: {
+          title: `title-post-video-${Date.now()}`,
+          artist: `artist-post-social-${Date.now()}`,
+        },
+      });
+
+      player.loop = true;
+      player.muted = false;
+      player.timeUpdateEventInterval = 2;
+      player.volume = 1.0;
+
+      setMediaUri({ ...newMedia, player });
       onMediaSelected(newMedia);
     }
   };
@@ -55,7 +67,7 @@ const VideoPicker = ({ onMediaSelected }: VideoPickerProps) => {
         {mediaUri && (
           <TouchableOpacity style={styles.mediaWrapper}>
             <VideoPlayer
-              source={{ uri: mediaUri.uri }}
+              player={mediaUri.player}
               loop
               muted={false}
               controls={{ showProgressBar: true }}

@@ -1,4 +1,4 @@
-import { VideoSource } from "expo-video";
+import { VideoPlayer, VideoSource } from "expo-video";
 import { GlobalSearchType, TimelineType } from "./enums";
 
 export interface User {
@@ -179,6 +179,7 @@ export interface SocialPostFile {
   file: string;
   type: "video" | "image";
   created_at: string;
+  player: VideoPlayer;
 }
 
 export interface SocialPost {
@@ -238,6 +239,7 @@ export interface ReelsDetail {
   is_compressing: boolean;
   is_liked: boolean;
   is_viewed: boolean;
+  player: VideoPlayer;
 }
 
 export interface Comment {
@@ -306,6 +308,7 @@ export interface File {
   file: string;
   type: "image" | "video";
   created_at: string;
+  player: VideoPlayer;
 }
 export interface Strain {
   id: number;

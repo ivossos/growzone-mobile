@@ -1,9 +1,12 @@
-import { FlatList, Image, StyleSheet, Dimensions, TouchableOpacity, View, ActivityIndicator, RefreshControl, ViewToken } from "react-native";
+import { Image, StyleSheet, Dimensions, TouchableOpacity, View, ActivityIndicator, RefreshControl, ViewToken, ViewabilityConfig } from "react-native";
 import { router } from "expo-router";
 import { SocialPost } from "@/api/@types/models";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getUserPosts } from "@/api/social/post/get-user-posts";
 import Toast from "react-native-toast-message";
+import { VideoView } from "expo-video";
+import VideoPlayer from "../VideoPlayer";
+import { FlatList } from "react-native-gesture-handler";
 
 const numColumns = 3;
 const w = Dimensions.get("window").width;
@@ -16,10 +19,12 @@ export default function PostGrid({ userId }: PostGridProps) {
   const [refreshing, setRefreshing] = useState(false);
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [skip, setSkip] = useState(0);
-  const [limit, setLimit] = useState(10);
+  const [limit] = useState(10);
+  const [currentVideoId, setCurrentVideoId] = useState<number | null>(null);
   const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [mutedVideo, setMutedVideo] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const videoRefs = useRef<(Video | null)[]>([]);
+  const videoRefs = useRef<Record<number, any>>({} as any);
 
   const fetchPostsData = async (skipValue: number, limitValue: number) => {
     try {
@@ -46,6 +51,13 @@ export default function PostGrid({ userId }: PostGridProps) {
     }
   };
 
+    const viewabilityConfig: ViewabilityConfig = useMemo(() => {
+      return {
+        itemVisiblePercentThreshold: 80,
+        waitForInteraction: true,
+      };
+    }, []);
+
   const onRefresh = async () => {
     setRefreshing(true);
     setSkip(0);
@@ -60,25 +72,70 @@ export default function PostGrid({ userId }: PostGridProps) {
     }
   };
 
-  const onViewableItemsChanged = useRef(({ viewableItems }: {viewableItems: ViewToken[]}) => {
-    viewableItems.forEach(({ index }) => {
-      const videoRef = videoRefs.current[index as number];
-      if (videoRef) {
-        videoRef.pauseAsync();
-      }
-    });
-  }).current;
-
-  useEffect(() => {
-    return () => {
-      videoRefs.current.forEach(async (videoRef) => {
-        if (videoRef) {
-          await videoRef.pauseAsync();
-          await videoRef.unloadAsync();
+    const onViewableItemsChanged = useCallback(
+      (info: {
+        viewableItems: ViewToken<SocialPost>[];
+        changed: ViewToken<SocialPost>[];
+      }) => {
+        const { viewableItems, changed } = info;
+  
+        if (viewableItems.length > 0) {
+          const [visibleItem] = viewableItems;
+          const [_, oldVisibleItem] = changed;
+  
+          const oldItem = oldVisibleItem?.item ?? null;
+          const currentItem = visibleItem?.item ?? null;
+          const currentId = currentItem?.id
+  
+          setCurrentVideoId(currentId);
+  
+          videoRefs.current[currentId]?.mutedVideo(mutedVideo);
+  
+          if (oldItem && oldItem.id) {
+            videoRefs.current[oldItem.id]?.mutedVideo(mutedVideo);
+          }
+  
+          if (oldItem && videoRefs.current[oldItem.id]) {
+            videoRefs.current[oldItem.id]?.pause();
+          }
+  
+          if (currentItem && videoRefs.current[currentId]) {
+            videoRefs.current[currentId]?.play();
+          }
         }
-      });
-    };
-  }, []);
+      },
+      []
+    );
+
+    const handlerMutedVideo = useCallback(() => {
+      const value = !mutedVideo;
+  
+      if (currentVideoId && videoRefs.current[currentVideoId]) {
+        videoRefs.current[`${currentVideoId}`].mutedVideo(value);
+      }
+  
+      setMutedVideo(value);
+    }, [mutedVideo, currentVideoId]);
+
+  // const onViewableItemsChanged = useRef(({ viewableItems }: {viewableItems: ViewToken[]}) => {
+  //   viewableItems.forEach(({ index }) => {
+  //     const videoRef = videoRefs.current[index as number];
+  //     if (videoRef) {
+  //       videoRef.pauseAsync();
+  //     }
+  //   });
+  // }).current;
+
+  // useEffect(() => {
+  //   return () => {
+  //     videoRefs.current.forEach(async (videoRef) => {
+  //       if (videoRef) {
+  //         await videoRef.pauseAsync();
+  //         await videoRef.unloadAsync();
+  //       }
+  //     });
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (hasMorePosts) {
@@ -100,18 +157,19 @@ export default function PostGrid({ userId }: PostGridProps) {
     
     return (
       <TouchableOpacity onPress={() => router.push({ pathname: '/post/[id]', params: { id: item.post_id }})} className="mb-1">
-        {/* brendo */}
         {item?.file?.type === 'image' ? (
           <Image source={{ uri: item?.file?.file }} style={styles.image} resizeMode="contain" />
         ) : (
-          <Video
-            ref={ref => (videoRefs.current[index] = ref)} 
-            source={{ uri: item?.file?.file}}
-            style={styles.image}
-            isMuted={false}
-            shouldPlay={false}
-            isLooping={false}
-            useNativeControls={false}
+          <VideoPlayer
+            player={item.file.player}
+            loop
+            muted={mutedVideo}
+            controls={{
+              showProgressBar: true,
+              handlerMutedVideo,
+              showMutedButton: true,
+            }}
+            autoplay={currentVideoId === item.id}
           />
         )}
       </TouchableOpacity>
@@ -131,10 +189,8 @@ export default function PostGrid({ userId }: PostGridProps) {
       initialNumToRender={10}
       maxToRenderPerBatch={10}
       windowSize={5}
+      viewabilityConfig={viewabilityConfig}
       onViewableItemsChanged={onViewableItemsChanged}
-      viewabilityConfig={{
-        itemVisiblePercentThreshold: 50,
-      }}
       // refreshControl={
       //   <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       // }

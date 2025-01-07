@@ -16,20 +16,68 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { getReel } from "@/api/social/post/get-reel";
 import { useQuery } from "@tanstack/react-query";
+import { useCallback, useState } from "react";
+import { useVideoPlayerContext } from "@/context/video-player-context";
+import { createVideoPlayer, VideoPlayer } from "expo-video";
+import { queryClient } from "@/lib/react-query";
+import Loader from "@/components/ui/loader";
 
 export default function Reels() {
-  const params = useLocalSearchParams();
-  const { id } = (params as { id: string }) || {};
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const postId = Number(id)
+  const { toggleAudioMute, setPlayer, pauseVideo } = useVideoPlayerContext();
+
+  const [mutedVideo, setMutedVideo] = useState(false);
 
   const {
     data: post,
     isError,
+    isLoading,
     error,
   } = useQuery<ReelsDetail>({
-    queryKey: ["reels", Number(id)],
-    queryFn: () => getReel(Number(id)),
-    enabled: !!Number(id),
+    queryKey: ["reels", postId],
+    queryFn: async () => {
+      const weedz = await getReel(postId)
+
+      let player: VideoPlayer | undefined = undefined
+
+      if (weedz.file.type === 'video') {
+        player = createVideoPlayer({
+          uri: weedz.file.file,
+          metadata: {
+            title: `title-weedz-${weedz.id}`,
+            artist: `artist-weedz-${weedz.id}`,
+          },
+        });
+  
+        player.loop = true;
+        player.muted = false;
+        player.timeUpdateEventInterval = 2;
+        player.volume = 1.0;
+      }
+
+      weedz.player = player as VideoPlayer;
+      weedz.file.player = player as VideoPlayer;
+
+      setPlayer(player)
+
+      return weedz;
+    },
+    enabled: !!postId,
   });
+
+    const handlerGoBack = useCallback(() => {
+      pauseVideo();
+      setPlayer(undefined);
+      queryClient.removeQueries({ queryKey: ['reels', postId] })
+      router.back();
+    }, []);
+
+  const handlerMutedVideo = useCallback(() => {
+    const value = !mutedVideo;
+    toggleAudioMute(value);
+    setMutedVideo(value);
+  }, [mutedVideo, setMutedVideo]);
 
   if (isError) {
     console.error("Error on get reels", error);
@@ -39,7 +87,16 @@ export default function Reels() {
       text2:
         "Aconteceu um erro ao buscar as informações desse post. Tente novamente mais tarde.",
     });
+    setPlayer(undefined);
     router.back();
+  }
+
+  if (isLoading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-black-100">
+        <Loader isLoading />
+      </View>
+    );
   }
 
   return (
@@ -60,7 +117,7 @@ export default function Reels() {
                 borderRadius: 8,
                 padding: 8,
               }}
-              onPress={() => router.back()}
+              onPress={handlerGoBack}
             >
               <ChevronLeft className="w-8 h-8" color={colors.brand.white} />
             </TouchableOpacity>
@@ -75,7 +132,15 @@ export default function Reels() {
         {post && (
           <ReelsPost
             post={post}
-            activePostId={post.post_id}
+            video={{
+              controls: {
+                handlerMutedVideo,
+                showProgressBar: false,
+              },
+              muted: mutedVideo,
+              player: post.player,
+            }}
+            activePostId={postId}
           />
         )}
       </View>

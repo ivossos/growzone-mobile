@@ -1,26 +1,141 @@
 import { TimelineType } from "@/api/@types/enums";
-import { TimelineParams } from "@/api/@types/models";
+import {
+  GrowPostDetail,
+  PostDetail,
+  ReelsDetail,
+  TimelineParams,
+} from "@/api/@types/models";
 import { getAllGrowPost } from "@/api/social/post/timeline/get-all-grow-post";
 import { getAllSocialPost } from "@/api/social/post/timeline/get-all-social-post";
 import { getAllWeedzPost } from "@/api/social/post/timeline/get-all-weedz-post";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { createVideoPlayer } from "expo-video";
 import Toast from "react-native-toast-message";
 
-const useTimeline = (props: Omit<TimelineParams, 'limit' | 'skip'>) => {
+const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
   const limit = 10;
+
+  const findAllWeedzPost = async (
+    params: Pick<TimelineParams, "limit" | "userId" | "skip">
+  ): Promise<Array<ReelsDetail>> => {
+    const weedzPosts = await getAllWeedzPost(params);
+
+    return weedzPosts.map((weedzPost, index) => {
+      if (weedzPost.file.type === "image") {
+        return weedzPost;
+      }
+
+      const player = createVideoPlayer({
+        uri: weedzPost.file.file,
+        metadata: {
+          title: `title-weedz-${index}`,
+          artist: `artist-weedz-${index}`,
+        },
+      });
+
+      player.loop = true;
+      player.muted = false;
+      player.timeUpdateEventInterval = 2;
+      player.volume = 1.0;
+
+      weedzPost.file.player = player;
+
+      return {
+        ...weedzPost,
+        player,
+      };
+    });
+  };
+
+  const findAllSocialPost = async (
+    params: Pick<TimelineParams, "limit" | "userId" | "skip">
+  ): Promise<Array<PostDetail>> => {
+    const socialPosts = await getAllSocialPost(params);
+
+    const socialPostsMap = socialPosts.map((socialPost) => {
+      const files = socialPost.files.map((file, index) => {
+        if (file.type === "image") {
+          return file;
+        }
+
+        const player = createVideoPlayer({
+          uri: file.file,
+          metadata: {
+            title: `title-social-post-${index}`,
+            artist: `artist-social-post-${index}`,
+          },
+        });
+
+        player.loop = true;
+        player.muted = false;
+        player.timeUpdateEventInterval = 2;
+        player.volume = 1.0;
+
+        return {
+          ...file,
+          player,
+        };
+      });
+
+      return {
+        ...socialPost,
+        files,
+      };
+    });
+
+    return socialPostsMap;
+  };
+
+  const findAllGrowPost = async (
+    params: Pick<TimelineParams, "limit" | "userId" | "skip">
+  ): Promise<Array<GrowPostDetail>> => {
+    const growPosts = await getAllGrowPost(params);
+
+    const growPostsMap = growPosts.map((growPost) => {
+      const files = growPost.files.map((file, index) => {
+        if (file.type === "image") {
+          return file;
+        }
+
+        const player = createVideoPlayer({
+          uri: file.file,
+          metadata: {
+            title: `title-grow-post-${index}`,
+            artist: `artist-grow-post-${index}`,
+          },
+        });
+
+        player.loop = true;
+        player.muted = false;
+        player.timeUpdateEventInterval = 2;
+        player.volume = 1.0;
+
+        return {
+          ...file,
+          player,
+        };
+      });
+
+      return {
+        ...growPost,
+        files,
+      };
+    });
+
+    return growPostsMap;
+  };
 
   const fetchData = async ({ pageParam = 0, queryKey }: any) => {
     const [_, params] = queryKey as [any, TimelineParams];
-
     const typeValue = params.type;
 
     const handlers = {
       [TimelineType.SOCIAL]: () =>
-        getAllSocialPost({ ...params, skip: pageParam, limit }),
+        findAllSocialPost({ ...params, skip: pageParam, limit }),
       [TimelineType.WEEDZ]: () =>
-        getAllWeedzPost({ ...params, skip: pageParam, limit }),
+        findAllWeedzPost({ ...params, skip: pageParam, limit }),
       [TimelineType.GROW]: () =>
-        getAllGrowPost({ ...params, skip: pageParam, limit }),
+        findAllGrowPost({ ...params, skip: pageParam, limit }),
     };
 
     const handler = handlers[typeValue as TimelineType];
@@ -39,10 +154,14 @@ const useTimeline = (props: Omit<TimelineParams, 'limit' | 'skip'>) => {
     isFetchingNextPage,
     isLoading,
     isSuccess,
+    refetch,
+    isRefetching,
   } = useInfiniteQuery({
     queryKey: ["timeline", props],
-    queryFn: fetchData,
-    enabled: !!props?.userId,
+    queryFn: async (data) => {
+      return await fetchData(data);
+    },
+    enabled: props.userId != null,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < limit) return undefined;
       return allPages.length * limit;
@@ -67,7 +186,9 @@ const useTimeline = (props: Omit<TimelineParams, 'limit' | 'skip'>) => {
     hasNextPage,
     isFetchingNextPage,
     isLoading,
+    refetch,
+    isRefetching,
   };
 };
 
-export default useTimeline
+export default useTimeline;

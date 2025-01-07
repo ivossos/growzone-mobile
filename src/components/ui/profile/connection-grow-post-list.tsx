@@ -23,10 +23,11 @@ const w = Dimensions.get("window").width;
 type Props = {
   userId: number;
   data: GrowPost;
+  index: number;
 };
 
 const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
-  ({ userId, data }, ref) => {
+  ({ userId, data, index }, ref) => {
     const router = useRouter();
     const { user } = useAuth();
 
@@ -81,6 +82,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
               id: data.post_id,
               userId: userId,
               type: TimelineType.GROW,
+              index: index
             },
           })
         }

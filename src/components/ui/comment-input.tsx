@@ -2,6 +2,7 @@ import React, {
   forwardRef,
   Fragment,
   memo,
+  useEffect,
   useImperativeHandle,
   useRef,
   useState,
@@ -12,13 +13,11 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Keyboard,
   StyleSheet,
   TextInput,
-  ScrollView,
-  TouchableWithoutFeedback,
   Text,
   TextInputProps,
+  Keyboard,
 } from "react-native";
 import SendIcon from "@/assets/icons/send.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
@@ -27,10 +26,6 @@ import { getInitials, getUserName } from "@/lib/utils";
 import { UserDTO } from "@/api/@types/models";
 import { z } from "zod";
 import { BottomSheetTextInput } from "@gorhom/bottom-sheet";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -40,6 +35,7 @@ interface CommentInputProps {
     name?: string;
     username?: string;
   };
+  isFocus?: boolean;
   handleCommentSubmit: (value: { comment: string }) => Promise<void>;
   isLoadingAddComment: boolean;
 }
@@ -71,9 +67,11 @@ const CommentInputTextInput = forwardRef<
 
 const CommentInput = forwardRef(
   (
-    { user, handleCommentSubmit, isLoadingAddComment }: CommentInputProps,
+    { user, handleCommentSubmit, isLoadingAddComment, isFocus }: CommentInputProps,
     ref
   ) => {
+    // const [isFocus, setIsFocus] = useState(false)
+
     const form = useForm({
       resolver: zodResolver(CommentValidation),
       defaultValues: {
@@ -85,6 +83,7 @@ const CommentInput = forwardRef(
 
     useImperativeHandle(ref, () => ({
       focusInput: () => {
+        // setIsFocus(!isFocus)
         inputRef.current?.focus();
       },
     }));
@@ -94,66 +93,78 @@ const CommentInput = forwardRef(
         style={styles.container}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <SafeAreaView>
-          <View style={styles.inputWrapper}>
-            <Avatar className="w-12 h-12 items-center border border-black-90 bg-black-70">
-              {user?.image?.image ? (
-                <AvatarImage
-                  className="rounded-full"
-                  source={{ uri: user.image.image }}
-                />
-              ) : (
-                <AvatarFallback>
-                  {getInitials(getUserName(user as UserDTO))}
-                </AvatarFallback>
-              )}
-            </Avatar>
-
-            <View
-              style={[
-                styles.textInputBase,
-                form.formState.errors?.["comment"]?.message
-                  ? styles.textInputErrorContainer
-                  : styles.textInputContainer,
-              ]}
-            >
-              <Controller
-                control={form.control}
-                name="comment"
-                render={({ field: { onChange }, fieldState }) => (
-                  <CommentInputTextInput
-                    ref={inputRef as any}
-                    error={fieldState.error?.message || ""}
-                    onChangeText={onChange}
-                  />
-                )}
+        <View style={styles.inputWrapper}>
+          <Avatar className="w-12 h-12 items-center border border-black-90 bg-black-70">
+            {user?.image?.image ? (
+              <AvatarImage
+                className="rounded-full"
+                source={{ uri: user.image.image }}
               />
-            </View>
+            ) : (
+              <AvatarFallback>
+                {getInitials(getUserName(user as UserDTO))}
+              </AvatarFallback>
+            )}
+          </Avatar>
 
-            <View>
-              <TouchableOpacity
-                onPress={form.handleSubmit(handleCommentSubmit)}
-              >
-                {!isLoadingAddComment ? (
-                  <SendIcon width={48} height={48} />
-                ) : (
-                  <ActivityIndicator
-                    animating={isLoadingAddComment}
-                    color="#fff"
-                    size="small"
-                    style={{ width: 48, height: 48 }}
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
+          <View
+            style={[
+              styles.textInputBase,
+              form.formState.errors?.["comment"]?.message
+                ? styles.textInputErrorContainer
+                : styles.textInputContainer,
+            ]}
+          >
+            <Controller
+              control={form.control}
+              name="comment"
+              render={({ field: { onChange, onBlur }, fieldState }) => (
+                <BottomSheetTextInput
+                  ref={inputRef as any}
+                  style={styles.input}
+                  placeholder="Escreva um comentário..."
+                  placeholderTextColor={
+                    fieldState.error?.message
+                      ? colors.brand.error
+                      : colors.black[30]
+                  }
+                  onChangeText={onChange}
+                  multiline
+                  autoFocus={isFocus}
+                  numberOfLines={5}
+                  onBlur={onBlur}
+                />
+
+                // <CommentInputTextInput
+                //   ref={ref}
+                //   error={fieldState.error?.message || ""}
+                //   onChangeText={onChange}
+                // />
+              )}
+            />
           </View>
 
-          {form.formState.errors?.["comment"]?.message && (
-            <Text className="text-red-500 text-base font-medium ml-16">
-              {form.formState.errors?.["comment"]?.message}
-            </Text>
-          )}
-        </SafeAreaView>
+          <View>
+            <TouchableOpacity onPress={form.handleSubmit(handleCommentSubmit)}>
+              {!isLoadingAddComment ? (
+                <SendIcon width={48} height={48} />
+              ) : (
+                <ActivityIndicator
+                  animating={isLoadingAddComment}
+                  color="#fff"
+                  size="small"
+                  style={{ width: 48, height: 48 }}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {form.formState.errors?.["comment"]?.message && (
+          <Text className="text-red-500 text-base font-medium ml-16">
+            {form.formState.errors?.["comment"]?.message}
+          </Text>
+        )}
       </KeyboardAvoidingView>
     );
   }
@@ -163,6 +174,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
+    marginBottom: Platform.OS === "android" ? 12 : 0,
   },
   inputWrapper: {
     flexDirection: "row",

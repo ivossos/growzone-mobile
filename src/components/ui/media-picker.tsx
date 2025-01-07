@@ -1,5 +1,12 @@
 import React, { useCallback, useMemo, useState } from "react";
-import { View, StyleSheet, Image, TouchableOpacity, Text } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Text,
+  Platform,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { ImageIcon, XIcon, Camera } from "lucide-react-native"; // Usando ícone de exclusão XCircleIcon
 import { colors } from "@/styles/colors";
@@ -7,6 +14,8 @@ import { Modal } from "../Modal";
 import Button from "./button";
 import Toast from "react-native-toast-message";
 import { MediaUpload } from "@/api/@types/models";
+import { createVideoPlayer, VideoPlayer as VideoPlayerType } from "expo-video";
+import VideoPlayer from "../VideoPlayer";
 
 interface MediaPickerProps {
   onMediaSelected: (media: MediaUpload) => void;
@@ -14,7 +23,9 @@ interface MediaPickerProps {
 
 const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
   const [isOpenMedia, setIsOpenMedia] = useState(false);
-  const [mediaUris, setMediaUris] = useState<MediaUpload[]>([]);
+  const [mediaUris, setMediaUris] = useState<
+    Array<MediaUpload & { player?: VideoPlayerType }>
+  >([]);
 
   const handleMedia = useCallback(() => {
     setIsOpenMedia(!isOpenMedia);
@@ -34,7 +45,7 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
     }
 
     const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ["images", "videos"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -56,7 +67,7 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
     }
 
     const cameraResult = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      mediaTypes: ["images", "videos"],
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -66,20 +77,42 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
   };
 
   const handleMediaResult = (result: ImagePicker.ImagePickerResult) => {
-    if (result.canceled || !result.assets || !result.assets.length) return; 
+    if (result.canceled || !result.assets || !result.assets.length) return;
 
-    result.assets.forEach((asset) => {
+    result.assets.forEach((asset, index) => {
+      const extension = asset.type === "video" ? "MP4" : "JPEG";
+
       const newMedia: MediaUpload = {
         uri: asset.uri,
-        fileName: asset.fileName || `media-${Date.now()}`,
+        fileName: asset.fileName || `media-${Date.now()}.${extension}`,
         type: asset.type as string,
       };
 
-      setMediaUris((prevMediaUris) => [...prevMediaUris, newMedia]);
+      let player: VideoPlayerType | undefined = undefined;
+
+      if (asset.type === "video") {
+        player = createVideoPlayer({
+          uri: newMedia.uri,
+          metadata: {
+            title: `title-post-${index}`,
+            artist: `artist-post-${index}`,
+          },
+        });
+
+        player.loop = true;
+        player.muted = false;
+        player.timeUpdateEventInterval = 2;
+        player.volume = 1.0;
+      }
+
+      setMediaUris((prevMediaUris) => [
+        ...prevMediaUris,
+        { ...newMedia, player },
+      ]);
       onMediaSelected(newMedia);
     });
 
-    handleMedia()
+    handleMedia();
   };
 
   const removeMedia = (index: number) => {
@@ -136,7 +169,7 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
         {actionModalMedia}
       </Modal>
     );
-  }, [isOpenMedia, actionModalMedia]);
+  }, [isOpenMedia, actionModalMedia, handleMedia]);
 
   return (
     <View style={styles.container}>
@@ -149,15 +182,14 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
             onPress={() => removeMedia(index)}
             style={styles.mediaWrapper}
           >
-            {/* brendo */}
             {media.type === "video" ? (
-              <Video
-                source={{ uri: media.uri }}
-                style={styles.media}
-                shouldPlay
-                isLooping
-                useNativeControls
-              />
+              <View style={{ width: 50, height: 50 , backgroundColor: 'red'}}>
+                <VideoPlayer
+                  player={media.player as VideoPlayerType}
+                  autoplay={false}
+                  loop
+                />
+              </View>
             ) : (
               <Image
                 source={{ uri: media.uri }}

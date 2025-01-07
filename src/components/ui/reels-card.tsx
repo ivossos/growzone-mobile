@@ -5,8 +5,9 @@ import { colors } from "@/styles/colors";
 import { SocialPost } from "@/api/@types/models";
 import { Link } from "expo-router";
 import { replaceMediaUrl } from "@/lib/utils";
+import { TimelineType } from "@/api/@types/enums";
 
-export default function ReelsCard( item: SocialPost) {
+export default function ReelsCard(item: SocialPost) {
   // const videoRef = useRef<(Video | null)>(null);
 
   // useEffect(() => {
@@ -23,19 +24,26 @@ export default function ReelsCard( item: SocialPost) {
   // }, []);
 
   return (
-    <Link href={{ pathname: '/profile/post/[id]/reels', params: { id: item.post_id } }}>
-
+    // timeline
+    <Link
+      href={{
+        pathname: "/post/[id]/reels",
+        params: {
+          id: item.post_id,
+        },
+      }}
+    >
       <View className="flex flex-col gap-2 w-[155px]">
         <Image
           source={{ uri: replaceMediaUrl(item?.file?.file) }}
           className="rounded-t-2xl"
           style={{
-            height: 224, 
-            width: 155
+            height: 224,
+            width: 155,
           }}
-            resizeMode="cover"
+          resizeMode="cover"
         />
-          {/* <Video
+        {/* <Video
             ref={ref => (videoRef.current = ref)} 
             source={{ uri: item?.file?.file}}
             className="rounded-t-2xl"
@@ -48,14 +56,16 @@ export default function ReelsCard( item: SocialPost) {
             isLooping
             useNativeControls={false}
           /> */}
-          <LinearGradient
-            colors={["rgba(255, 255, 255, 0.20)", "rgba(255, 255, 255, 0.20)"]}
-            style={styles.blurContainer}
-          >
-            <Eye size={14} color={colors.brand.white}/>
-            <Text className="text-white text-base font-medium">{item.view_count}</Text>
-          </LinearGradient>
-          {/* <View className="flex flex-col gap-1">
+        <LinearGradient
+          colors={["rgba(255, 255, 255, 0.20)", "rgba(255, 255, 255, 0.20)"]}
+          style={styles.blurContainer}
+        >
+          <Eye size={14} color={colors.brand.white} />
+          <Text className="text-white text-base font-medium">
+            {item.view_count}
+          </Text>
+        </LinearGradient>
+        {/* <View className="flex flex-col gap-1">
             <Text
               className="text-base text-brand-grey font-normal"
               numberOfLines={1}
@@ -81,27 +91,27 @@ export default function ReelsCard( item: SocialPost) {
                 </Text>
             </View>
           </View> */}
-        </View>
+      </View>
     </Link>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   blurContainer: {
-    position: 'absolute',
+    position: "absolute",
     top: 16,
     left: 16,
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    flexDirection: "row",
     gap: 4,
     paddingVertical: 4,
     paddingHorizontal: 8,
     borderRadius: 9999,
     backgroundColor: "rgba(255, 255, 255, 0.16)",
-    shadowColor: 'rgba(0, 0, 0, 0.16)',
+    shadowColor: "rgba(0, 0, 0, 0.16)",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.16,
-    shadowRadius: 16, 
+    shadowRadius: 16,
     elevation: 4,
   },
 });

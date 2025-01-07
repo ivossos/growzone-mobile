@@ -1,6 +1,11 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import { ChevronRight, EllipsisIcon } from "lucide-react-native";
+import {
+  ChevronRight,
+  EllipsisIcon,
+  Volume2,
+  VolumeX,
+} from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { colors } from "@/styles/colors";
 import MediaSlider from "./media-slider";
@@ -16,13 +21,21 @@ import CommentCard from "./comment-card";
 import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
+import { PostType } from "@/api/@types/enums";
 
 interface Props {
   post: PostDetail;
   loadComments: () => Promise<void>;
+  handlerAudioMute: (muted: boolean) => void;
+  audioMute: boolean;
 }
 
-const PostCard = ({ post, loadComments }: Props) => {
+const PostCard = ({
+  post,
+  audioMute,
+  loadComments,
+  handlerAudioMute,
+}: Props) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
@@ -124,7 +137,14 @@ const PostCard = ({ post, loadComments }: Props) => {
         </View>
       </View>
 
-      <MediaSlider items={post.files} postId={post.post_id} />
+      <MediaSlider
+        post={post}
+        postType={PostType.SOCIAL_POST}
+        items={post.files}
+        audioMute={audioMute}
+        handlerAudioMute={handlerAudioMute}
+        postId={post.post_id}
+      />
 
       <View className="flex flex-col gap-2">
         <View className="flex flex-row items-center gap-3">

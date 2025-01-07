@@ -48,6 +48,7 @@ import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import Loader from "@/components/ui/loader";
 import useFilterGlobalSearch from "@/hooks/useFilterGlobalSearch";
+import { createVideoPlayer, VideoPlayer } from "expo-video";
 
 export const searchGeneticValidation = z.object({
   strain: z
@@ -131,6 +132,37 @@ export default function SearchScreen() {
     []
   );
 
+  const getAllTrendingGrowPosts = async (): Promise<GrowPost[]> => {
+    const growPosts = await getTrendingGrowPosts({});
+
+    return growPosts.map((growPost, index) => {
+      let fileVideo = {} as VideoPlayer;
+
+      if (growPost.file.type === "video") {
+        fileVideo = createVideoPlayer({
+          uri: growPost.file.file,
+          metadata: {
+            title: `title-grow-post-${index}`,
+            artist: `artist-grow-post-${index}`,
+          },
+        });
+
+        fileVideo.loop = true;
+        fileVideo.muted = false;
+        fileVideo.timeUpdateEventInterval = 2;
+        fileVideo.volume = 1.0;
+      }
+
+      return {
+        ...growPost,
+        file: {
+          ...growPost.file,
+          player: fileVideo,
+        },
+      };
+    });
+  };
+
   const { data, isLoading } = useQuery({
     queryKey: ["search-global-initial-page"],
     queryFn: async () => {
@@ -138,7 +170,7 @@ export default function SearchScreen() {
         await Promise.all([
           getTopContributors({}),
           getTrendingWells({}),
-          getTrendingGrowPosts({}),
+          getAllTrendingGrowPosts(),
         ]);
       return { topContributors, trendingWells, trendingGrowPosts };
     },
@@ -527,7 +559,9 @@ export default function SearchScreen() {
                         </Text>
                         <TouchableOpacity
                           className="flex items-center flex-row gap-1"
-                          onPress={() => router.navigate("/(drawer)/(tabs)/reels")}
+                          onPress={() =>
+                            router.navigate("/(drawer)/(tabs)/reels")
+                          }
                         >
                           <Text className="text-primary text-base font-medium">
                             ver mais

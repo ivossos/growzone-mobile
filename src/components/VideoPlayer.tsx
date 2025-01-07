@@ -1,207 +1,128 @@
-import React, {
-  forwardRef,
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Dimensions,
-  Platform,
-  StatusBar,
-  ViewStyle,
-  StyleProp,
-  Text,
-} from "react-native";
-import {
-  useVideoPlayer,
-  VideoContentFit,
-  VideoSource,
-  VideoView,
-} from "expo-video";
-import { Play, Volume2, VolumeX } from "lucide-react-native";
+import React, { FC, useCallback, useMemo, useState } from "react";
+import { StyleSheet, View, TouchableOpacity, Dimensions, Pressable } from "react-native";
+import { useVideoPlayer, VideoView } from "expo-video";
 import Slider from "@react-native-community/slider";
-import { VideoPlayerHandle } from "@/api/@types/models";
 import { useEvent, useEventListener } from "expo";
-import { colors } from "@/styles/colors";
-import Loader from "./ui/loader";
 import { Ionicons } from "@expo/vector-icons";
 
-interface VideoPlayerProps {
-  source: { uri: string };
-  data?: any;
-  loop?: boolean;
-  muted?: boolean;
-  autoplay?: boolean;
-  resizeMode?: VideoContentFit;
-  startPlay?: (value: any) => void;
-  styleContainer?: StyleProp<ViewStyle>;
-  controls?: Partial<{
-    showProgressBar: boolean;
-    showMutedButton: boolean;
-    handlerMutedVideo: () => void;
-    muted: boolean;
-  }>;
-}
+import { useVideoPlayerContext } from "@/context/video-player-context";
+import { colors } from "@/styles/colors";
+import { VideoPlayerProps } from "./Types";
 
-const VideoPlayer = forwardRef<VideoPlayerHandle, VideoPlayerProps>(
-  (
-    {
-      source,
-      loop = false,
-      autoplay = false,
-      muted = false,
-      resizeMode = "cover",
-      data = null,
-      styleContainer = null,
-      controls,
-      startPlay,
-    },
-    ref
-  ) => {
-    const [currentTime, setCurrentTime] = useState(0);
-    const [duration, setDuration] = useState(0);
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-    const videoRef = useRef<VideoView>(null);
+const VideoPlayer: FC<VideoPlayerProps> = ({
+  player,
+  autoplay = false,
+  controls,
+  data = null,
+  resizeMode = "cover",
+  startPlay,
+  styleContainer = null,
+}) => {
+  const insets = useSafeAreaInsets();
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
 
-    const player = useVideoPlayer(source, (player) => {
-      player.loop = loop;
-      player.muted = muted;
-      player.timeUpdateEventInterval = 1;
-      player.volume = !muted ? 1.0 : 0;
-    });
+  const { handlerTime, playVideo } = useVideoPlayerContext();
 
-    const { isPlaying } = useEvent(player, "playingChange", {
-      isPlaying: player.playing,
-    });
+  const { isPlaying } = useEvent(player, "playingChange", {
+    isPlaying: player.playing,
+  });
 
-    const { status } = useEvent(player, "statusChange", {
-      status: player.status,
-    });
+  const iconControlPlay = useMemo(() => {
+    return !isPlaying ? (
+      <Ionicons name="play" size={70} color={colors.brand.white} />
+    ) : null;
+  }, [isPlaying]);
 
-    const iconControlPlay = useMemo(() => {
-      return !isPlaying ? (
-        <Ionicons name="play" size={70} color={colors.brand.white} />
-      ) : null;
-    }, [isPlaying]);
+  const handlerPlay = useCallback(() => {
+    if (isPlaying) {
+      player.pause();
+    } else {
+      player.play();
 
-    const handlerPlay = useCallback(() => {
-      if (isPlaying) {
-        player.pause();
-      } else {
-        player.play();
-
-        if (startPlay) {
-          startPlay(data);
-        }
-
-        if (controls && controls.showMutedButton) {
-          player.muted = controls.muted as boolean;
-        }
+      if (startPlay) {
+        startPlay(data);
       }
-    }, [isPlaying]);
 
-    const handleSeek = useCallback(
-      (value: number) => {
-        player.seekBy(value);
-      },
-      [player]
-    );
-
-    useImperativeHandle(ref, () => ({
-      play: () => {
-        player.play();
-      },
-      pause: () => {
-        player.pause();
-      },
-      replace: (source: VideoSource) => {
-        player.replace(source);
-      },
-      mutedVideo: (mutedVideo: boolean) => {
-        player.muted = mutedVideo;
-      },
-    }));
-
-    useEventListener(
-      player,
-      "timeUpdate",
-      ({ currentTime, bufferedPosition }) => {
-        if (currentTime && bufferedPosition) {
-          setCurrentTime(currentTime);
-          setDuration(bufferedPosition);
-        }
-      }
-    );
-
-    useEventListener(player, "statusChange", ({ status }) => {
-      if (status === "readyToPlay" && autoplay) {
-        player.play();
-        if (startPlay) {
-          startPlay(data);
-        }
-      }
-    });
-
-    if (["idle", "loading"].includes(status)) {
-      return <Loader isLoading />;
+      // if (controls && controls.showMutedButton) {
+      //   player.muted = controls.muted as boolean;
+      // }
     }
+  }, [isPlaying, startPlay]);
 
-    return (
-      <>
-        <TouchableOpacity
-          style={styleContainer ? styleContainer : styles.container}
-          onPress={handlerPlay}
-        >
-          <VideoView
-            ref={videoRef}
-            allowsFullscreen={false}
-            allowsPictureInPicture={false}
-            nativeControls={false}
-            contentFit={resizeMode}
-            style={styleContainer ? styleContainer : styles.video}
-            player={player}
-          />
+  useEventListener(
+    player,
+    "timeUpdate",
+    ({ currentTime, bufferedPosition }) => {
+      if (currentTime && bufferedPosition) {
+        setCurrentTime(currentTime);
+        setDuration(bufferedPosition);
+      }
+    }
+  );
 
-          <View style={styles.iconContainer}>{iconControlPlay}</View>
-        </TouchableOpacity>
+  useEventListener(player, "statusChange", ({ status: statusChangeValue }) => {
+    const readyToStartVideo = statusChangeValue === "readyToPlay" && autoplay;
 
-        <View style={styles.sliderContainer}>
-          {controls?.showProgressBar && (
-            <View style={{ flex: 1 }}>
-              <Slider
-                style={styles.slider}
-                minimumValue={0}
-                maximumValue={duration}
-                value={currentTime}
-                onSlidingComplete={handleSeek}
-                minimumTrackTintColor="#FFFFFF"
-                maximumTrackTintColor="#555555"
-                thumbTintColor="#FFFFFF"
-              />
-            </View>
-          )}
+    if (readyToStartVideo) {
+      playVideo();
+      if (startPlay) {
+        startPlay(data);
+      }
+    }
+  });
 
-          {controls?.showMutedButton && (
-            <View>
-              <TouchableOpacity onPress={controls.handlerMutedVideo}>
-                {controls.muted ? (
-                  <VolumeX size={20} color={colors.brand.white} />
-                ) : (
-                  <Volume2 size={20} color={colors.brand.white} />
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
+  return (
+    <Pressable
+      style={styleContainer ? styleContainer : styles.container}
+      onPress={handlerPlay}
+    >
+      <VideoView
+        allowsFullscreen={false}
+        allowsPictureInPicture={false}
+        nativeControls={false}
+        contentFit={resizeMode}
+        style={styleContainer ? styleContainer : styles.video}
+        player={player}
+      />
+
+      <View style={styles.iconContainer}>{iconControlPlay}</View>
+
+      {controls?.showProgressBar && (
+        <View style={[styles.sliderContainer, { bottom: insets.bottom + 44 }]}>
+          <View style={{ flex: 1 }}>
+            <Slider
+              style={styles.slider}
+              minimumValue={0}
+              maximumValue={duration}
+              value={currentTime}
+              onSlidingComplete={handlerTime}
+              minimumTrackTintColor="#FFFFFF"
+              maximumTrackTintColor="#555555"
+              thumbTintColor="#FFFFFF"
+            />
+          </View>
         </View>
-      </>
-    );
-  }
-);
+      )}
+
+      {/* {controls?.showMutedButton && (
+        <View style={[styles.muteContainer, { bottom: insets.bottom + 44 }]}>
+          <View style={{ left: 100 }}>
+            <TouchableOpacity onPress={controls.handlerMutedVideo}>
+              {controls.muted ? (
+                <VolumeX size={20} color={colors.brand.white} />
+              ) : (
+                <Volume2 size={20} color={colors.brand.white} />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      )} */}
+    </Pressable>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -221,20 +142,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "100%",
     height: "100%",
-    zIndex: 10,
   },
   sliderContainer: {
     position: "absolute",
     flexDirection: "row",
     alignContent: "center",
     alignItems: "center",
-    bottom: 0,
-    left: 10,
-    right: 10,
+    marginHorizontal: 10,
   },
   slider: {
     width: "100%",
-    height: 40,
+    height: 60,
   },
 });
 

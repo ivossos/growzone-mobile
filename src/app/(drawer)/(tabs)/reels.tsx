@@ -23,6 +23,8 @@ import { getReels } from "@/api/social/post/get-reels";
 import { ReelsDetail } from "@/api/@types/models";
 import { uniqBy } from "lodash";
 import { FlatList } from "react-native-gesture-handler";
+import { useVideoPlayerContext } from "@/context/video-player-context";
+import { createVideoPlayer, useVideoPlayer, VideoPlayer } from "expo-video";
 
 const statusBarHeight =
   Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -31,7 +33,8 @@ const ScreenHeight =
   (Platform.OS === "ios" ? 72 : statusBarHeight);
 
 export default function Reels() {
-  const videoRefs = useRef<Record<number, any>>({} as any);
+  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, handlerTime, getPlayer } =
+    useVideoPlayerContext();
 
   const [refreshing, setRefreshing] = useState(false);
   const [activePostId, setActivePostId] = useState<number>();
@@ -49,6 +52,33 @@ export default function Reels() {
     };
   }, []);
 
+  const buildWeedzData = useCallback(
+    (weedzData: Array<ReelsDetail>): Array<ReelsDetail> => {
+      return weedzData.map((weedz, index) => {
+        const player = createVideoPlayer({
+          uri: weedz.file.file,
+          metadata: {
+            title: `title-weedz-${index}`,
+            artist: `artist-weedz-${index}`,
+          },
+        });
+
+        player.loop = true;
+        player.muted = false;
+        player.timeUpdateEventInterval = 2;
+        player.volume = 1.0;
+
+        weedz.file.player = player;
+
+        return {
+          ...weedz,
+          player,
+        };
+      });
+    },
+    []
+  );
+
   const fetchPostsData = async (skipValue: number, limitValue: number) => {
     try {
       if (loadingMore || refreshing) return;
@@ -59,7 +89,15 @@ export default function Reels() {
       if (data.length === 0) {
         setHasMorePosts(false);
       } else {
-        setPosts((prevPosts) => uniqBy([...prevPosts, ...data], "post_id"));
+        const weedz: Array<ReelsDetail> = buildWeedzData(data);
+        const player = getPlayer()
+
+        if (!player) {
+          const [weed] = weedz
+          setPlayer(weed.player)
+        }
+
+        setPosts((prevPosts) => uniqBy([...prevPosts, ...weedz], "post_id"));
       }
     } catch (error) {
       console.error("Erro ao buscar os reels:", error);
@@ -87,30 +125,24 @@ export default function Reels() {
     viewableItems: ViewToken<ReelsDetail>[];
     changed: ViewToken<ReelsDetail>[];
   }) => {
-    const { viewableItems, changed } = info;
+    const { viewableItems } = info;
 
     if (viewableItems.length > 0) {
       const [visibleItem] = viewableItems;
-      const [_, oldVisibleItem] = changed;
 
-      const oldItem = posts[visibleItem.index ? visibleItem.index - 1 : 0] ?? null;
       const currentItem = visibleItem?.item ?? null;
       const currentId = currentItem?.id;
 
       setActivePostId(currentId);
 
-      videoRefs.current[currentId]?.mutedVideo(mutedVideo);
+      toggleAudioMute(mutedVideo);
+      pauseVideo();
+      handlerTime(0);
 
-      if (oldItem && oldItem.id) {
-        videoRefs.current[oldItem.id]?.mutedVideo(mutedVideo);
-      }
-
-      if (oldItem && videoRefs.current[oldItem.id]) {
-        videoRefs.current[oldItem.id]?.pause();
-      }
-
-      if (currentItem && videoRefs.current[currentId]) {
-        videoRefs.current[currentId]?.play();
+      if (currentItem && currentItem.id) {
+        setPlayer(currentItem.file.player);
+        toggleAudioMute(mutedVideo);
+        playVideo();
       }
     }
   };
@@ -130,12 +162,9 @@ export default function Reels() {
   const handlerMutedVideo = useCallback(() => {
     const value = !mutedVideo;
 
-    if (activePostId && videoRefs.current[activePostId]) {
-      videoRefs.current[activePostId].mutedVideo(value);
-    }
-
+    toggleAudioMute(value);
     setMutedVideo(value);
-  }, [mutedVideo, activePostId]);
+  }, [mutedVideo]);
 
   return (
     <View>
@@ -146,15 +175,15 @@ export default function Reels() {
         renderItem={({ item }) => (
           <View style={styles.fullscreenItem}>
             <ReelsPost
-              ref={(ref) => {
-                if (ref) {
-                  videoRefs.current[item.id] = ref;
-                }
-              }}
               post={item}
               activePostId={activePostId || 0}
               video={{
-                handlerMutedVideo,
+                controls: {
+                  showButtonPlay: false,
+                  showProgressBar: true,
+                  handlerMutedVideo,
+                },
+                player: item.player,
                 muted: mutedVideo,
               }}
             />
@@ -174,8 +203,7 @@ export default function Reels() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
+        initialNumToRender={5}
         windowSize={5}
       />
     </View>

@@ -4,6 +4,8 @@ import {
   CalendarDaysIcon,
   ChevronRight,
   EllipsisIcon,
+  Volume2,
+  VolumeX,
 } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { colors } from "@/styles/colors";
@@ -13,18 +15,21 @@ import LikedIcon from "@/assets/icons/liked.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
 import { router } from "expo-router";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
-import { GrowPostDetail} from "@/api/@types/models";
+import { GrowPostDetail } from "@/api/@types/models";
 import { formatDistance, getInitials } from "@/lib/utils";
 import Toast from "react-native-toast-message";
 import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
+import { PostType } from "@/api/@types/enums";
 
 interface Props {
   post: GrowPostDetail;
+  handlerAudioMute: (muted: boolean) => void;
+  audioMute: boolean;
 }
 
-const GrowPostCard = ({ post }: Props) => {
+const GrowPostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -93,21 +98,38 @@ const GrowPostCard = ({ post }: Props) => {
           <Text className="text-brand-grey text-sm">
             {formatDistance(post.created_at)}
           </Text>
-          {user.id !== post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "report", id: post.post_id })}>
-            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-          </TouchableOpacity>}
-          {user.id === post.user.id && <TouchableOpacity onPress={() => openBottomSheet({ type: "grow-post-bottom-sheet", id: post.post_id })}>
-            <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
-          </TouchableOpacity>}
+          {user.id !== post.user.id && (
+            <TouchableOpacity
+              onPress={() =>
+                openBottomSheet({ type: "report", id: post.post_id })
+              }
+            >
+              <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+            </TouchableOpacity>
+          )}
+          {user.id === post.user.id && (
+            <TouchableOpacity
+              onPress={() =>
+                openBottomSheet({
+                  type: "grow-post-bottom-sheet",
+                  id: post.post_id,
+                })
+              }
+            >
+              <EllipsisIcon width={20} height={20} color={colors.brand.grey} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      <View className="relative">
-        <MediaSlider items={post.files} postId={post.post_id} />
-        <View className="absolute bottom-4 left-2 border border-black-80 bg-white px-2 py-1 rounded-full">
-          <Text className="text-black text-base ">{post.phase.name}</Text>
-        </View>
-      </View>
+      <MediaSlider
+        post={post}
+        postType={PostType.GROW_POST}
+        items={post.files}
+        audioMute={audioMute}
+        handlerAudioMute={handlerAudioMute}
+        postId={post.post_id}
+      />
 
       <View className="flex flex-col gap-2">
         <View className="flex flex-row justify-between gap-1">

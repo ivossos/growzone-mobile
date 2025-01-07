@@ -24,10 +24,11 @@ const w = Dimensions.get("window").width;
 type Props = {
   userId: number;
   data: SocialPost;
+  index: number;
 };
 
 const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
-  ({ userId, data, ...rest }, ref) => {
+  ({ userId, data, index }, ref) => {
     if (data.is_compressing) {
       if (data.id !== userId) return null;
 
@@ -52,6 +53,7 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
               id: data.post_id,
               userId: userId,
               type: TimelineType.SOCIAL,
+              index: index,
             },
           })
         }

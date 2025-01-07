@@ -47,11 +47,6 @@ import { EditProfileButton } from "@/components/ui/profile/edit-profile-button";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
 import Loader from "../loader";
-// import {
-//   FlashList,
-//   ListRenderItemInfo,
-// } from "@shopify/flash-list";
-
 import {
   MasonryFlashList,
   MasonryListRenderItemInfo,
@@ -82,38 +77,50 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   const growPostsRef = useRef<FlatList>(null);
 
   const renderPosts = useCallback(
-    (data: SocialPost) => (
-      <ConnectionPostList ref={postRef as any} userId={userId} data={data} />
+    (data: SocialPost, index: number) => (
+      <ConnectionPostList
+        ref={postRef as any}
+        index={index}
+        userId={userId}
+        data={data}
+      />
     ),
     [userId, postRef]
   );
 
   const renderReels = useCallback(
-    (data: SocialPost) => (
-      <ConnectionReelstList ref={reelsRef as any} userId={userId} data={data} />
+    (data: SocialPost, index: number) => (
+      <ConnectionReelstList
+        ref={reelsRef as any}
+        index={index}
+        userId={userId}
+        data={data}
+      />
     ),
     [userId, reelsRef]
   );
 
   const renderGrowPost = useCallback(
-    (data: GrowPost) => (
+    (data: GrowPost, index: number) => (
       <ConnectionGrowPostList
         ref={growPostsRef as any}
         userId={userId}
+        index={index}
         data={data}
       />
     ),
     [growPostsRef, userId]
   );
 
-  const handleRefresh = useCallback(async () => {
+  const handleRefresh = useCallback(() => {
     try {
       setIsRefreshing(true);
-      await queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-      await queryClient.invalidateQueries({ queryKey: ["follow", userId] });
-      await queryClient.invalidateQueries({
+      queryClient.removeQueries({ queryKey: ["profile", userId] });
+      queryClient.removeQueries({ queryKey: ["follow", userId] });
+      queryClient.removeQueries({
         queryKey: ["profile-posts", userId],
       });
+      queryClient.removeQueries({ queryKey: ["timeline"] });
     } catch (error) {
       console.error("Erro ao atualizar dados:", error);
     } finally {
@@ -205,7 +212,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
       type: "profile",
       userId: id,
       callbackFn: async () =>
-        await queryClient.invalidateQueries({ queryKey: ["profile", userId] }),
+        queryClient.removeQueries({ queryKey: ["profile", userId] }),
     });
   };
 
@@ -246,14 +253,14 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
         await createFollowFn(id);
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-      await queryClient.invalidateQueries({ queryKey: ["follow", userId] });
+      queryClient.removeQueries({ queryKey: ["profile", userId] });
+      queryClient.removeQueries({ queryKey: ["follow", userId] });
     } catch (error) {
       console.error("Erro na ação de follow", error);
     }
   };
 
-  const renderItem = ({ item }: MasonryListRenderItemInfo<ItemData>) => {
+  const renderItem = ({ item, index }: MasonryListRenderItemInfo<ItemData>) => {
     const screens = {
       [TimelineType.SOCIAL]: renderPosts,
       [TimelineType.WEEDZ]: renderReels,
@@ -261,7 +268,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
     };
 
     const Component = screens[activeTab];
-    return Component(item as any);
+    return Component(item as any, index);
   };
 
   const getColumnFlex = useCallback(() => {
@@ -363,7 +370,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
       showsVerticalScrollIndicator={false}
       numColumns={getColumnFlex()}
       getColumnFlex={getColumnFlex}
-      contentContainerStyle={{ backgroundColor: colors.black[100]  }}
+      contentContainerStyle={{ backgroundColor: colors.black[100] }}
       onEndReached={() => data.hasNextPage && data.fetchNextPage()}
       onEndReachedThreshold={0.5}
       refreshControl={

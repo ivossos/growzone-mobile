@@ -24,7 +24,7 @@ export default function UpdateAppModal() {
 
     try {
       const update = await Updates.checkForUpdateAsync();
-      if (update.isAvailable) {
+      if (update.isAvailable && Platform.OS === 'ios') {
         setModalVisible(true);
       }
     } catch (e) {
@@ -33,6 +33,7 @@ export default function UpdateAppModal() {
   };
 
   const goToStore = async () => {
+    // TODO: alterar url do android quando o app ficar disponivel na loja
     const storeUrl =
       Platform.OS === "ios"
         ? `https://apps.apple.com/br/app/growzone/id6737212804`

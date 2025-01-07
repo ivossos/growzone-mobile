@@ -11,7 +11,6 @@ import BottomSheet, {
   BottomSheetFlatList,
   BottomSheetFooter,
   BottomSheetFooterProps,
-  BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { colors } from "@/styles/colors";
@@ -33,13 +32,15 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import createComment from "@/api/social/post/comment/create-comment";
 import { orderBy, uniqBy } from "lodash";
-import { Controller, useForm } from "react-hook-form";
 import CommentInput from "./comment-input";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
+  const insets = useSafeAreaInsets()
   const { user } = useAuth();
   const commentInputRef = useRef<{ focusInput: () => void }>(null);
   const [skip, setSkip] = useState(0);
+  const [isFocus, setIsFocus] = useState(false)
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoadingAddComment, setIsLoadingAddComment] = useState(false);
@@ -47,7 +48,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const [newCommentData, setNewCommentData] = useState<CreateCommentBody>(
     {} as CreateCommentBody
   );
-  const snapPoints = useMemo(() => ["60%", "80%"], []);
+  const snapPoints = useMemo(() => ["60%", "80%", "92%"], []);
 
   const { postId, isVisible, currentType, closeBottomSheet, callback } =
     useBottomSheetContext();
@@ -178,6 +179,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const handleClose = useCallback(() => {
     setComments([]);
     setSkip(0);
+    setIsFocus(false);
     handlerNewCommentData({});
     closeBottomSheet();
   }, [closeBottomSheet, handlerNewCommentData]);
@@ -207,6 +209,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
           setComments((prev) => [...[comment], ...prev]);
         }
 
+        setIsFocus(false)
         handlerNewCommentData({});
         if (callback) {
           await callback(true);
@@ -272,8 +275,9 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   );
 
   const handlerAddParentComment = useCallback(
-    (comment: Comment) => {
+    (comment: Comment) => {    
       handlerNewCommentData({ parentId: comment.id });
+      setIsFocus(true)
       commentInputRef.current?.focusInput();
     },
     [commentInputRef.current, handlerNewCommentData]
@@ -341,13 +345,16 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
     (props: BottomSheetFooterProps) => (
       <BottomSheetFooter
         style={{
+          paddingBottom: insets.bottom,
           paddingHorizontal: 8,
+          backgroundColor: colors.black[100]
         }}
         {...props}
       >
         <CommentInput
           ref={commentInputRef}
           user={user}
+          isFocus={isFocus}
           handleCommentSubmit={handleCommentSubmit}
           isLoadingAddComment={isLoadingAddComment}
         />
@@ -368,10 +375,10 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         keyExtractor={(item) => "key-" + item.id}
         renderItem={renderItem}
         contentContainerStyle={{ padding: 20 }}
-        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         keyboardDismissMode="none"
         nestedScrollEnabled
+        keyboardShouldPersistTaps="handled"
         enableFooterMarginAdjustment
         ListEmptyComponent={() => {
           if (!loading) {
@@ -401,9 +408,8 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         backgroundStyle={{ backgroundColor: colors.black[100] }}
         backdropComponent={renderBackdrop}
         onClose={handleClose}
-        keyboardBehavior={Platform.OS === "ios" ? "interactive" : "interactive"}
         keyboardBlurBehavior="restore"
-        android_keyboardInputMode="adjustResize"
+        keyboardBehavior={Platform.OS === "ios" ? "extend" : "interactive"}
         footerComponent={renderFooter}
       >
         <Loader isLoading={loading} />
