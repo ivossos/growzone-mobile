@@ -10,6 +10,7 @@ import { getAllSocialPost } from "@/api/social/post/timeline/get-all-social-post
 import { getAllWeedzPost } from "@/api/social/post/timeline/get-all-weedz-post";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { createVideoPlayer } from "expo-video";
+import { useMemo } from "react";
 import Toast from "react-native-toast-message";
 
 const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
@@ -129,16 +130,19 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
     const [_, params] = queryKey as [any, TimelineParams];
     const typeValue = params.type;
 
+    console.log('params ', { ...params, pageParam });
+    
+
     const handlers = {
       [TimelineType.SOCIAL]: () =>
-        findAllSocialPost({ ...params, skip: pageParam, limit }),
+        findAllSocialPost({ ...params, skip: pageParam }),
       [TimelineType.WEEDZ]: () =>
-        findAllWeedzPost({ ...params, skip: pageParam, limit }),
+        findAllWeedzPost({ ...params, skip: pageParam }),
       [TimelineType.GROW]: () =>
-        findAllGrowPost({ ...params, skip: pageParam, limit }),
+        findAllGrowPost({ ...params, skip: pageParam }),
     };
 
-    const handler = handlers[typeValue as TimelineType];
+    const handler = handlers[typeValue];
     if (!handler) {
       throw new Error("Tipo de timeline desconhecida");
     }
@@ -158,9 +162,7 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
     isRefetching,
   } = useInfiniteQuery({
     queryKey: ["timeline", props],
-    queryFn: async (data) => {
-      return await fetchData(data);
-    },
+    queryFn: fetchData,
     enabled: props.userId != null,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.length < limit) return undefined;
@@ -168,6 +170,15 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
     },
     initialPageParam: 0,
   });
+
+  // const loadUntilIndex = async (index: number) => {
+  //   const requiredPages = Math.ceil((index + 1) / defaultLimit);
+  //   for (let i = 0; i < requiredPages; i++) {
+  //     if (hasNextPage) {
+  //       await fetchNextPage();
+  //     }
+  //   }
+  // };
 
   if (error) {
     console.error("Erro ao carregar a timeline: ", error);

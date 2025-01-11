@@ -74,6 +74,7 @@ export default function Timeline() {
 
   const [hasScrolledToItem, setHasScrolledToItem] = useState(false);
 
+  // const initialLimit = indexItemSelected + 1;
   const { data, isLoading, hasNextPage, isRefetching, fetchNextPage, refetch } =
     useTimeline({
       userId,
@@ -87,7 +88,7 @@ export default function Timeline() {
   const viewabilityConfig: ViewabilityConfig = useMemo(() => {
     const config = {
       itemVisiblePercentThreshold: isWeedzScreen ? 50 : 80,
-      waitForInteraction: isWeedzScreen ? true : true,
+      waitForInteraction: true,
     };
 
     return config;
@@ -187,7 +188,7 @@ export default function Timeline() {
         pauseVideo();
         toggleAudioMute(mutedVideo);
 
-        const playerValue = getPlayerValue(currentItem)
+        const playerValue = getPlayerValue(currentItem);
 
         if (currentItem && currentItem.id) {
           setPlayer(playerValue);
@@ -260,6 +261,16 @@ export default function Timeline() {
     }
   };
 
+  const handleScrollToIndexFailed = (info: {
+    index: number;
+    averageItemLength: number;
+  }) => {
+    flatListRef.current?.scrollToOffset({
+      offset: info.index * info.averageItemLength,
+      animated: true,
+    });
+  };
+
   const handlerGoBack = () => {
     pauseVideo();
     queryClient.removeQueries({ queryKey: ["timeline"] });
@@ -308,6 +319,7 @@ export default function Timeline() {
                 controls: {
                   handlerMutedVideo,
                   showProgressBar: true,
+                  showButtonPlay: true,
                 },
                 muted: mutedVideo,
                 player: (item as ReelsDetail).player,
@@ -331,7 +343,7 @@ export default function Timeline() {
     return screen[params.type];
   };
 
-  useEffect(() => {
+  const handleScrollToIndex = async () => {
     const hasData =
       !isLoading &&
       data.length > 0 &&
@@ -341,22 +353,30 @@ export default function Timeline() {
 
     let indexPostSelected = indexItemSelected;
 
-    if (params.index == '') {
+    if (params.index == "") {
       indexPostSelected = data.findIndex(
         (postData) => postData.post_id === postId
       );
     }
 
     if (hasData) {
-      const index = indexPostSelected != -1 ? indexPostSelected : 0;
-      setIndexItemSelected(index);
-      handlerPlayerVideo(index);
-      flatListRef.current.scrollToIndex({
-        index,
-        animated: true,
-      });
-      setHasScrolledToItem(true);
+      if (indexPostSelected >= data.length && hasNextPage) {
+        await fetchNextPage();
+      } else {
+        const index = indexPostSelected != -1 ? indexPostSelected : 0;
+        setIndexItemSelected(index);
+        handlerPlayerVideo(index);
+        flatListRef.current.scrollToIndex({
+          index,
+          animated: true,
+        });
+        setHasScrolledToItem(true);
+      }
     }
+  };
+
+  useEffect(() => {
+    handleScrollToIndex();
   }, [data]);
 
   if (isLoading) {
@@ -375,7 +395,7 @@ export default function Timeline() {
         initialScrollIndex={indexItemSelected}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-        keyExtractor={(item) => item.post_id.toString()}
+        keyExtractor={(item, index) => `post_timeline_${index}`}
         numColumns={1}
         getItemLayout={getItemLayout as any}
         ListHeaderComponent={() => {
@@ -406,14 +426,7 @@ export default function Timeline() {
         viewabilityConfig={viewabilityConfig}
         onViewableItemsChanged={onViewableItemsChanged}
         pagingEnabled={isWeedzScreen}
-        onScrollToIndexFailed={(info) => {
-          console.warn("Scroll falhou:", info);
-          // Fallback para scrollToOffset
-          flatListRef.current?.scrollToOffset({
-            offset: info.averageItemLength * info.index,
-            animated: true,
-          });
-        }}
+        onScrollToIndexFailed={handleScrollToIndexFailed}
         ListFooterComponent={
           !hasScrolledToItem ? (
             <View className="flex-1 justify-center items-center bg-black-100">

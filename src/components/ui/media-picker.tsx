@@ -183,13 +183,16 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
             style={styles.mediaWrapper}
           >
             {media.type === "video" ? (
-              <View style={{ width: 50, height: 50 , backgroundColor: 'red'}}>
-                <VideoPlayer
-                  player={media.player as VideoPlayerType}
-                  autoplay={false}
-                  loop
-                />
-              </View>
+              <VideoPlayer
+                player={media.player as VideoPlayerType}
+                styleContainer={styles.media}
+                autoplay={false}
+                controls={{
+                  showButtonPlay: false,
+                  showProgressBar: false,
+                }}
+                loop
+              />
             ) : (
               <Image
                 source={{ uri: media.uri }}

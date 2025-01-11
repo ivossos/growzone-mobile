@@ -95,6 +95,15 @@
           "resizeMode": "contain",
           "backgroundColor": "#000000"
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./src/assets/images/icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": true
+        }
       ]
     ],
     "experiments": {

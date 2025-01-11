@@ -21,6 +21,33 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthContextProvider } from "@/context/auth-context";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
+import * as Notifications from "expo-notifications";
+import * as TaskManager from "expo-task-manager";
+import { NotificationPushProvider } from "@/context/notification-push-context";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
+const BACKGROUND_NOTIFICATION_TASK = "BACKGROUND-NOTIFICATION-TASK";
+
+TaskManager.defineTask(
+  BACKGROUND_NOTIFICATION_TASK,
+  async ({ data, error, executionInfo }) => {
+    console.log("✅ Received a notification in the background!", {
+      data,
+      error,
+      executionInfo,
+    });
+
+    return Promise.resolve();
+  }
+);
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,8 +61,8 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
-    if(error) throw error;
-    
+    if (error) throw error;
+
     if (fontLoaded) {
       SplashScreen.hideAsync();
     }
@@ -46,38 +73,52 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <QueryClientProvider client={queryClient}>
-        <AuthContextProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <Stack>
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="notifications"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen name="profile" options={{ headerShown: false }} />
-              <Stack.Screen name="followers" options={{ headerShown: false }} />
-              <Stack.Screen name="following" options={{ headerShown: false }} />
-              <Stack.Screen name="post" options={{ headerShown: false }} />
-              <Stack.Screen name="edit-post" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="edit-reels-post"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="edit-grow-post"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-            <Toast />
-          </GestureHandlerRootView>
-        </AuthContextProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <NotificationPushProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <QueryClientProvider client={queryClient}>
+          <AuthContextProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <Stack>
+                <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+                {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="notifications"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="profile" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="followers"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="following"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="post" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="edit-post"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="edit-reels-post"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="edit-grow-post"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="(drawer)"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+              <Toast />
+            </GestureHandlerRootView>
+          </AuthContextProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </NotificationPushProvider>
   );
 }

@@ -37,7 +37,7 @@ import createReels from "@/api/social/post/create-reels";
 import { uploadVideo } from "@/api/compress/upload-video";
 import { z } from "zod";
 import createGrowPost from "@/api/social/post/create-grow-post";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, FieldError, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import SelectGeneticDropdown from "./select-genetic-dropdown";
 import SelectPhaseDropdown from "./select-phase-dropdown";
@@ -54,6 +54,7 @@ export const GrowPostValidation = z.object({
     .refine(
       (data) => {
         const isValid = data.id !== null && data.id !== undefined;
+        console.log("genetic ", data);
         return isValid;
       },
       {
@@ -67,6 +68,8 @@ export const GrowPostValidation = z.object({
     })
     .refine(
       (data) => {
+        console.log("phase ", data);
+
         const isValid = data.id !== null && data.id !== undefined;
         return isValid;
       },
@@ -153,8 +156,8 @@ const CreateBottomSheet = React.forwardRef<
   });
 
   const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop {...props} opacity={0.8} appearsOnIndex />
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop {...props} opacity={0.8} appearsOnIndex={1} />
     ),
     []
   );
@@ -166,7 +169,7 @@ const CreateBottomSheet = React.forwardRef<
           ref.current.snapToIndex(1);
         }
 
-        setCurrentAction(null)
+        setCurrentAction(null);
         form.reset();
         setSelectedImages([]);
         setSelectedVideos([]);
@@ -177,17 +180,17 @@ const CreateBottomSheet = React.forwardRef<
   );
 
   const handleCreatePost = useCallback(() => {
-    setCurrentAction('post')
+    setCurrentAction("post");
     handlerCreateBottomSheet();
   }, []);
 
   const handleCreateReels = useCallback(() => {
-    setCurrentAction('reels')
+    setCurrentAction("reels");
     handlerCreateBottomSheet();
   }, []);
 
   const handleCreateGrowPost = useCallback(() => {
-    setCurrentAction('growPost')
+    setCurrentAction("growPost");
     handlerCreateBottomSheet();
   }, []);
 
@@ -208,17 +211,19 @@ const CreateBottomSheet = React.forwardRef<
       });
 
       for (const video of selectedVideos) {
-        const uploadPromise = uploadVideo(post.post_id, video).catch((error) => {
-          console.error(`Erro ao enviar o vídeo ${video}`, error);
-          return Promise.reject(error);
-        });
+        const uploadPromise = uploadVideo(post.post_id, video).catch(
+          (error) => {
+            console.error(`Erro ao enviar o vídeo ${video}`, error);
+            return Promise.reject(error);
+          }
+        );
         uploadPromises.push(uploadPromise);
       }
 
       await Promise.all(uploadPromises);
 
       form.reset();
-      setCurrentAction(null)
+      setCurrentAction(null);
       setSelectedImages([]);
       setSelectedVideos([]);
       setPostDescription("");
@@ -261,60 +266,128 @@ const CreateBottomSheet = React.forwardRef<
     }
   }, [selectedVideos, postDescription, onClose]);
 
-  const handleCreateSocialGrowPost = useCallback(
-    async (values: z.infer<typeof GrowPostValidation>) => {
-      if (!selectedImages.length && !selectedVideos.length) {
-        Toast.show({
-          type: "info",
-          text1: "Ops!",
-          text2:
-            "Você precisa adicionar pelo menos uma imagem ou video no seu post",
-        });
-        return;
+  const handleCreateSocialGrowPost = async (
+    values: z.infer<typeof GrowPostValidation>
+  ) => {
+    console.log("values 4", values);
+
+    // if (!selectedImages.length && !selectedVideos.length) {
+    //   Toast.show({
+    //     type: "info",
+    //     text1: "Ops!",
+    //     text2:
+    //       "Você precisa adicionar pelo menos uma imagem ou video no seu post",
+    //   });
+    //   return;
+    // }
+
+    // setIsLoadingCreateGrowPost(true);
+    // try {
+    //   const post = await createGrowPost({
+    //     images: selectedImages,
+    //     video_count: selectedVideos.length,
+    //     description: postDescription,
+    //     day: Number(values.day),
+    //     strain_id: values.genetic.id!,
+    //     phase_id: values.phase.id!,
+    //   });
+
+    //   for (const video of selectedVideos) {
+    //     try {
+    //       await uploadVideo(post.post_id, video);
+    //     } catch (error) {
+    //       console.error(`Erro ao enviar o vídeo ${video}`, error);
+    //     }
+    //   }
+
+    //   setCurrentAction(null);
+    //   setSelectedImages([]);
+    //   setSelectedVideos([]);
+    //   form.reset();
+    //   setPostDescription("");
+    //   onClose();
+    // } catch (error) {
+    //   console.error("Erro ao criar grow post:", error);
+    //   Toast.show({
+    //     type: "error",
+    //     text1: "Ops!",
+    //     text2: "Não foi possivel criar seu post, tente novamente.",
+    //   });
+    // } finally {
+    //   setIsLoadingCreateGrowPost(false);
+    // }
+  };
+
+  // const handleCreateSocialGrowPost = useCallback(
+  //   async (values: z.infer<typeof GrowPostValidation>) => {
+  //     console.log('values ', values);
+
+  //     if (!selectedImages.length && !selectedVideos.length) {
+  //       Toast.show({
+  //         type: "info",
+  //         text1: "Ops!",
+  //         text2:
+  //           "Você precisa adicionar pelo menos uma imagem ou video no seu post",
+  //       });
+  //       return;
+  //     }
+
+  //     setIsLoadingCreateGrowPost(true);
+  //     try {
+  //       const post = await createGrowPost({
+  //         images: selectedImages,
+  //         video_count: selectedVideos.length,
+  //         description: postDescription,
+  //         day: Number(values.day),
+  //         strain_id: values.genetic.id!,
+  //         phase_id: values.phase.id!,
+  //       });
+
+  //       for (const video of selectedVideos) {
+  //         try {
+  //           await uploadVideo(post.post_id, video);
+  //         } catch (error) {
+  //           console.error(`Erro ao enviar o vídeo ${video}`, error);
+  //         }
+  //       }
+
+  //       setCurrentAction(null)
+  //       setSelectedImages([]);
+  //       setSelectedVideos([]);
+  //       form.reset();
+  //       setPostDescription("");
+  //       onClose();
+  //     } catch (error) {
+  //       console.error("Erro ao criar grow post:", error);
+  //       Toast.show({
+  //         type: "error",
+  //         text1: "Ops!",
+  //         text2: "Não foi possivel criar seu post, tente novamente.",
+  //       });
+  //     } finally {
+  //       setIsLoadingCreateGrowPost(false);
+  //     }
+  //   },
+  //   [selectedImages, selectedVideos, postDescription, form, onClose]
+  // );
+
+  const buildErrorMessage = useCallback((fieldName: string, error?: FieldError) => {
+    if (error) {
+      let message = error.message || '';
+      const fieldDataError = (error as any)[fieldName] as FieldError;
+
+      if (fieldDataError) {
+        message = fieldDataError.message || '';
       }
 
-      setIsLoadingCreateGrowPost(true);
-      try {
-        const post = await createGrowPost({
-          images: selectedImages,
-          video_count: selectedVideos.length,
-          description: postDescription,
-          day: Number(values.day),
-          strain_id: values.genetic.id!,
-          phase_id: values.phase.id!,
-        });
-
-        for (const video of selectedVideos) {
-          try {
-            await uploadVideo(post.post_id, video);
-          } catch (error) {
-            console.error(`Erro ao enviar o vídeo ${video}`, error);
-          }
-        }
-
-        setSelectedImages([]);
-        setSelectedVideos([]);
-        form.reset();
-        setPostDescription("");
-        onClose();
-      } catch (error) {
-        console.error("Erro ao criar grow post:", error);
-        Toast.show({
-          type: "error",
-          text1: "Ops!",
-          text2: "Não foi possivel criar seu post, tente novamente.",
-        });
-      } finally {
-        setIsLoadingCreateGrowPost(false);
-      }
-    },
-    [selectedImages, selectedVideos, postDescription, onClose]
-  );
+      return message;
+    }
+  }, []);
 
   const onChangeButtonSheet = useCallback(
     (index: number) => {
       const openBottomSheetOption = currentAction !== null && index !== -1;
-      
+
       if (openBottomSheetOption) {
         handlerCreateBottomSheet();
       }
@@ -401,8 +474,11 @@ const CreateBottomSheet = React.forwardRef<
       )}
 
       {currentAction === "post" && (
-        <BottomSheetContent user={user} onClose={() => onChangeButtonSheet(-1)} title="Post">
-
+        <BottomSheetContent
+          user={user}
+          onClose={() => onChangeButtonSheet(-1)}
+          title="Post"
+        >
           <BottomSheetView className="flex flex-row items-start justify-start">
             <TextInput
               numberOfLines={3}
@@ -450,7 +526,11 @@ const CreateBottomSheet = React.forwardRef<
             contentContainerStyle={{ flexGrow: 1, paddingBottom: 40 }}
             showsVerticalScrollIndicator={false}
           >
-            <BottomSheetContent user={user} onClose={() => onChangeButtonSheet(-1)} title="Plantas">
+            <BottomSheetContent
+              user={user}
+              onClose={() => onChangeButtonSheet(-1)}
+              title="Plantas"
+            >
               <BottomSheetView className="flex flex-row flex-1 items-start justify-start">
                 <TextInput
                   numberOfLines={3}
@@ -479,14 +559,14 @@ const CreateBottomSheet = React.forwardRef<
                 <Controller
                   control={form.control}
                   name="genetic"
-                  render={({ field: { onChange, value }, fieldState }) => (
+                  render={({ field: { onChange, name }, fieldState }) => (
                     <SelectGeneticDropdown
                       title="Genética"
                       placeholder="Selecione uma genética"
                       handleChangeText={(selectedId) =>
                         onChange({ id: selectedId })
                       }
-                      error={fieldState.error?.["genetic"]?.message}
+                      error={buildErrorMessage(name, fieldState.error)}
                     />
                   )}
                 />
@@ -494,14 +574,14 @@ const CreateBottomSheet = React.forwardRef<
                 <Controller
                   control={form.control}
                   name="phase"
-                  render={({ field: { onChange, value }, fieldState }) => (
+                  render={({ field: { onChange, name }, fieldState }) => (
                     <SelectPhaseDropdown
                       title="Fase"
                       placeholder="Selecione uma fase"
                       handleChangeText={(selectedId) =>
                         onChange({ id: selectedId })
                       }
-                      error={fieldState.error?.["phase"]?.message}
+                      error={buildErrorMessage(name, fieldState.error)}
                     />
                   )}
                 />
@@ -511,17 +591,18 @@ const CreateBottomSheet = React.forwardRef<
                   name="day"
                   render={({
                     fieldState,
-                    field: { onChange, onBlur, value },
+                    field: { onChange, onBlur, value, name },
                   }) => (
                     <FormFieldBottomSheetText
                       title="Dias"
                       placeholder="Ex: 120"
                       keyboardType="numeric"
                       otherStyles="w-full"
+                      containerStyles="p-6"
                       onBlur={onBlur}
                       value={value.toString()}
                       handleChangeText={onChange}
-                      error={fieldState.error?.message}
+                      error={buildErrorMessage(name, fieldState.error)}
                     />
                   )}
                 />
@@ -540,7 +621,11 @@ const CreateBottomSheet = React.forwardRef<
       )}
 
       {currentAction === "reels" && (
-        <BottomSheetContent user={user} onClose={() => onChangeButtonSheet(-1)} title="Weedz">
+        <BottomSheetContent
+          user={user}
+          onClose={() => onChangeButtonSheet(-1)}
+          title="Weedz"
+        >
           <BottomSheetView className="flex flex-row items-start justify-start">
             <TextInput
               numberOfLines={3}

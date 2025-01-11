@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import BottomSheet, {
   BottomSheetBackdrop,
+  BottomSheetBackdropProps,
   BottomSheetFlatList,
   BottomSheetFooter,
   BottomSheetFooterProps,
@@ -256,7 +257,7 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   }, [loading, hasMore, loadPostComments]);
 
   const renderBackdrop = useCallback(
-    (props: any) => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop {...props} opacity={0.8} appearsOnIndex={1} />
     ),
     []

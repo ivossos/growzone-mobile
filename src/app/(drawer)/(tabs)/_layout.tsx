@@ -175,6 +175,11 @@ export default function TabLayout() {
           />
           <Tabs.Screen
             name="search"
+            listeners={{
+              focus: (data) => {
+                pauseVideo()
+              },
+            }}
             options={{
               title: "Pesquisa Global",
               headerShown: false,
@@ -235,6 +240,11 @@ export default function TabLayout() {
           />
           <Tabs.Screen
             name="profile"
+            listeners={{
+              focus: (data) => {
+                pauseVideo()
+              },
+            }}
             options={{
               title: "Perfil",
               headerShown: false,

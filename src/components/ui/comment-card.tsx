@@ -16,6 +16,7 @@ import { Modal } from "../Modal";
 import Button from "./button";
 import { deleteComment } from "@/api/social/post/comment/delete-comment";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Props {
   comment: Comment;
@@ -39,6 +40,7 @@ export default function CommentCard({
   handlerAddParentComment,
   handlerParentComment,
 }: Props) {
+  const { user } = useAuth();
   const { openBottomSheet } = useBottomSheetContext();
   const [isLiked, setIsLiked] = useState(comment.is_liked);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,8 +76,6 @@ export default function CommentCard({
     commentValue: Comment,
     { show }: { show: boolean }
   ) => {
-    console.log("show ", { commentValue, show });
-
     await handlerParentComment!(commentValue, { show });
   };
 
@@ -175,7 +175,7 @@ export default function CommentCard({
             handlePress={handleDeleteComment}
             variant="secondary"
             isLoading={isLoading}
-            isDisabled={isLoading}
+            isDisabled={isLoading || user.id !== selectedComment.user.id}
             containerStyles="gap-2"
             leftIcon={TrashIcon}
           />

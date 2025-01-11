@@ -1,5 +1,11 @@
 import React, { FC, useCallback, useMemo, useState } from "react";
-import { StyleSheet, View, TouchableOpacity, Dimensions, Pressable } from "react-native";
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Dimensions,
+  Pressable,
+} from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
 import Slider from "@react-native-community/slider";
 import { useEvent, useEventListener } from "expo";
@@ -45,10 +51,6 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
       if (startPlay) {
         startPlay(data);
       }
-
-      // if (controls && controls.showMutedButton) {
-      //   player.muted = controls.muted as boolean;
-      // }
     }
   }, [isPlaying, startPlay]);
 
@@ -88,7 +90,9 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         player={player}
       />
 
-      <View style={styles.iconContainer}>{iconControlPlay}</View>
+      {controls?.showButtonPlay && (
+        <View style={styles.iconContainer}>{iconControlPlay}</View>
+      )}
 
       {controls?.showProgressBar && (
         <View style={[styles.sliderContainer, { bottom: insets.bottom + 44 }]}>

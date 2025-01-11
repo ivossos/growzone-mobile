@@ -167,7 +167,7 @@ export default function PostGrid({ userId }: PostGridProps) {
             controls={{
               showProgressBar: true,
               handlerMutedVideo,
-              showMutedButton: true,
+              showButtonPlay: true,
             }}
             autoplay={currentVideoId === item.id}
           />

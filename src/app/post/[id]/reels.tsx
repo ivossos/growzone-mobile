@@ -136,6 +136,7 @@ export default function Reels() {
               controls: {
                 handlerMutedVideo,
                 showProgressBar: false,
+                showButtonPlay: true,
               },
               muted: mutedVideo,
               player: post.player,

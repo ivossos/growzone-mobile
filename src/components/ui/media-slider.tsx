@@ -58,6 +58,9 @@ const MediaSlider = ({
           playVideo();
 
           setActiveIndex(index);
+        } else {
+          pauseVideo();
+          setPlayer(undefined);
         }
       }
     },
@@ -66,32 +69,38 @@ const MediaSlider = ({
 
   const RenderItem = memo(
     ({ item, index }: { item: SocialPostFile; index: number }) => {
-      const styleComponent: any = {
-        width: "100%",
-        height: 350,
-        borderRadius: 16,
-      };
-
       if (item.type === "image") {
         return (
-          <Image
-            source={{ uri: item.file }}
-            style={styleComponent}
-            resizeMode="cover"
-          />
+          <View className="relative">
+            <Image
+              source={{ uri: item.file }}
+              style={styles.item}
+              resizeMode="cover"
+            />
+            <View className="absolute bottom-6 w-full flex flex-row justify-between items-center px-4">
+              {postType === PostType.GROW_POST && (
+                <View className="border border-black-80 bg-white px-2 py-1 rounded-full">
+                  <Text className="text-black text-base">
+                    {(post as GrowPostDetail).phase.name}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
         );
       }
 
       return (
         <View className="relative">
           <VideoPlayer
-            styleContainer={styleComponent}
+            styleContainer={styles.item}
             resizeMode="cover"
             player={item.player}
             autoplay={index === activeIndex}
             loop
             controls={{
               showProgressBar: false,
+              showButtonPlay: false,
             }}
             muted={audioMute}
           />
@@ -153,6 +162,11 @@ const styles = StyleSheet.create({
   carousel: {
     height: 350,
     width: "100%",
+    borderRadius: 16,
+  },
+  item: {
+    width: "100%",
+    height: 350,
     borderRadius: 16,
   },
 });

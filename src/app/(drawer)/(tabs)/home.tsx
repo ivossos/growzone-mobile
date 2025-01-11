@@ -51,6 +51,7 @@ export default function HomeScreen() {
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<FeedAllPost>) => {
+
       if (item.type === "social") {
         return (
           <PostCard

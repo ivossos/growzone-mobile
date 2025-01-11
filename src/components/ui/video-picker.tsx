@@ -70,7 +70,7 @@ const VideoPicker = ({ onMediaSelected }: VideoPickerProps) => {
               player={mediaUri.player}
               loop
               muted={false}
-              controls={{ showProgressBar: true }}
+              controls={{ showProgressBar: true, showButtonPlay: true }}
             />
           </TouchableOpacity>
         )}

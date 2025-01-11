@@ -40,7 +40,7 @@ const renderTabBar = (props) => (
   />
 );
 
-const TabProfile = ({ userId }) => {
+const TabProfile = ({ userId }: { userId: number }) => {
   const [index, setIndex] = useState(0);
   const [routes] = useState([
     { key: 'posts', title: 'Posts' },
