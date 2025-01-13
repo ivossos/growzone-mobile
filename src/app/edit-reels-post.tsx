@@ -7,7 +7,14 @@ import { router, useLocalSearchParams, useNavigation } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { ScrollView, Text, TouchableOpacity, View, KeyboardAvoidingView, Platform } from "react-native";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { z } from "zod";
@@ -15,6 +22,7 @@ import { ReelsDetail } from "@/api/@types/models";
 import { getReel } from "@/api/social/post/get-reel";
 import updateReelsPost from "@/api/social/post/update-reels-post";
 import { queryClient } from "@/lib/react-query";
+import { useVideoPlayerContext } from "@/context/video-player-context";
 
 export const EditProfileValidation = z.object({
   description: z.string(),
@@ -27,17 +35,17 @@ export default function EditReelsPost() {
   const { user } = useAuth();
 
   const params = useLocalSearchParams();
-  const { id } = (params as unknown  as { id: number }) || {};
+  const { id } = (params as unknown as { id: number }) || {};
 
   const form = useForm({
     resolver: zodResolver(EditProfileValidation),
     values: {
-      description: post?.description || '',
-    }
+      description: post?.description || "",
+    },
   });
 
   const fetchPost = async () => {
-    if(!id) return;
+    if (!id) return;
 
     try {
       setIsLoading(true);
@@ -45,22 +53,21 @@ export default function EditReelsPost() {
       setPost(data);
     } catch (error) {
       Toast.show({
-        type: 'error',
-        text1: 'Opss',
-        text2: 'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.'
+        type: "error",
+        text1: "Opss",
+        text2:
+          'Aconteceu um erro ao buscar as informaçōes desse post", "Tente novamente mais tarde.',
       });
-
     } finally {
       setIsLoading(false);
     }
   };
 
-
   async function submit(values: z.infer<typeof EditProfileValidation>) {
-    if(!post) return
+    if (!post) return;
     try {
       setIsLoading(true);
-      
+
       await updateReelsPost({
         postId: post?.id,
         description: values.description || null,
@@ -68,16 +75,16 @@ export default function EditReelsPost() {
 
       form.reset();
 
-      queryClient.invalidateQueries({ queryKey: ["reels", post.post_id.toString()] });
+      queryClient.removeQueries({ queryKey: ["timeline"] });
+      queryClient.removeQueries({ queryKey: ["reels"] });
 
       router.back();
-      
     } catch (err) {
-      console.error('Erro ao atualizar post', err);
+      console.error("Erro ao atualizar post", err);
       Toast.show({
-        type: 'error',
-        text1: 'Ops!',
-        text2: 'Ocorreu um erro ao atualizar seu post, tente novamente.',
+        type: "error",
+        text1: "Ops!",
+        text2: "Ocorreu um erro ao atualizar seu post, tente novamente.",
       });
     } finally {
       setIsLoading(false);
@@ -86,35 +93,42 @@ export default function EditReelsPost() {
 
   function handleNavigation() {
     form.reset();
-    navigation.goBack()
+    navigation.goBack();
   }
 
   useEffect(() => {
     fetchPost();
   }, [id]);
 
-
   return (
     <View className="flex-1 bg-black-100">
       <SafeAreaView>
-      <KeyboardAvoidingView
+        <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={0}
         >
-        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ flexGrow: 1 }}>
-          <View className="flex flex-row items-center gap-4 px-6 h-[72px] border-b-[1px] border-black-80">
-            <TouchableOpacity onPress={handleNavigation}>
-              <ArrowLeft className="w-6 h-6" color={colors.brand.white} />
-            </TouchableOpacity>
-            <Text className="text-white text-base font-semibold">Editar publicação</Text>
-          </View>
-        
-          <View className="flex flex-col gap-6 flex-1 px-6 pb-10 my-3 mb-20">
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ flexGrow: 1 }}
+          >
+            <View className="flex flex-row items-center gap-4 px-6 h-[72px] border-b-[1px] border-black-80">
+              <TouchableOpacity onPress={handleNavigation}>
+                <ArrowLeft className="w-6 h-6" color={colors.brand.white} />
+              </TouchableOpacity>
+              <Text className="text-white text-base font-semibold">
+                Editar publicação
+              </Text>
+            </View>
 
-            <Controller
-              control={form.control}
-              name="description"
-              render={({  fieldState, field: { onChange, onBlur, value } }) => (
+            <View className="flex flex-col gap-6 flex-1 px-6 pb-10 my-3 mb-20">
+              <Controller
+                control={form.control}
+                name="description"
+                render={({
+                  fieldState,
+                  field: { onChange, onBlur, value },
+                }) => (
                   <FormField
                     title="Descrição"
                     placeholder={`O que você está pensando, ${
@@ -124,7 +138,8 @@ export default function EditReelsPost() {
                     value={value}
                     containerStyles="h-40"
                     style={{
-                      flex: 1, borderBottomWidth: 0 
+                      flex: 1,
+                      borderBottomWidth: 0,
                     }}
                     handleChangeText={onChange}
                     error={fieldState.error?.message}
@@ -134,15 +149,14 @@ export default function EditReelsPost() {
                 )}
               />
 
-            <Button
-              containerStyles="w-full"
-              title="Salvar alterações"
-              handlePress={form.handleSubmit(submit)}
-              isLoading={isLoading}
-            />
-
-          </View>
-        </ScrollView>
+              <Button
+                containerStyles="w-full"
+                title="Salvar alterações"
+                handlePress={form.handleSubmit(submit)}
+                isLoading={isLoading}
+              />
+            </View>
+          </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>

@@ -135,11 +135,6 @@ const CommentInput = forwardRef(
                   onBlur={onBlur}
                 />
 
-                // <CommentInputTextInput
-                //   ref={ref}
-                //   error={fieldState.error?.message || ""}
-                //   onChangeText={onChange}
-                // />
               )}
             />
           </View>

@@ -26,13 +26,19 @@ import {
   RefreshControl,
   Image,
   StyleSheet,
+  ListRenderItemInfo,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { debounce } from "lodash";
 import { searchGlobal } from "@/api/social/global-search/search-global";
 import Toast from "react-native-toast-message";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
-import { getInitials, getUserName, replaceMediaUrl } from "@/lib/utils";
+import {
+  buildErrorMessage,
+  getInitials,
+  getUserName,
+  replaceMediaUrl,
+} from "@/lib/utils";
 import { getTopContributors } from "@/api/social/contributor/get-top-contributors";
 import { deleteFollow } from "@/api/social/follow/delete-follow";
 import { createFollow } from "@/api/social/follow/create-follow";
@@ -75,6 +81,47 @@ type FormFilterGenetic = {
   };
 };
 
+const Section = ({
+  title,
+  data,
+  renderItem,
+  onPress,
+  showMore = false,
+}: {
+  title: string;
+  data: any[];
+  renderItem: ({ item }: { item: any }) => JSX.Element;
+  onPress?: () => void;
+  showMore?: boolean;
+}) => {
+  if (data.length === 0) return null;
+
+  return (
+    <View className="flex flex-col gap-5 px-6 pt-6">
+      <View className="flex flex-row justify-between items-center">
+        <Text className="text-lg text-white font-semibold">{title}</Text>
+        {showMore && onPress && (
+          <TouchableOpacity
+            className="flex items-center flex-row gap-1"
+            onPress={onPress}
+          >
+            <Text className="text-primary text-base font-medium">ver mais</Text>
+            <ArrowRight size={18} color={colors.brand.green} />
+          </TouchableOpacity>
+        )}
+      </View>
+      <FlatList
+        data={data}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        keyExtractor={(item, index) => `item_${index}`}
+        renderItem={renderItem}
+        contentContainerStyle={{ gap: 16 }}
+      />
+    </View>
+  );
+};
+
 export default function SearchScreen() {
   const form = useForm<FormFilterGenetic, FormFilterGenetic, FormFilterGenetic>(
     {
@@ -87,6 +134,8 @@ export default function SearchScreen() {
   );
 
   const [phase, strain] = form.watch(["phase", "strain"]);
+
+  const { openBottomSheet } = useBottomSheetContext();
 
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -102,7 +151,24 @@ export default function SearchScreen() {
     strain_id: strain.id || 0,
   });
 
-  const { openBottomSheet } = useBottomSheetContext();
+  const { data, isLoading } = useQuery({
+    queryKey: ["search-global-initial-page"],
+    queryFn: async () => {
+      const [topContributors, trendingWells, trendingGrowPosts] =
+        await Promise.all([
+          getTopContributors({}),
+          getTrendingWells({}),
+          getAllTrendingGrowPosts(),
+        ]);
+      return { topContributors, trendingWells, trendingGrowPosts };
+    },
+  });
+
+  const {
+    topContributors = [],
+    trendingGrowPosts = [],
+    trendingWells = [],
+  } = data || {};
 
   const setValueFormFilter = async (
     filterData: Omit<FormFilterGenetic, "strain">
@@ -131,6 +197,10 @@ export default function SearchScreen() {
     ],
     []
   );
+
+  const options = useMemo(() => {
+    return [{ key: "contributors" }, { key: "reels" }, { key: "buds" }];
+  }, []);
 
   const getAllTrendingGrowPosts = async (): Promise<GrowPost[]> => {
     const growPosts = await getTrendingGrowPosts({});
@@ -162,19 +232,6 @@ export default function SearchScreen() {
       };
     });
   };
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["search-global-initial-page"],
-    queryFn: async () => {
-      const [topContributors, trendingWells, trendingGrowPosts] =
-        await Promise.all([
-          getTopContributors({}),
-          getTrendingWells({}),
-          getAllTrendingGrowPosts(),
-        ]);
-      return { topContributors, trendingWells, trendingGrowPosts };
-    },
-  });
 
   async function handleFollower(user: GlobalSearchUser) {
     try {
@@ -401,6 +458,51 @@ export default function SearchScreen() {
     return globalSectionSelected === GlobalSearchType.USER ? 1 : 3;
   }, [globalSectionSelected]);
 
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<{ key: string }>) => {
+      if (isRefreshing) return null;
+
+      switch (item.key) {
+        case "contributors":
+          return (
+            <Section
+              title="Top Contribuidores"
+              data={topContributors}
+              renderItem={({ item }) => (
+                <ContributorCard key={item.id} user={item} />
+              )}
+            />
+          );
+
+        case "reels":
+          return (
+            <Section
+              title="Weedz em Alta"
+              data={trendingWells}
+              renderItem={({ item }) => <ReelsCard key={item.id} {...item} />}
+              showMore
+              onPress={() => router.navigate("/(drawer)/(tabs)/reels")}
+            />
+          );
+
+        case "buds":
+          return (
+            <Section
+              title="Top Buds"
+              data={trendingGrowPosts}
+              renderItem={({ item }) => (
+                <TrendingGrowCard key={item.id} item={item} />
+              )}
+            />
+          );
+
+        default:
+          return null;
+      }
+    },
+    [isRefreshing, topContributors, trendingWells, trendingGrowPosts]
+  );
+
   if (isLoading || filterGlobalSearch.isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-black-100">
@@ -408,12 +510,6 @@ export default function SearchScreen() {
       </View>
     );
   }
-
-  const {
-    topContributors = [],
-    trendingGrowPosts = [],
-    trendingWells = [],
-  } = data || {};
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
@@ -438,7 +534,7 @@ export default function SearchScreen() {
             <Controller
               control={form.control}
               name="strain"
-              render={({ field: { onChange, value }, fieldState }) => (
+              render={({ field: { onChange, value, name }, fieldState }) => (
                 <View className="flex-1">
                   <SelectGeneticDropdown
                     placeholder="Selecione uma genética"
@@ -453,7 +549,7 @@ export default function SearchScreen() {
                         name: data.label || null,
                       });
                     }}
-                    error={fieldState.error?.["strain"]?.message}
+                    error={buildErrorMessage(name, fieldState.error)}
                   />
                 </View>
               )}
@@ -513,7 +609,7 @@ export default function SearchScreen() {
 
         {!query && (
           <FlatList
-            data={[{ key: "contributors" }, { key: "reels" }, { key: "buds" }]}
+            data={options}
             keyExtractor={(item) => item.key}
             showsVerticalScrollIndicator={false}
             contentContainerClassName="pb-20 flex-grow"
@@ -526,93 +622,7 @@ export default function SearchScreen() {
                 tintColor={colors.brand.green}
               />
             }
-            renderItem={({ item }) => {
-              if (item.key === "contributors") {
-                return (
-                  !isRefreshing &&
-                  topContributors.length > 0 && (
-                    <View className="flex flex-col gap-5 px-6">
-                      <Text className="text-lg text-white font-semibold">
-                        Top Contribuidores
-                      </Text>
-                      <FlatList
-                        data={topContributors}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        keyExtractor={(user) => user.id.toString()}
-                        renderItem={({ item }) => (
-                          <ContributorCard key={item.id} user={item} />
-                        )}
-                        contentContainerStyle={{ gap: 16 }}
-                      />
-                    </View>
-                  )
-                );
-              } else if (item.key === "reels") {
-                return (
-                  !isRefreshing &&
-                  trendingWells?.length > 0 && (
-                    <View className="flex flex-col gap-5 px-6 pt-6">
-                      <View className="flex flex-row justify-between items-center ">
-                        <Text className="text-lg text-white font-semibold">
-                          Weedz em Alta
-                        </Text>
-                        <TouchableOpacity
-                          className="flex items-center flex-row gap-1"
-                          onPress={() =>
-                            router.navigate("/(drawer)/(tabs)/reels")
-                          }
-                        >
-                          <Text className="text-primary text-base font-medium">
-                            ver mais
-                          </Text>
-                          <ArrowRight size={18} color={colors.brand.green} />
-                        </TouchableOpacity>
-                      </View>
-                      <FlatList
-                        data={trendingWells}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        keyExtractor={(post) => post.post_id.toString()}
-                        renderItem={({ item }) => (
-                          <ReelsCard key={item.id} {...item} />
-                        )}
-                        contentContainerStyle={{ gap: 16 }}
-                      />
-                    </View>
-                  )
-                );
-              } else if (item.key === "buds") {
-                return (
-                  !isRefreshing &&
-                  trendingGrowPosts?.length > 0 && (
-                    <View className="flex flex-col gap-5 px-6 pt-6">
-                      <View className="flex flex-row justify-between items-center ">
-                        <Text className="text-lg text-white font-semibold">
-                          Top Buds
-                        </Text>
-                        {/* <TouchableOpacity className="flex items-center flex-row gap-1" onPress={() => router.navigate('/reels')}>
-                      <Text className="text-primary text-base font-medium">ver mais</Text>
-                      <ArrowRight size={18} color={colors.brand.green}/>
-                    </TouchableOpacity> */}
-                      </View>
-                      <FlatList
-                        data={trendingGrowPosts}
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        keyExtractor={(post) => post.post_id.toString()}
-                        renderItem={({ item }) => (
-                          <TrendingGrowCard key={item.id} item={item} />
-                        )}
-                        contentContainerStyle={{ gap: 16 }}
-                      />
-                    </View>
-                  )
-                );
-              } else {
-                return null;
-              }
-            }}
+            renderItem={renderItem}
           />
         )}
       </View>

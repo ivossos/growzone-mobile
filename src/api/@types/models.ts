@@ -477,3 +477,11 @@ export interface VideoPlayerHandle {
   replace: (source: VideoSource) => void;
   mutedVideo: (mutedVideo: boolean) => void;
 }
+
+export interface UpdateGrowPost {
+  post_id: number
+  description?: string;
+  day: number;
+  strain_id: number;
+  phase_id: number
+}

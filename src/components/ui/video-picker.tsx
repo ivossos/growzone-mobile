@@ -65,14 +65,14 @@ const VideoPicker = ({ onMediaSelected }: VideoPickerProps) => {
     <View style={styles.container}>
       <View style={styles.mediaContainer}>
         {mediaUri && (
-          <TouchableOpacity style={styles.mediaWrapper}>
-            <VideoPlayer
-              player={mediaUri.player}
-              loop
-              muted={false}
-              controls={{ showProgressBar: true, showButtonPlay: true }}
-            />
-          </TouchableOpacity>
+          <VideoPlayer
+            player={mediaUri.player}
+            loop
+            resizeMode="cover"
+            styleContainer={styles.mediaWrapper}
+            muted={false}
+            controls={{ showProgressBar: false, showButtonPlay: true }}
+          />
         )}
       </View>
       <TouchableOpacity style={styles.selectButton} onPress={pickMedia}>
@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
   },
   mediaWrapper: {
     width: 200,
-    height: 200,
+    height: 400,
+    borderRadius: 16,
   },
   media: {
     width: "100%",

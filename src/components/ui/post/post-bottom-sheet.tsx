@@ -9,6 +9,7 @@ import BottomSheet, {
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { Pencil, Trash2 } from "lucide-react-native";
 import { router } from "expo-router";
+import { useVideoPlayerContext } from "@/context/video-player-context";
 
 interface Props {
   onClose: () => void;
@@ -16,6 +17,7 @@ interface Props {
 
 const PostBottomSheet = React.forwardRef<BottomSheet, Props>(
   ({ onClose }, ref) => {
+    const { pauseVideo } = useVideoPlayerContext();
     const snapPoints = useMemo(() => ["30%"], []);
     const {
       postId,
@@ -43,6 +45,8 @@ const PostBottomSheet = React.forwardRef<BottomSheet, Props>(
     }
 
     const navigate = () => {
+      pauseVideo()
+
       const routesMap: Record<string, string> = {
         "post-bottom-sheet": "/edit-post",
         "reel-post-bottom-sheet": "/edit-reels-post",
@@ -51,7 +55,7 @@ const PostBottomSheet = React.forwardRef<BottomSheet, Props>(
 
       if (currentType && routesMap[currentType]) {
         router.push({
-          pathname: routesMap[currentType],
+          pathname: routesMap[currentType] as any,
           params: { id: postId },
         });
       }
@@ -59,6 +63,8 @@ const PostBottomSheet = React.forwardRef<BottomSheet, Props>(
 
     const handleDeletePost = () => {
       if (!postId) return;
+
+      pauseVideo()
 
       openBottomSheet({
         type: "delete-post-bottom-sheet",

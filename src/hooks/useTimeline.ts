@@ -10,18 +10,22 @@ import { getAllSocialPost } from "@/api/social/post/timeline/get-all-social-post
 import { getAllWeedzPost } from "@/api/social/post/timeline/get-all-weedz-post";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { createVideoPlayer } from "expo-video";
-import { useMemo } from "react";
 import Toast from "react-native-toast-message";
+
+interface ReturnType<T> {
+  data: Array<T>
+  nextCursor: number;
+}
 
 const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
   const limit = 10;
 
   const findAllWeedzPost = async (
     params: Pick<TimelineParams, "limit" | "userId" | "skip">
-  ): Promise<Array<ReelsDetail>> => {
+  ): Promise<ReturnType<ReelsDetail>> => {
     const weedzPosts = await getAllWeedzPost(params);
 
-    return weedzPosts.map((weedzPost, index) => {
+    const weedzPostMap = weedzPosts.map((weedzPost, index) => {
       if (weedzPost.file.type === "image") {
         return weedzPost;
       }
@@ -46,11 +50,18 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
         player,
       };
     });
+
+    return {
+      data: weedzPostMap,
+      nextCursor: params.skip + limit
+    };
   };
 
   const findAllSocialPost = async (
     params: Pick<TimelineParams, "limit" | "userId" | "skip">
-  ): Promise<Array<PostDetail>> => {
+  ): Promise<ReturnType<PostDetail>> => {
+    console.log('findAllSocialPost ', params);
+    
     const socialPosts = await getAllSocialPost(params);
 
     const socialPostsMap = socialPosts.map((socialPost) => {
@@ -84,12 +95,15 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
       };
     });
 
-    return socialPostsMap;
+    return {
+      data: socialPostsMap,
+      nextCursor: params.skip + limit
+    };
   };
 
   const findAllGrowPost = async (
     params: Pick<TimelineParams, "limit" | "userId" | "skip">
-  ): Promise<Array<GrowPostDetail>> => {
+  ): Promise<ReturnType<GrowPostDetail>> => {
     const growPosts = await getAllGrowPost(params);
 
     const growPostsMap = growPosts.map((growPost) => {
@@ -123,23 +137,23 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
       };
     });
 
-    return growPostsMap;
+    return {
+      data: growPostsMap,
+      nextCursor: params.skip + limit
+    };
   };
 
   const fetchData = async ({ pageParam = 0, queryKey }: any) => {
     const [_, params] = queryKey as [any, TimelineParams];
     const typeValue = params.type;
 
-    console.log('params ', { ...params, pageParam });
-    
-
     const handlers = {
       [TimelineType.SOCIAL]: () =>
-        findAllSocialPost({ ...params, skip: pageParam }),
+        findAllSocialPost({ ...params, skip: pageParam, limit }),
       [TimelineType.WEEDZ]: () =>
-        findAllWeedzPost({ ...params, skip: pageParam }),
+        findAllWeedzPost({ ...params, skip: pageParam, limit }),
       [TimelineType.GROW]: () =>
-        findAllGrowPost({ ...params, skip: pageParam }),
+        findAllGrowPost({ ...params, skip: pageParam, limit}),
     };
 
     const handler = handlers[typeValue];
@@ -165,20 +179,12 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
     queryFn: fetchData,
     enabled: props.userId != null,
     getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < limit) return undefined;
-      return allPages.length * limit;
+      console.log('lastPage ', lastPage.nextCursor);
+      
+      return lastPage.nextCursor
     },
     initialPageParam: 0,
   });
-
-  // const loadUntilIndex = async (index: number) => {
-  //   const requiredPages = Math.ceil((index + 1) / defaultLimit);
-  //   for (let i = 0; i < requiredPages; i++) {
-  //     if (hasNextPage) {
-  //       await fetchNextPage();
-  //     }
-  //   }
-  // };
 
   if (error) {
     console.error("Erro ao carregar a timeline: ", error);
@@ -191,7 +197,9 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
   }
 
   return {
-    data: isSuccess ? data.pages.flat() : [],
+    data: isSuccess
+      ? data.pages.flatMap(page => page.data as any)
+      : [],
     error,
     fetchNextPage,
     hasNextPage,

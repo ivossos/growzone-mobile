@@ -49,9 +49,7 @@ export default function Post() {
   });
 
   const loadComments = async () => {
-    await queryClient.invalidateQueries({
-      queryKey: ["post-data", id]
-    })
+    queryClient.removeQueries({ queryKey: ["post-data"] });
   };
 
   useEffect(() => {
@@ -78,6 +76,8 @@ export default function Post() {
   }
 
   const { post } = data || {};
+
+  // TODO: ajustar props depois
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>

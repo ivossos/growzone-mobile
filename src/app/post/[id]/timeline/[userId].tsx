@@ -17,6 +17,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Platform,
+  RefreshControl,
   StatusBar,
   StyleSheet,
   View,
@@ -66,6 +67,7 @@ export default function Timeline() {
 
   const flatListRef = useRef<FlatList>(null);
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState<number | null>(null);
   const [mutedVideo, setMutedVideo] = useState(false);
   const [indexItemSelected, setIndexItemSelected] = useState(
@@ -131,6 +133,20 @@ export default function Timeline() {
     },
     [isWeedzScreen, params.type]
   );
+
+  const handleRefresh = useCallback(() => {
+    try {
+      setIsRefreshing(true);
+      queryClient.removeQueries({ queryKey: ["profile"] });
+      queryClient.removeQueries({ queryKey: ["follow"] });
+      queryClient.removeQueries({ queryKey: ["profile-posts"] });
+      queryClient.removeQueries({ queryKey: ["timeline"] });
+    } catch (error) {
+      console.error("Erro ao atualizar dados:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
 
   const viewabilityConfigCallbackPairs = useRef([
     {
@@ -360,7 +376,7 @@ export default function Timeline() {
     }
 
     if (hasData) {
-      if (indexPostSelected >= data.length && hasNextPage) {
+      if (indexPostSelected >= data.length) {
         await fetchNextPage();
       } else {
         const index = indexPostSelected != -1 ? indexPostSelected : 0;
@@ -422,7 +438,13 @@ export default function Timeline() {
         stickyHeaderHiddenOnScroll={stickyHeaderHiddenOnScroll}
         decelerationRate={isWeedzScreen ? "fast" : undefined}
         snapToAlignment={isWeedzScreen ? "start" : undefined}
-        // viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+          />
+        }
         viewabilityConfig={viewabilityConfig}
         onViewableItemsChanged={onViewableItemsChanged}
         pagingEnabled={isWeedzScreen}

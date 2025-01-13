@@ -129,7 +129,6 @@ const SelectGeneticDropdown = ({
 
     try {
       await createGenetic(createGeneticData);
-
       Toast.show({
         type: "success",
         text1: "Sucesso",

@@ -10,7 +10,7 @@ import { replaceMediaUrl } from "@/lib/utils";
 export function TrendingGrowCard({ item }: { item: GrowPost }) {
   return (
     <Link href={{ pathname: "/post/[id]/grow", params: { id: item.post_id } }}>
-      <View className="flex flex-col gap-2 w-[155px]">
+      <View className="flex w-[155px] rounded-2xl border border-black-90">
         <View className="relative">
           <Image
             source={{
@@ -23,6 +23,7 @@ export function TrendingGrowCard({ item }: { item: GrowPost }) {
               height: 224,
               width: 155,
             }}
+            className="rounded-t-2xl"
             resizeMode="cover"
           />
 
@@ -32,11 +33,13 @@ export function TrendingGrowCard({ item }: { item: GrowPost }) {
             </View>
 
             {item.file.type === "video" && (
-              <View style={{
-                backgroundColor: "rgba(0, 0, 0, 0.6)",
-                padding: 4,
-                borderRadius: 9999,
-              }}>
+              <View
+                style={{
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  padding: 4,
+                  borderRadius: 9999,
+                }}
+              >
                 <Video size={18} color={colors.brand.white} />
               </View>
             )}

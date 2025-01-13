@@ -115,18 +115,16 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   const handleRefresh = useCallback(() => {
     try {
       setIsRefreshing(true);
-      queryClient.removeQueries({ queryKey: ["profile", userId] });
-      queryClient.removeQueries({ queryKey: ["follow", userId] });
-      queryClient.removeQueries({
-        queryKey: ["profile-posts", userId],
-      });
+      queryClient.removeQueries({ queryKey: ["profile"] });
+      queryClient.removeQueries({ queryKey: ["follow"] });
+      queryClient.removeQueries({ queryKey: ["profile-posts"] });
       queryClient.removeQueries({ queryKey: ["timeline"] });
     } catch (error) {
       console.error("Erro ao atualizar dados:", error);
     } finally {
       setIsRefreshing(false);
     }
-  }, [userId]);
+  }, []);
 
   const handlerChangeTab = useCallback((tabValue: TimelineType) => {
     setActiveTab(tabValue);

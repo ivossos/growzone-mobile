@@ -22,6 +22,7 @@ interface Props {
   handleChangeText: (text: string, data: { id: number; label: string }) => void;
   onFocus?: () => void;
   onBlur?: () => void;
+  openDirection?: "up" | "down";
 }
 
 const SelectPhaseDropdown = ({
@@ -33,6 +34,7 @@ const SelectPhaseDropdown = ({
   handleChangeText,
   onBlur = () => {},
   onFocus = () => {},
+  openDirection = 'down',
 }: Props) => {
   const [value, setValue] = useState<number | null>(null);
   const [isFocus, setIsFocus] = useState(false);
@@ -127,7 +129,10 @@ const SelectPhaseDropdown = ({
         placeholderStyle={styles.placeholderStyle}
         selectedTextStyle={styles.selectedTextStyle}
         inputSearchStyle={styles.inputSearchStyle}
-        containerStyle={styles.containerStyles}
+        containerStyle={[
+          styles.containerStyles,
+          { top: openDirection === 'up' && !searchQuery ? -300 : 0 },
+        ]}
         itemContainerStyle={styles.itemContainerStyle}
         itemTextStyle={styles.itemTextStyle}
         iconStyle={styles.iconStyle}
