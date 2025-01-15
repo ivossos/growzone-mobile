@@ -82,8 +82,6 @@ const SelectGeneticDropdown = ({
   }, [searchQuery]);
 
   const loadInitialValue = async () => {
-      
-      
     if (!initialValue || !initialValue.id || value === initialValue.id) {
       return;
     }
@@ -111,8 +109,6 @@ const SelectGeneticDropdown = ({
   };
 
   useEffect(() => {
-
-
     loadInitialValue();
   }, [initialValue, value, data]);
 

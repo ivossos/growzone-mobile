@@ -96,7 +96,9 @@ export default function CommentCard({
 
     openBottomSheet({
       type: "report-comment",
-      id: selectedComment.id,
+      data: {
+        commentId: selectedComment.id,
+      },
       callbackFn: async (data) => {
         setIsLoading(false);
       },

@@ -6,9 +6,11 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   Image,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from "react-native";
 import Toast from "react-native-toast-message";
@@ -21,7 +23,11 @@ interface ContributorCardProps {
 export default function ContributorCard({
   user: contributor,
 }: ContributorCardProps) {
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = screenWidth * 0.42;
+
   const { user } = useAuth();
+
   const [follow, setFollow] = useState<boolean>(contributor.is_following);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
 
@@ -50,77 +56,76 @@ export default function ContributorCard({
   }
 
   return (
-    <Link href={{ pathname: "/profile/[id]", params: { id: contributor.id } }}>
-      <View className="flex w-[155px] rounded-2xl border border-black-90">
-        {contributor.image?.image ? (
-          <Image
-            height={160}
-            width={155}
-            source={{ uri: contributor.image?.image }}
-            resizeMode="cover"
-            className="rounded-t-2xl"
-          />
-        ) : (
-          <View
-            style={{ height: 160 }}
-            className="flex flex-row justify-center items-center w-full bg-black-80 rounded-t-2xl"
-          >
-            <Text className="text-brand-green text-center text-7xl">
-              {getInitials(contributor?.name || contributor?.username)}
-            </Text>
-          </View>
-        )}
-        <View className="flex gap-2 p-3">
-          <Text className="text-sm text-white font-semibold">
-            {contributor.name || contributor?.username}
+    <View
+      className="bg-black-100 border border-black-90 rounded-lg shadow-lg gap-4"
+      style={{ width: cardWidth }}
+    >
+      {contributor.image?.image ? (
+        <Image
+          source={{ uri: contributor.image?.image }}
+          className="h-40 rounded-lg"
+          resizeMode="cover"
+          alt="Image user"
+        />
+      ) : (
+        <View className="flex flex-row justify-center items-center bg-black-80 rounded-lg h-40">
+          <Text className="text-brand-green text-center text-7xl">
+            {getInitials(contributor?.name || contributor?.username)}
           </Text>
-          {user.id === contributor.id ? (
-            <TouchableOpacity
-              className="mr-auto px-3 py-1 bg-black-80 rounded-[64px]"
-              onPress={() =>
-                router.push({
-                  pathname: "/profile/[id]",
-                  params: { id: user.id },
-                })
-              }
-            >
-              <Text className="text-base text-brand-green">Entrar</Text>
-            </TouchableOpacity>
-          ) : follow ? (
-            <TouchableOpacity
-              className="mr-auto px-3 py-1 bg-black-80 rounded-[64px]"
-              onPress={handleFollower}
-            >
-              {isLoadingHandleFollower ? (
-                <ActivityIndicator
-                  animating
-                  color="#fff"
-                  size="small"
-                  className="ml-2"
-                />
-              ) : (
-                <Text className="text-base text-neutral-400">Seguindo</Text>
-              )}
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              className="mr-auto px-3 py-1 border border-brand-green rounded-[64px]"
-              onPress={handleFollower}
-            >
-              {isLoadingHandleFollower ? (
-                <ActivityIndicator
-                  animating
-                  color="#fff"
-                  size="small"
-                  className="ml-2"
-                />
-              ) : (
-                <Text className="text-base text-brand-green">Seguir</Text>
-              )}
-            </TouchableOpacity>
-          )}
         </View>
+      )}
+
+      <View className="px-4 gap-4">
+        <Text className="text-sm text-white font-semibold">
+          {contributor.name || contributor?.username}
+        </Text>
+
+        {user.id === contributor.id ? (
+          <TouchableOpacity
+            className="mr-auto px-3 py-1 bg-black-80 rounded-full"
+            onPress={() =>
+              router.push({
+                pathname: "/profile/[id]",
+                params: { id: contributor.id },
+              })
+            }
+          >
+            <Text className="text-base text-brand-green">Entrar</Text>
+          </TouchableOpacity>
+        ) : follow ? (
+          <TouchableOpacity
+            className="mr-auto px-3 py-1 bg-black-80 rounded-full"
+            onPress={handleFollower}
+          >
+            {isLoadingHandleFollower ? (
+              <ActivityIndicator
+                animating
+                color="#fff"
+                size="small"
+                className="ml-2"
+              />
+            ) : (
+              <Text className="text-base text-neutral-400">Seguindo</Text>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            className="mr-auto px-3 py-1 border border-brand-green rounded-full"
+            onPress={handleFollower}
+          >
+            {isLoadingHandleFollower ? (
+              <ActivityIndicator
+                animating
+                color="#fff"
+                size="small"
+                className="ml-2"
+              />
+            ) : (
+              <Text className="text-base text-brand-green">Seguir</Text>
+            )}
+          </TouchableOpacity>
+        )}
       </View>
-    </Link>
+    </View>
   );
 }

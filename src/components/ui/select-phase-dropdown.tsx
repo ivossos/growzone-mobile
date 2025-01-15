@@ -70,19 +70,25 @@ const SelectPhaseDropdown = ({
 
   useEffect(() => {
     const loadInitialValue = async () => {
-      if (!initialValue || !initialValue.id || value === initialValue.id)
+      if (!initialValue || !initialValue.id) {
+        setValue(null);
         return;
+      }
+      
+      if (value === initialValue.id) {
+        return;
+      }
 
       if (data.some((item) => item.id === initialValue.id)) return;
 
       try {
         setIsLoading(true);
-        const genetics = await getPhases({ query: initialValue.label });
-        const genetic = genetics.find((item) => item.id === initialValue.id);
+        const phases = await getPhases({ query: initialValue.label });
+        const phase = phases.find((item) => item.id === initialValue.id);
 
-        if (genetic) {
+        if (phase) {
           setData((prev) =>
-            uniqBy([{ id: genetic.id, name: genetic.name }, ...prev], "id")
+            uniqBy([{ id: phase.id, name: phase.name }, ...prev], "id")
           );
           setValue(initialValue.id);
         }

@@ -1,16 +1,31 @@
 import { GrowPost, VideoPlayerHandle } from "@/api/@types/models";
 import { colors } from "@/styles/colors";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { CalendarDaysIcon, Video } from "lucide-react-native";
-import { useRef } from "react";
-import { Image, Text, View } from "react-native";
+import { Fragment, useCallback, useRef } from "react";
+import { Image, Pressable, Text, useWindowDimensions, View } from "react-native";
 import VideoPlayer from "../VideoPlayer";
 import { replaceMediaUrl } from "@/lib/utils";
 
 export function TrendingGrowCard({ item }: { item: GrowPost }) {
+
+  
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = screenWidth * 0.42;
+  const handlerPress = useCallback(() => {
+    router.push({
+      pathname: "/post/[id]/grow",
+      params: { id: item.post_id },
+    });
+  }, [item]);
+
   return (
-    <Link href={{ pathname: "/post/[id]/grow", params: { id: item.post_id } }}>
-      <View className="flex w-[155px] rounded-2xl border border-black-90">
+    <Pressable
+      onPress={handlerPress}
+      style={{ width: cardWidth }}
+      className="bg-black-100 border border-black-90 rounded-lg shadow-lg gap-4"
+    >
+      <Fragment>
         <View className="relative">
           <Image
             source={{
@@ -19,11 +34,7 @@ export function TrendingGrowCard({ item }: { item: GrowPost }) {
                   ? item.file.file
                   : replaceMediaUrl(item.file.file),
             }}
-            style={{
-              height: 224,
-              width: 155,
-            }}
-            className="rounded-t-2xl"
+            className="w-full h-64 rounded-lg"
             resizeMode="cover"
           />
 
@@ -46,7 +57,7 @@ export function TrendingGrowCard({ item }: { item: GrowPost }) {
           </View>
         </View>
 
-        <View className="flex flex-row items-center justify-between gap-2">
+        <View className="p-2 flex-row justify-between items-center gap-2">
           {item.strain && (
             <Text
               className="text-xs text-brand-grey font-normal"
@@ -65,7 +76,7 @@ export function TrendingGrowCard({ item }: { item: GrowPost }) {
             </Text>
           </View>
         </View>
-      </View>
-    </Link>
+      </Fragment>
+    </Pressable>
   );
 }

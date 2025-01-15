@@ -48,7 +48,7 @@ export default function Post() {
       const [post] = await Promise.all([getGrowPost(numberId)]);
 
       const filesMap = post.files.map((file, index) => {
-        let player = {} as VideoPlayer;
+        let player: undefined | VideoPlayer = undefined
 
         if (file.type === "video") {
           player = createVideoPlayer({
@@ -71,7 +71,7 @@ export default function Post() {
         };
       });
 
-      post.files = filesMap;
+      post.files = filesMap as any;
 
       setPlayerValue(post);
 
@@ -95,7 +95,10 @@ export default function Post() {
 
   useEffect(() => {
     if (data?.post) {
-      setPlayer(data.post.files[0].player);
+      const [player] = data.post.files
+      if (player && player.type === 'video') {
+        setPlayer(player.player);
+      }
     }
   }, [data]);
 

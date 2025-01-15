@@ -31,7 +31,7 @@ const ReportCommentBottomSheet = React.forwardRef<
   const [isDecided, setIsDecided] = useState<ReportReason | null>(null);
   const snapPoints = useMemo(() => ["30%", "40%", "70%", "90%"], []);
 
-  const { postId, isVisible, currentType, closeBottomSheet, callback } =
+  const { postId, data: commentData, isVisible, currentType, closeBottomSheet, callback } =
     useBottomSheetContext();
 
   const fetchReportReasons = useCallback(async () => {

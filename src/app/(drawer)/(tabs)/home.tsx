@@ -145,11 +145,6 @@ export default function HomeScreen() {
     },
   ]);
 
-  const handleEndReached = useCallback(() => {
-    if (posts.hasNextPage && !posts.isFetchingNextPage) {
-      posts.fetchNextPage();
-    }
-  }, [posts.hasNextPage, posts.isFetchingNextPage]);
 
   return (
     <Fragment>
@@ -179,7 +174,11 @@ export default function HomeScreen() {
           viewabilityConfigCallbackPairs={
             viewabilityConfigCallbackPairs.current
           }
-          onEndReached={handleEndReached}
+          onEndReached={() => {
+            if (posts.hasNextPage) {
+              posts.fetchNextPage()
+            }
+          }}
           onEndReachedThreshold={0.8}
           ListFooterComponent={
             posts.isFetchingNextPage ? <Loader isLoading /> : null

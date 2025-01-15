@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, ReactNode } from "react";
 
-type BottomSheetType =
+export type BottomSheetType =
   | "comment"
   | "report"
   | "search-genetic"
@@ -27,11 +27,13 @@ type BottomSheetContextType = {
     type: BottomSheetType;
     id?: number;
     userId?: number;
+    data?: any | null;
     callbackFn?: ((prop?: any) => Promise<void>) | null;
   }) => void;
   closeBottomSheet: () => void;
   currentType: BottomSheetType | null;
   callback: ((prop?: any) => Promise<void>) | null;
+  data: any | null;
 };
 
 const BottomSheetContext = createContext<BottomSheetContextType | undefined>(
@@ -54,20 +56,24 @@ export const BottomSheetProvider = ({ children }: { children: ReactNode }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [currentType, setCurrentType] = useState<BottomSheetType | null>(null);
   const [callback, setCallback] = useState<(() => Promise<void>) | null>(null);
+  const [data, setData] = useState<any | null>(null);
 
   const openBottomSheet = ({
     type,
     id,
     userId,
+    data: value,
     callbackFn,
   }: {
     type: BottomSheetType;
     id?: number;
     userId?: number;
+    data?: any | null;
     callbackFn?: (() => Promise<void>) | null;
   }) => {
     if (id) setPostId(id);
     if (userId) setUserId(userId);
+    if (value) setData(value)
 
     setCurrentType(type);
     setIsVisible(true);
@@ -99,6 +105,7 @@ export const BottomSheetProvider = ({ children }: { children: ReactNode }) => {
         closeBottomSheet,
         currentType,
         callback,
+        data
       }}
     >
       {children}

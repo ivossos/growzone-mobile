@@ -22,6 +22,7 @@ import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
 import { PostType } from "@/api/@types/enums";
+import { useVideoPlayerContext } from "@/context/video-player-context";
 
 interface Props {
   post: PostDetail;
@@ -37,6 +38,7 @@ const PostCard = ({
   handlerAudioMute,
 }: Props) => {
   const { user } = useAuth();
+  const { playVideo, pauseVideo } = useVideoPlayerContext();
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -74,11 +76,13 @@ const PostCard = ({
   };
 
   const handlerOpenCommentSheet = useCallback(() => {
+    pauseVideo()
     openBottomSheet({
       type: "comment",
       id: post.post_id,
       callbackFn: async () => {
         await loadComments();
+        playVideo()
       },
     });
   }, [post]);

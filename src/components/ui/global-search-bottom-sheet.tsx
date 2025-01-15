@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Text, View } from "react-native";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -16,6 +16,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import SelectPhaseDropdown from "./select-phase-dropdown";
 import Button from "./button";
 import { ScrollView } from "react-native-gesture-handler";
+import { buildErrorMessage } from "@/lib/utils";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface Props {
   onClose: () => void;
@@ -39,7 +41,8 @@ export const filterGeneticValidation = z.object({
 
 const GlobalSearchBottomSheet = React.forwardRef<BottomSheet, Props>(
   ({ onClose }, ref) => {
-    const { isVisible, currentType, closeBottomSheet, callback } =
+    const insets = useSafeAreaInsets();
+    const { isVisible, currentType, closeBottomSheet, callback, data } =
       useBottomSheetContext();
 
     const form = useForm<
@@ -49,11 +52,20 @@ const GlobalSearchBottomSheet = React.forwardRef<BottomSheet, Props>(
     >({
       resolver: zodResolver(filterGeneticValidation),
       defaultValues: {
-        phase: { id: null, name: null },
+        phase: { id: data?.phase?.id || null, name: data?.phase?.name || null },
       },
     });
 
     const snapPoints = useMemo(() => ["60%", "90%"], []);
+
+    useEffect(() => {
+      form.reset({
+        phase: {
+          id: data?.phase?.id || null,
+          name: data?.phase?.name || null,
+        },
+      });
+    }, [data]);
 
     const renderBackdrop = useCallback(
       (props: BottomSheetBackdropProps) => (
@@ -80,7 +92,14 @@ const GlobalSearchBottomSheet = React.forwardRef<BottomSheet, Props>(
 
     const footerComponent = useMemo(() => {
       return (props: BottomSheetFooterProps) => (
-        <BottomSheetFooter style={{ paddingHorizontal: 18, paddingBottom: 18 }} {...props}>
+        <BottomSheetFooter
+          style={{
+            paddingBottom: insets.bottom,
+            paddingHorizontal: 8,
+            backgroundColor: colors.black[100],
+          }}
+          {...props}
+        >
           <Button
             title="Pesquisar"
             handlePress={form.handleSubmit(handlerSubmit)}
@@ -106,22 +125,22 @@ const GlobalSearchBottomSheet = React.forwardRef<BottomSheet, Props>(
             <Controller
               control={form.control}
               name="phase"
-              render={({ field: { onChange, value }, fieldState }) => (
+              render={({ field: { onChange, value, name }, fieldState }) => (
                 <SelectPhaseDropdown
                   title="Fase"
                   placeholder="Selecione uma fase"
                   showClearIcon
                   initialValue={{
-                    id: value.id || 0,
-                    label: value.name || "",
+                    id: Number(value.id) || undefined,
+                    label: value.name || undefined,
                   }}
                   handleChangeText={(selectedId, data) => {
                     onChange({
-                      id: selectedId || null,
+                      id: Number(selectedId) || null,
                       name: data.label || null,
                     });
                   }}
-                  error={fieldState.error?.["phase"]?.message}
+                  error={buildErrorMessage(name, fieldState.error)}
                 />
               )}
             />
@@ -135,7 +154,7 @@ const GlobalSearchBottomSheet = React.forwardRef<BottomSheet, Props>(
     return (
       <BottomSheet
         ref={ref}
-        index={0}
+        index={1}
         snapPoints={snapPoints}
         enablePanDownToClose
         handleIndicatorStyle={{ backgroundColor: colors.black[80] }}

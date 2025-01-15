@@ -108,6 +108,7 @@ export default function Reels() {
           "Aconteceu um erro ao buscar os reels. Tente novamente mais tarde.",
       });
     } finally {
+      playVideo()
       setRefreshing(false);
     }
     setLoadingMore(false);

@@ -30,7 +30,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { debounce } from "lodash";
-import { searchGlobal } from "@/api/social/global-search/search-global";
 import Toast from "react-native-toast-message";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
 import {
@@ -39,22 +38,18 @@ import {
   getUserName,
   replaceMediaUrl,
 } from "@/lib/utils";
-import { getTopContributors } from "@/api/social/contributor/get-top-contributors";
 import { deleteFollow } from "@/api/social/follow/delete-follow";
 import { createFollow } from "@/api/social/follow/create-follow";
-import { getTrendingWells } from "@/api/social/wells/get-trending-wells";
-import { getTrendingGrowPosts } from "@/api/social/post/get-trending-grow-posts";
 import { TrendingGrowCard } from "@/components/ui/trending-grow-card";
 import { GlobalSearchType } from "@/api/@types/enums";
 import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import SelectGeneticDropdown from "@/components/ui/select-genetic-dropdown";
-import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/react-query";
-import Loader from "@/components/ui/loader";
 import useFilterGlobalSearch from "@/hooks/useFilterGlobalSearch";
-import { createVideoPlayer, VideoPlayer } from "expo-video";
+import HeaderGoBack from "@/components/ui/HeaderGoBack";
+import { EXTRACTIONS_PHASE, RESULT_PHASE } from "@/constants";
 
 export const searchGeneticValidation = z.object({
   strain: z
@@ -66,6 +61,7 @@ export const searchGeneticValidation = z.object({
   phase: z
     .object({
       id: z.number().nullable(),
+      name: z.string().nullable(),
     })
     .nullable(),
 });
@@ -78,6 +74,7 @@ type FormFilterGenetic = {
   };
   phase: {
     id: number | null;
+    name: string | null;
   };
 };
 
@@ -128,7 +125,7 @@ export default function SearchScreen() {
       resolver: zodResolver(searchGeneticValidation),
       defaultValues: {
         strain: { id: null, name: null },
-        phase: { id: null },
+        phase: { id: null, name: null },
       },
     }
   );
@@ -137,6 +134,7 @@ export default function SearchScreen() {
 
   const { openBottomSheet } = useBottomSheetContext();
 
+  const [startSearch, setStartSearch] = useState(false);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
@@ -144,40 +142,48 @@ export default function SearchScreen() {
   const [globalSectionSelected, setGlobalSectionSelected] =
     useState<GlobalSearchType>(GlobalSearchType.USER);
 
-  const filterGlobalSearch = useFilterGlobalSearch({
+  const globalSearch = useFilterGlobalSearch({
     query: debouncedQuery,
     type: globalSectionSelected,
     phase_id: phase.id || 0,
     strain_id: strain.id || 0,
-  });
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["search-global-initial-page"],
-    queryFn: async () => {
-      const [topContributors, trendingWells, trendingGrowPosts] =
-        await Promise.all([
-          getTopContributors({}),
-          getTrendingWells({}),
-          getAllTrendingGrowPosts(),
-        ]);
-      return { topContributors, trendingWells, trendingGrowPosts };
-    },
+    startSearch,
   });
 
   const {
-    topContributors = [],
-    trendingGrowPosts = [],
-    trendingWells = [],
-  } = data || {};
+    data: {
+      topContributors,
+      trendingWells,
+      trendingGrowPostsResults,
+      trendingGrowPostsExtration,
+      growPosts,
+    },
+    isLoading,
+  } = globalSearch.homeGlobalSearch || {};
+
+  const filterGlobalSearch = globalSearch.globalSearch || {};
 
   const setValueFormFilter = async (
     filterData: Omit<FormFilterGenetic, "strain">
   ) => {
-    form.setValue("phase", { id: filterData.phase?.id || null });
+    console.log("filterData ", filterData);
+
+    form.setValue("phase", {
+      id: filterData.phase?.id || null,
+      name: filterData.phase?.name || null,
+    });
   };
 
   const handleOpenFilterBottomSheet = () => {
-    openBottomSheet({ type: "search-genetic", callbackFn: setValueFormFilter });
+    const data = {
+      phase,
+    };
+
+    openBottomSheet({
+      type: "search-genetic",
+      callbackFn: setValueFormFilter,
+      data,
+    });
   };
 
   const tabData = useMemo(
@@ -199,39 +205,14 @@ export default function SearchScreen() {
   );
 
   const options = useMemo(() => {
-    return [{ key: "contributors" }, { key: "reels" }, { key: "buds" }];
+    return [
+      { key: "contributors" },
+      { key: "reels" },
+      { key: "plants" },
+      { key: "buds" },
+      { key: "extractions" },
+    ];
   }, []);
-
-  const getAllTrendingGrowPosts = async (): Promise<GrowPost[]> => {
-    const growPosts = await getTrendingGrowPosts({});
-
-    return growPosts.map((growPost, index) => {
-      let fileVideo = {} as VideoPlayer;
-
-      if (growPost.file.type === "video") {
-        fileVideo = createVideoPlayer({
-          uri: growPost.file.file,
-          metadata: {
-            title: `title-grow-post-${index}`,
-            artist: `artist-grow-post-${index}`,
-          },
-        });
-
-        fileVideo.loop = true;
-        fileVideo.muted = false;
-        fileVideo.timeUpdateEventInterval = 2;
-        fileVideo.volume = 1.0;
-      }
-
-      return {
-        ...growPost,
-        file: {
-          ...growPost.file,
-          player: fileVideo,
-        },
-      };
-    });
-  };
 
   async function handleFollower(user: GlobalSearchUser) {
     try {
@@ -243,9 +224,7 @@ export default function SearchScreen() {
         await createFollow(user.id);
       }
 
-      await queryClient.invalidateQueries({
-        queryKey: ["search-global-initial-page"],
-      });
+      queryClient.removeQueries({ queryKey: ["search-global-initial-page"] });
     } catch (error) {
       console.error("erro on handleFollower", error);
 
@@ -273,6 +252,7 @@ export default function SearchScreen() {
   }, [query]);
 
   const handlerSessionTabsSearch = (type: GlobalSearchType) => {
+    queryClient.removeQueries({ queryKey: ["filtered-global-search"] });
     setGlobalSectionSelected(type);
   };
 
@@ -280,11 +260,8 @@ export default function SearchScreen() {
     setIsRefreshing(true);
 
     try {
-      if (!isLoading) {
-        await queryClient.invalidateQueries({
-          queryKey: ["search-global-initial-page"],
-        });
-      }
+      queryClient.removeQueries({ queryKey: ["search-global-initial-page"] });
+      queryClient.removeQueries({ queryKey: ["filtered-global-search"] });
     } catch (error) {
       console.error("Error refreshing data:", error);
     } finally {
@@ -292,23 +269,11 @@ export default function SearchScreen() {
     }
   }, [isLoading]);
 
-  const handlerChangeValues = async () => {
-    if (debouncedQuery) {
-      await queryClient.invalidateQueries({
-        queryKey: ["filtered-global-search"],
-      });
-    }
-  };
-
-  useEffect(() => {
-    handlerChangeValues();
-  }, [phase, strain, debouncedQuery, globalSectionSelected]);
-
   const profileTab = useMemo(() => {
     return (user: GlobalSearchUser) => (
       <Link
         key={user.id}
-        className="px-4"
+        className="px-4 py-1"
         href={{
           pathname: "/post/[id]",
           params: { id: user.id },
@@ -407,7 +372,7 @@ export default function SearchScreen() {
   }, [router]);
 
   const tabSelect = useMemo(() => {
-    if (debouncedQuery) {
+    if (startSearch) {
       return (
         <View className="flex flex-row bg-black-90 px-12 py-7 rounded-lg border border-black-90 justify-around">
           {tabData.map((tab, index) => (
@@ -437,11 +402,11 @@ export default function SearchScreen() {
         </View>
       );
     }
-  }, [debouncedQuery, tabData, globalSectionSelected]);
+  }, [startSearch, tabData, globalSectionSelected]);
 
   const renderScreenTabSelected = useCallback(
     ({ item }: MasonryListRenderItemInfo<GlobalSearch>) => {
-      if (debouncedQuery) {
+      if (startSearch) {
         const screen = {
           [GlobalSearchType.USER]: profileTab,
           [GlobalSearchType.GROW_POST]: geneticsTab,
@@ -451,12 +416,51 @@ export default function SearchScreen() {
         return Component(item as any);
       }
     },
-    [debouncedQuery, geneticsTab, profileTab, globalSectionSelected]
+    [startSearch, globalSectionSelected, geneticsTab, profileTab]
   );
 
   const getColumnFlex = useCallback(() => {
     return globalSectionSelected === GlobalSearchType.USER ? 1 : 3;
   }, [globalSectionSelected]);
+
+  const openGlobalSearchPlants = useCallback(
+    async (type: "buds" | "plants" | "extractions") => {
+      const phaseMap: Record<string, typeof EXTRACTIONS_PHASE | typeof RESULT_PHASE | null> = {
+        extractions: EXTRACTIONS_PHASE,
+        buds: RESULT_PHASE,
+        plants: null,
+      };
+  
+      const phase = phaseMap[type];
+      if (phase) {
+        form.setValue("phase", phase);
+      }
+  
+      setGlobalSectionSelected(GlobalSearchType.GROW_POST);
+      setStartSearch(true);
+    },
+    []
+  );
+
+  const handlerChangeSearchUserGlobal = useCallback(
+    (text: string) => {
+      const hasText = !!text;
+      setQuery(text);
+      setStartSearch(hasText ? true : false);
+
+      if (!hasText) {
+        form.reset();
+      }
+    },
+    []
+  );
+
+  const handlerGoBack = useCallback(() => {
+    setGlobalSectionSelected(GlobalSearchType.USER);
+    setQuery("");
+    form.reset();
+    setStartSearch(false);
+  }, []);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<{ key: string }>) => {
@@ -489,7 +493,35 @@ export default function SearchScreen() {
           return (
             <Section
               title="Top Buds"
-              data={trendingGrowPosts}
+              data={trendingGrowPostsResults}
+              showMore
+              onPress={() => openGlobalSearchPlants("buds")}
+              renderItem={({ item }) => (
+                <TrendingGrowCard key={item.id} item={item} />
+              )}
+            />
+          );
+
+        case "extractions":
+          return (
+            <Section
+              title="Top Extrações"
+              data={trendingGrowPostsExtration}
+              showMore
+              onPress={() => openGlobalSearchPlants("extractions")}
+              renderItem={({ item }) => (
+                <TrendingGrowCard key={item.id} item={item} />
+              )}
+            />
+          );
+
+        case "plants":
+          return (
+            <Section
+              title="Plantas"
+              data={growPosts}
+              showMore
+              onPress={() => openGlobalSearchPlants("plants")}
               renderItem={({ item }) => (
                 <TrendingGrowCard key={item.id} item={item} />
               )}
@@ -500,73 +532,83 @@ export default function SearchScreen() {
           return null;
       }
     },
-    [isRefreshing, topContributors, trendingWells, trendingGrowPosts]
+    [
+      isRefreshing,
+      topContributors,
+      trendingWells,
+      trendingGrowPostsResults,
+      trendingGrowPostsExtration,
+      openGlobalSearchPlants,
+    ]
   );
-
-  if (isLoading || filterGlobalSearch.isLoading) {
-    return (
-      <View className="flex-1 justify-center items-center bg-black-100">
-        <Loader isLoading />
-      </View>
-    );
-  }
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-      <View className="flex-1 gap-4 bg-black-100 overflow-hidden">
-        {globalSectionSelected === GlobalSearchType.USER && (
-          <View className="flex flex-row gap-2 py-6 px-6">
-            <FormField
-              placeholder="Pesquisa Global"
-              value={query}
-              handleChangeText={(text) => {
-                setQuery(text);
-              }}
-              type="clear"
-              otherStyles="flex-1"
-              leftIcon={Search}
-            />
-          </View>
-        )}
+      <View className="flex-1 bg-black-100 overflow-hidden ">
+        <View className="flex flex-row items-center gap-2 px-4 py-6">
+          {startSearch && (
+            <View>
+              <HeaderGoBack
+                containerStyle={{
+                  marginHorizontal: 4,
+                }}
+                onBack={handlerGoBack}
+              />
+            </View>
+          )}
 
-        {globalSectionSelected === GlobalSearchType.GROW_POST && (
-          <View className="flex flex-row items-center gap-6 p-4">
-            <Controller
-              control={form.control}
-              name="strain"
-              render={({ field: { onChange, value, name }, fieldState }) => (
-                <View className="flex-1">
-                  <SelectGeneticDropdown
-                    placeholder="Selecione uma genética"
-                    showClearIcon
-                    initialValue={{
-                      id: Number(value.id) || undefined,
-                      label: value.name || undefined,
-                    }}
-                    handleChangeText={(selectedId, data) => {
-                      onChange({
-                        id: selectedId || null,
-                        name: data.label || null,
-                      });
-                    }}
-                    error={buildErrorMessage(name, fieldState.error)}
-                  />
-                </View>
-              )}
-            />
+          {globalSectionSelected === GlobalSearchType.USER && (
+            <View className="flex-1">
+              <FormField
+                placeholder="Pesquisa Global"
+                value={query}
+                handleChangeText={handlerChangeSearchUserGlobal}
+                type="clear"
+                otherStyles="w-full"
+                leftIcon={Search}
+              />
+            </View>
+          )}
 
-            <TouchableOpacity
-              className="bg-black-80 justify-center items-center rounded-lg h-14 w-14"
-              onPress={handleOpenFilterBottomSheet}
-            >
-              <Filter size={18} color={colors.brand.green} />
-            </TouchableOpacity>
-          </View>
-        )}
+          {globalSectionSelected === GlobalSearchType.GROW_POST && (
+            <View className="flex flex-1 flex-row items-center gap-4">
+              <Controller
+                control={form.control}
+                name="strain"
+                render={({ field: { onChange, value, name }, fieldState }) => (
+                  <View className="flex-1">
+                    <SelectGeneticDropdown
+                      placeholder="Selecione uma genética"
+                      showClearIcon
+                      initialValue={{
+                        id: Number(value.id) || undefined,
+                        label: value.name || undefined,
+                      }}
+                      handleChangeText={(selectedId, data) => {
+                        onChange({
+                          id: selectedId || null,
+                          name: data.label || null,
+                        });
+                      }}
+                      error={buildErrorMessage(name, fieldState.error)}
+                    />
+                  </View>
+                )}
+              />
+
+              <TouchableOpacity
+                className="bg-black-80 justify-center items-center rounded-lg h-14 w-14"
+                onPress={handleOpenFilterBottomSheet}
+              >
+                <Filter size={18} color={colors.brand.green} />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
         {tabSelect}
 
-        {query && (
+        {startSearch && (
           <MasonryFlashList
             data={filterGlobalSearch.data}
             key={globalSectionSelected}
@@ -584,7 +626,7 @@ export default function SearchScreen() {
             ListFooterComponent={() => {
               if (filterGlobalSearch.isLoading) {
                 return (
-                  <View className="flex items-center justify-center">
+                  <View className="flex items-center justify-center my-6">
                     <ActivityIndicator animating color="#fff" size="small" />
                   </View>
                 );
@@ -607,14 +649,13 @@ export default function SearchScreen() {
           />
         )}
 
-        {!query && (
+        {!startSearch && (
           <FlatList
             data={options}
             keyExtractor={(item) => item.key}
             showsVerticalScrollIndicator={false}
             contentContainerClassName="pb-20 flex-grow"
             refreshing={isRefreshing}
-            onRefresh={onRefresh}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
@@ -632,10 +673,10 @@ export default function SearchScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 2,
+    padding: 1,
   },
   item: {
-    margin: 2,
+    margin: 1,
   },
   file: {
     aspectRatio: 1,

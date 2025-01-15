@@ -151,7 +151,6 @@ export default function EditGrowPost() {
       form.reset();
 
       queryClient.removeQueries({ queryKey: ["timeline"] });
-      // queryClient.removeQueries({ queryKey: ["post-data"] });
       queryClient.removeQueries({ queryKey: ["grow-post-data"] });
 
       router.back();
