@@ -10,6 +10,7 @@ type VideoPlayerContextType = {
   setPlayer: (videoData?: VideoPlayer) => void;
   handlerTime: (value: number) => void;
   isMuted: () => boolean;
+  clearPlayer: () => void;
   player: VideoPlayer;
 };
 
@@ -53,7 +54,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const pauseVideo = () => {
-    if (currentPlayerRef.current) {
+    if (currentPlayerRef.current && typeof currentPlayerRef.current.pause === 'function') {
       currentPlayerRef.current.pause();
     }
   };
@@ -64,11 +65,16 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const clearPlayer = () => {
+    currentPlayerRef.current = undefined;
+  };
+
   return (
     <VideoPlayerContext.Provider
       value={{
         pauseVideo,
         getPlayer,
+        clearPlayer,
         toggleAudioMute,
         handlerTime,
         playVideo,

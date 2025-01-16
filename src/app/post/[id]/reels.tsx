@@ -5,6 +5,7 @@ import { colors } from "@/styles/colors";
 import {
   router,
   Stack,
+  useFocusEffect,
   useLocalSearchParams,
   useNavigation,
 } from "expo-router";
@@ -25,7 +26,7 @@ import Loader from "@/components/ui/loader";
 export default function Reels() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const postId = Number(id)
-  const { toggleAudioMute, setPlayer, pauseVideo } = useVideoPlayerContext();
+  const { playVideo, toggleAudioMute, setPlayer, pauseVideo, clearPlayer } = useVideoPlayerContext();
 
   const [mutedVideo, setMutedVideo] = useState(false);
 
@@ -59,7 +60,8 @@ export default function Reels() {
       weedz.player = player as VideoPlayer;
       weedz.file.player = player as VideoPlayer;
 
-      setPlayer(player)
+      setPlayer(player);
+      playVideo();
 
       return weedz;
     },
@@ -69,7 +71,7 @@ export default function Reels() {
     const handlerGoBack = useCallback(() => {
       pauseVideo();
       setPlayer(undefined);
-      queryClient.removeQueries({ queryKey: ['reels', postId] })
+      //queryClient.removeQueries({ queryKey: ['reels', postId] })
       router.back();
     }, []);
 
@@ -90,6 +92,15 @@ export default function Reels() {
     setPlayer(undefined);
     router.back();
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        pauseVideo();
+        clearPlayer();
+      };
+    }, [])
+  );
 
   if (isLoading) {
     return (

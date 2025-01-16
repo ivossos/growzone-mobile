@@ -16,11 +16,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { getInitials } from "@/lib/utils";
 import { verifyIds } from "@/constants/mock";
 
-export function DrawerContent( props: DrawerContentComponentProps) {
+export function DrawerContent( { navigation, ...props}: DrawerContentComponentProps) {
   const { user } = useAuth();
 
-  const navigation = useNavigation();
-  const toggleMenu = () => navigation.dispatch(DrawerActions.toggleDrawer());
+  const toggleMenu = () => navigation.toggleDrawer();
 
   return (
     <View className="flex-1 bg-black-100 overflow-hidden">
@@ -73,14 +72,14 @@ export function DrawerContent( props: DrawerContentComponentProps) {
             }
 
             const onPress = () => {
-              const event = props.navigation.emit({
+              const event = navigation.emit({
                 type: "drawerItemPress",
                 canPreventDefault: true,
                 target: route.key,
               })
 
               if (!event.defaultPrevented) {
-                props.navigation.navigate(route.name, route.params)
+                navigation.navigate(route.name, route.params)
               }
             }
 

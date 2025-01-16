@@ -13,6 +13,8 @@ import { deletePost } from "@/api/social/post/delete-post";
 import { queryClient } from "@/lib/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { router } from "expo-router";
+import { FeedAllPost, ReelsDetail } from "@/api/@types/models";
+import { TimelineType } from "@/api/@types/enums";
 
 interface Props {
   onClose: () => void;
@@ -67,11 +69,80 @@ const DeletePostBottomSheet = React.forwardRef<BottomSheet, Props>(
       try {
         await deletePost(postId);
 
-        queryClient.removeQueries({ queryKey: ["profile"] });
-        queryClient.removeQueries({ queryKey: ["profile-posts"] });
-        queryClient.removeQueries({ queryKey: ["profile-post-grow"] });
-        queryClient.removeQueries({ queryKey: ["profile-reels"] });
-        queryClient.removeQueries({ queryKey: ["timeline"] });
+        queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
+        queryClient.invalidateQueries({
+          queryKey: [
+            "profile-posts",
+            { type: TimelineType.GROW, userId: user.id },
+          ],
+        });
+        queryClient.invalidateQueries({
+          queryKey: [
+            "profile-posts",
+            { type: TimelineType.SOCIAL, userId: user.id },
+          ],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: [
+            "profile-posts",
+            { type: TimelineType.WEEDZ, userId: user.id },
+          ],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ["profile-post-grow", user.id],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: [
+            "timeline",
+            { type: TimelineType.WEEDZ, userId: user.id },
+          ],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: [
+            "timeline",
+            { type: TimelineType.GROW, userId: user.id },
+          ],
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: [
+            "timeline",
+            { type: TimelineType.SOCIAL, userId: user.id },
+          ],
+        });
+
+        queryClient.invalidateQueries({ queryKey: ["profile-reels", user.id] });
+        queryClient.setQueryData<{ pages: FeedAllPost[][]; pageParams: any }>(
+          ["home-posts"],
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page) =>
+                page.filter((post) => post.post.post_id !== postId)
+              ),
+            };
+          }
+        );
+
+        queryClient.setQueryData<{ pages: ReelsDetail[][]; pageParams: any }>(
+          ["reels"],
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page) =>
+                page.filter((post) => post.post_id !== postId)
+              ),
+            };
+          }
+        );
 
         setReportSubmitted(true);
       } catch (error) {

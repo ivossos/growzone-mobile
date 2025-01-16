@@ -65,7 +65,6 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
 };
 
 export default function TabLayout() {
-  const { playVideo, pauseVideo } = useVideoPlayerContext();
   const bottomSheetRef = useRef<BottomSheet>(null);
   const searchSheetRef = useRef<BottomSheet>(null);
   const reportSheetRef = useRef<BottomSheet>(null);
@@ -79,6 +78,7 @@ export default function TabLayout() {
 
   const { scrollToTop } = useScrollToTop();
   const { user } = useAuth();
+  const { pauseVideo } = useVideoPlayerContext();
 
   const openBottomSheet = () => {
     bottomSheetRef.current?.snapToIndex(1);
@@ -155,10 +155,7 @@ export default function TabLayout() {
                 } else {
                   navigation.navigate(route.name);
                 }
-              },
-              blur: (data) => {
-                pauseVideo()
-              },
+              }
             })}
             options={{
               title: "Home",
@@ -175,11 +172,6 @@ export default function TabLayout() {
           />
           <Tabs.Screen
             name="search"
-            listeners={{
-              focus: (data) => {
-                pauseVideo()
-              },
-            }}
             options={{
               title: "Pesquisa Global",
               headerShown: false,
@@ -217,14 +209,6 @@ export default function TabLayout() {
           />
           <Tabs.Screen
             name="reels"
-            listeners={{
-              focus: (data) => {
-                playVideo()
-              },
-              blur: (data) => {
-                pauseVideo()
-              },
-            }}
             options={{
               title: "Reels",
               headerShown: false,
@@ -240,11 +224,6 @@ export default function TabLayout() {
           />
           <Tabs.Screen
             name="profile"
-            listeners={{
-              focus: (data) => {
-                pauseVideo()
-              },
-            }}
             options={{
               title: "Perfil",
               headerShown: false,

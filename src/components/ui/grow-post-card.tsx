@@ -27,9 +27,10 @@ interface Props {
   post: GrowPostDetail;
   handlerAudioMute: (muted: boolean) => void;
   audioMute: boolean;
+  loadComments: () => Promise<void>;
 }
 
-const GrowPostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
+const GrowPostCard = ({ post, audioMute, handlerAudioMute, loadComments }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -66,6 +67,16 @@ const GrowPostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
       setIsLoadingLiked(false);
     }
   };
+
+  const handlerOpenCommentSheet = useCallback(() => {
+    openBottomSheet({
+      type: "comment",
+      id: post.post_id,
+      callbackFn: async () => {
+        await loadComments();
+      },
+    });
+  }, [post]);
 
   return (
     <View className="flex gap-6 mx-6 my-3">
@@ -166,9 +177,7 @@ const GrowPostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
 
           <TouchableOpacity
             className="flex flex-row items-center gap-1"
-            onPress={() =>
-              openBottomSheet({ type: "comment", id: post.post_id })
-            }
+            onPress={handlerOpenCommentSheet}
           >
             <CommentIcon width={24} height={24} />
             {post.comment_count > 0 && (

@@ -41,7 +41,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
 
       return (
         <View
-          className="flex flex-row justify-center items-center bg-black-90 mt-10"
+          className="flex flex-row justify-center items-center bg-black-90 m-1"
           style={styles.image}
         >
           <ActivityIndicator size="small" color={colors.brand.green} />

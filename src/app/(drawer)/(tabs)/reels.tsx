@@ -4,27 +4,20 @@ import {
   RefreshControl,
   TouchableOpacity,
   View,
-  ViewabilityConfigCallbackPair,
   StatusBar,
   Dimensions,
   Platform,
   ViewabilityConfig,
-  ViewToken,
   StyleSheet,
 } from "react-native";
-import { router, Stack } from "expo-router";
-import { colors } from "@/styles/colors";
-
-import ReelsPost from "@/components/ui/reels-post";
-import { Camera, ChevronLeft } from "lucide-react-native";
-import LogoIcon from "@/assets/icons/logo-small-white.svg";
-import Toast from "react-native-toast-message";
-import { getReels } from "@/api/social/post/get-reels";
-import { ReelsDetail } from "@/api/@types/models";
-import { uniqBy } from "lodash";
 import { FlatList } from "react-native-gesture-handler";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useFocusEffect } from "expo-router";
+import { colors } from "@/styles/colors";
+import ReelsPost from "@/components/ui/reels-post";
+import { getReels } from "@/api/social/post/get-reels";
+import { createVideoPlayer } from "expo-video";
 import { useVideoPlayerContext } from "@/context/video-player-context";
-import { createVideoPlayer, useVideoPlayer, VideoPlayer } from "expo-video";
 
 const statusBarHeight =
   Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -33,17 +26,61 @@ const ScreenHeight =
   (Platform.OS === "ios" ? 72 : statusBarHeight);
 
 export default function Reels() {
-  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, handlerTime, getPlayer } =
-    useVideoPlayerContext();
+  const {
+    pauseVideo,
+    toggleAudioMute,
+    playVideo,
+    setPlayer,
+    handlerTime,
+    clearPlayer,
+    getPlayer,
+  } = useVideoPlayerContext();
 
-  const [refreshing, setRefreshing] = useState(false);
-  const [activePostId, setActivePostId] = useState<number>();
-  const [posts, setPosts] = useState<ReelsDetail[]>([]);
-  const [skip, setSkip] = useState(0);
-  const [limit] = useState(10);
-  const [hasMorePosts, setHasMorePosts] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [mutedVideo, setMutedVideo] = useState(false);
+  const [activePostId, setActivePostId] = useState<number>();
+  const [isScreenFocused, setIsScreenFocused] = useState(false);
+
+  const fetchReelsData = async ({ pageParam = 0 }: any) => {
+    const data = await getReels({ skip: pageParam, limit: 10 });
+    const weedz = data.map((reel, index) => {
+      const player = createVideoPlayer({
+        uri: reel.file.file,
+        metadata: {
+          title: `title-reel-${index}`,
+          artist: `artist-reel-${index}`,
+        },
+      });
+
+      player.loop = true;
+      player.muted = false;
+      player.timeUpdateEventInterval = 2;
+      player.volume = 1.0;
+
+      return {
+        ...reel,
+        player,
+      };
+    });
+    
+    return weedz;
+  };
+
+  const {
+    data: reelsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["reels"],
+    queryFn: fetchReelsData,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < 10) return undefined;
+      return allPages.length * 10;
+    },
+    initialPageParam: 0,
+  });
 
   const viewabilityConfig: ViewabilityConfig = useMemo(() => {
     return {
@@ -52,161 +89,117 @@ export default function Reels() {
     };
   }, []);
 
-  const buildWeedzData = useCallback(
-    (weedzData: Array<ReelsDetail>): Array<ReelsDetail> => {
-      return weedzData.map((weedz, index) => {
-        const player = createVideoPlayer({
-          uri: weedz.file.file,
-          metadata: {
-            title: `title-weedz-${index}`,
-            artist: `artist-weedz-${index}`,
-          },
-        });
-
-        player.loop = true;
-        player.muted = false;
-        player.timeUpdateEventInterval = 2;
-        player.volume = 1.0;
-
-        weedz.file.player = player;
-
-        return {
-          ...weedz,
-          player,
-        };
-      });
-    },
-    []
-  );
-
-  const fetchPostsData = async (skipValue: number, limitValue: number) => {
-    try {
-      if (loadingMore || refreshing) return;
-
-      setLoadingMore(true);
-      const data = await getReels({ skip: skipValue, limit: limitValue });
-
-      if (data.length === 0) {
-        setHasMorePosts(false);
-      } else {
-        const weedz: Array<ReelsDetail> = buildWeedzData(data);
-        const player = getPlayer()
-
-        if (!player) {
-          const [weed] = weedz
-          setPlayer(weed.player)
-        }
-
-        setPosts((prevPosts) => uniqBy([...prevPosts, ...weedz], "post_id"));
-      }
-    } catch (error) {
-      console.error("Erro ao buscar os reels:", error);
-      Toast.show({
-        type: "error",
-        text1: "Ops!",
-        text2:
-          "Aconteceu um erro ao buscar os reels. Tente novamente mais tarde.",
-      });
-    } finally {
-      playVideo()
-      setRefreshing(false);
-    }
-    setLoadingMore(false);
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    setSkip(0);
-    setHasMorePosts(true);
-    setPosts([]);
-    await fetchPostsData(0, limit);
-  };
-
-  const onViewableItemsChanged = (info: {
-    viewableItems: ViewToken<ReelsDetail>[];
-    changed: ViewToken<ReelsDetail>[];
-  }) => {
-    const { viewableItems } = info;
-
+  const onViewableItemsChanged = ({ viewableItems }: any) => {
     if (viewableItems.length > 0) {
-      const [visibleItem] = viewableItems;
-
-      const currentItem = visibleItem?.item ?? null;
-      const currentId = currentItem?.id;
-
-      setActivePostId(currentId);
-
+      const currentItem = viewableItems[0]?.item;
       toggleAudioMute(mutedVideo);
       pauseVideo();
       handlerTime(0);
-
-      if (currentItem && currentItem.id) {
-        setPlayer(currentItem.file.player);
+      
+      if (currentItem) {
+        setActivePostId(currentItem?.post_id);
+        setPlayer(currentItem.player);
         toggleAudioMute(mutedVideo);
         playVideo();
       }
     }
   };
 
-  useEffect(() => {
-    if (hasMorePosts) {
-      fetchPostsData(skip, limit);
-    }
-  }, [skip]);
-
-  const loadMorePosts = () => {
-    if (!loadingMore && hasMorePosts) {
-      setSkip((prevSkip) => prevSkip + limit);
-    }
-  };
-
   const handlerMutedVideo = useCallback(() => {
     const value = !mutedVideo;
-
     toggleAudioMute(value);
     setMutedVideo(value);
   }, [mutedVideo]);
+
+  useEffect(() => {
+    const setupPlayer = () => {
+      const player = getPlayer();
+
+      if (!player) {
+        const currentPost = reelsData?.pages
+          .flat()
+          .find((item) => item.post_id === activePostId);
+
+        if (currentPost) {
+          setPlayer(currentPost.player);
+        } else {
+          const firstPost = reelsData?.pages.flat()[0];
+          if (firstPost) {
+            setPlayer(firstPost.player);
+          }
+        }
+
+        playVideo();
+      } else {
+        playVideo();
+      }
+    };
+
+    if (isScreenFocused) {
+      setupPlayer();
+    }
+  }, [activePostId, reelsData, isScreenFocused])
+
+  useFocusEffect(
+    useCallback(() => {
+      setIsScreenFocused(true);
+      playVideo();
+
+      return () => {
+        setIsScreenFocused(false);
+        pauseVideo();
+        clearPlayer();
+      };
+    }, [])
+  );
+  
 
   return (
     <View>
       <StatusBar translucent backgroundColor={"transparent"} />
 
-      <FlatList
-        data={posts}
-        renderItem={({ item }) => (
-          <View style={styles.fullscreenItem}>
-            <ReelsPost
-              post={item}
-              activePostId={activePostId || 0}
-              video={{
-                controls: {
-                  showButtonPlay: false,
-                  showProgressBar: true,
-                  handlerMutedVideo,
-                },
-                player: item.player,
-                muted: mutedVideo,
-              }}
+      {isLoading ? (
+        <ActivityIndicator size="large" color={colors.brand.green} />
+      ) : (
+        <FlatList
+          data={reelsData?.pages.flat() || []}
+          renderItem={({ item }) => (
+            <View style={styles.fullscreenItem}>
+              <ReelsPost
+                post={item}
+                activePostId={activePostId || 0}
+                video={{
+                  controls: {
+                    showButtonPlay: false,
+                    showProgressBar: true,
+                    handlerMutedVideo,
+                  },
+                  player: item.player,
+                  muted: mutedVideo,
+                }}
+              />
+            </View>
+          )}
+          keyExtractor={(item, index) => `${item.id}-${index}`}
+          snapToInterval={ScreenHeight}
+          snapToAlignment="start"
+          decelerationRate="fast"
+          pagingEnabled
+          viewabilityConfig={viewabilityConfig}
+          onViewableItemsChanged={onViewableItemsChanged}
+          showsVerticalScrollIndicator={false}
+          onEndReached={() => hasNextPage && fetchNextPage()}
+          onEndReachedThreshold={0.3}
+          refreshControl={
+            <RefreshControl
+              refreshing={isFetchingNextPage}
+              onRefresh={() => refetch()}
             />
-          </View>
-        )}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
-        snapToInterval={ScreenHeight}
-        snapToAlignment="start"
-        decelerationRate="fast"
-        pagingEnabled
-        viewabilityConfig={viewabilityConfig}
-        onViewableItemsChanged={onViewableItemsChanged}
-        showsVerticalScrollIndicator={false}
-        numColumns={1}
-        onEndReached={loadMorePosts}
-        onEndReachedThreshold={0.3}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        initialNumToRender={5}
-        windowSize={5}
-      />
+          }
+          initialNumToRender={5}
+          windowSize={5}
+        />
+      )}
     </View>
   );
 }

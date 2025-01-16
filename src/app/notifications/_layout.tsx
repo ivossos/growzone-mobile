@@ -8,6 +8,7 @@ import ReportBottomSheet from '@/components/ui/report-bottom-sheet';
 import RateProfileBottomSheet from '@/components/ui/rate-profile-bottom-sheet';
 import BottomSheet from '@gorhom/bottom-sheet';
 import ReportCommentBottomSheet from '@/components/ui/report-comment-bottom-sheet';
+import { VideoPlayerProvider } from '@/context/video-player-context';
 
 export default function Layout() {
   const reportSheetRef = useRef<BottomSheet>(null);
@@ -29,12 +30,15 @@ export default function Layout() {
 
   return (
     <BottomSheetProvider>
-      <Slot />
+      <VideoPlayerProvider>
+        <Slot />
+      
       <CommentBottomSheet ref={commentSheetRef} />
       <ReportBottomSheet ref={reportSheetRef}  onClose={closeReportBottomSheet}/>
       <ReportCommentBottomSheet ref={reportCommentSheetRef} onClose={closeReportCommentBottomSheet} />
       <RateProfileBottomSheet ref={rateProfileSheetRef} onClose={rateProfileBottomSheet}/>
       <StatusBar backgroundColor={colors.black[100]} style="light" />
+      </VideoPlayerProvider>
     </BottomSheetProvider>
   )
 }

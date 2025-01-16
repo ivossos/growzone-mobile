@@ -118,6 +118,26 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
       queryClient.removeQueries({ queryKey: ["profile"] });
       queryClient.removeQueries({ queryKey: ["follow"] });
       queryClient.removeQueries({ queryKey: ["profile-posts"] });
+      queryClient.removeQueries({ queryKey: ["profile", userId] });
+      queryClient.removeQueries({ queryKey: ["follow", userId] });
+      queryClient.removeQueries({
+        queryKey: [
+          "profile-posts",
+          { type: TimelineType.GROW, userId: user.id },
+        ],
+      });
+      queryClient.removeQueries({
+        queryKey: [
+          "profile-posts",
+          { type: TimelineType.SOCIAL, userId: user.id },
+        ],
+      });
+      queryClient.removeQueries({
+        queryKey: [
+          "profile-posts",
+          { type: TimelineType.WEEDZ, userId: user.id },
+        ],
+      });
       queryClient.removeQueries({ queryKey: ["timeline"] });
     } catch (error) {
       console.error("Erro ao atualizar dados:", error);

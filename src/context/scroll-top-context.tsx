@@ -1,21 +1,21 @@
+import { FlashList } from '@shopify/flash-list';
 import React, { createContext, useContext, useRef } from 'react';
-import { FlatList } from 'react-native';
 
-type ScrollToTopContextProps = {
+type ScrollToTopContextProps<T> = {
   scrollToTop: () => void;
-  setFlatListRef: (ref: FlatList | null) => void;
+  setFlatListRef: (ref: FlashList<T> | null) => void;
 };
 
-const ScrollToTopContext = createContext<ScrollToTopContextProps | null>(null);
+const ScrollToTopContext = createContext<ScrollToTopContextProps<any> | null>(null);
 
-export const ScrollToTopProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const flatListRef = useRef<FlatList | null>(null);
+export const ScrollToTopProvider = <T,>({ children }: { children: React.ReactNode }) => {
+  const flatListRef = useRef<FlashList<T>  | null>(null);
 
   const scrollToTop = () => {
     flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
-  const setFlatListRef = (ref: FlatList | null) => {
+  const setFlatListRef = (ref: FlashList<T>  | null) => {
     flatListRef.current = ref;
   };
 

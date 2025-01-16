@@ -166,7 +166,6 @@ export default function SearchScreen() {
   const setValueFormFilter = async (
     filterData: Omit<FormFilterGenetic, "strain">
   ) => {
-    console.log("filterData ", filterData);
 
     form.setValue("phase", {
       id: filterData.phase?.id || null,
@@ -273,9 +272,9 @@ export default function SearchScreen() {
     return (user: GlobalSearchUser) => (
       <Link
         key={user.id}
-        className="px-4 py-1"
+        className="px-4 py-1 mt-2"
         href={{
-          pathname: "/post/[id]",
+          pathname: "/profile/[id]",
           params: { id: user.id },
         }}
       >

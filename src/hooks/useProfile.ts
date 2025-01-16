@@ -6,7 +6,7 @@ import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
-const useProfile = (props: { userId: number, type: TimelineType }) => {
+const useProfile = (props: { userId: number; type: TimelineType }) => {
   const limit = 10;
 
   const fetchData = async ({ pageParam = 0, queryKey }: any) => {

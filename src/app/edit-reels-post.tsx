@@ -22,7 +22,6 @@ import { ReelsDetail } from "@/api/@types/models";
 import { getReel } from "@/api/social/post/get-reel";
 import updateReelsPost from "@/api/social/post/update-reels-post";
 import { queryClient } from "@/lib/react-query";
-import { useVideoPlayerContext } from "@/context/video-player-context";
 
 export const EditProfileValidation = z.object({
   description: z.string(),

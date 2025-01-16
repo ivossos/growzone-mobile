@@ -35,6 +35,11 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       if(access_token && refresh_token && userLogged) {
         updateUserAndToken(userLogged, access_token)
       }
+
+      if(userLogged) {
+        await updateUserData();
+      }
+      
     } catch(err) {
       throw err
     } finally {

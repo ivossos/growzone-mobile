@@ -12,7 +12,7 @@ import PostCard from "@/components/ui/post-card";
 import ReelsPost from "@/components/ui/reels-post";
 import useTimeline from "@/hooks/useTimeline";
 import { colors } from "@/styles/colors";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
   Dimensions,
@@ -62,7 +62,7 @@ export default function Timeline() {
   const userId = Number(params.userId);
   const postId = Number(params.id);
 
-  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, handlerTime } =
+  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, clearPlayer } =
     useVideoPlayerContext();
 
   const flatListRef = useRef<FlatList>(null);
@@ -352,6 +352,7 @@ export default function Timeline() {
           handlerAudioMute={handlerMutedVideo}
           audioMute={mutedVideo}
           post={item as GrowPostDetail}
+          loadComments={loadComments}
         />
       ),
     };
@@ -394,6 +395,15 @@ export default function Timeline() {
   useEffect(() => {
     handleScrollToIndex();
   }, [data]);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        pauseVideo();
+        clearPlayer();
+      };
+    }, [])
+  );
 
   if (isLoading) {
     return (

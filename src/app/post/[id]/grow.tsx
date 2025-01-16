@@ -1,11 +1,8 @@
-import { getPostComments } from "@/api/social/post/comment/get-comments";
 import { getGrowPost } from "@/api/social/post/get-grow-post";
-import { getPostLikes } from "@/api/social/post/like/get-likes";
 import GrowPostCard from "@/components/ui/grow-post-card";
-import { useActivePostHome } from "@/hooks/use-active-post-home";
 import { colors } from "@/styles/colors";
 import { useQuery } from "@tanstack/react-query";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -29,7 +26,7 @@ const showErrorToast = (message: string) => {
 export default function Post() {
   const params = useLocalSearchParams();
   const { id } = (params as { id: string }) || {};
-  const { toggleAudioMute, setPlayer, pauseVideo } = useVideoPlayerContext();
+  const { toggleAudioMute, setPlayer, pauseVideo, clearPlayer } = useVideoPlayerContext();
 
   const [mutedVideo, setMutedVideo] = useState(false);
 
@@ -102,6 +99,21 @@ export default function Post() {
     }
   }, [data]);
 
+  useEffect(() => {
+    return () => {
+      queryClient.removeQueries({ queryKey: ['grow-post-data', id] });
+    };
+  }, [id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        pauseVideo();
+        clearPlayer();
+      };
+    }, [])
+  );
+
   if (error) {
     showErrorToast(
       "Aconteceu um erro ao buscar as informações. Tente novamente mais tarde."
@@ -143,6 +155,7 @@ export default function Post() {
               handlerAudioMute={handlerMutedVideo}
               audioMute={mutedVideo}
               post={post}
+              loadComments={async () => {}}
             />
           )}
         </ScrollView>

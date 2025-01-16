@@ -22,15 +22,18 @@ import useHome from "@/hooks/useHome";
 import { FeedAllPost, GrowPostDetail, PostDetail } from "@/api/@types/models";
 import { useVideoPlayerContext } from "@/context/video-player-context";
 import UpdateAppModal from "@/components/ui/update-app";
+import { useScrollToTop } from "@/context/scroll-top-context";
+import { useFocusEffect } from "expo-router";
 
 export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [audioMute, setAudioMute] = useState(false);
 
-  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, isMuted } =
+  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, isMuted, clearPlayer } =
     useVideoPlayerContext();
 
   const { posts, topContributors } = useHome();
+  const { setFlatListRef } = useScrollToTop();
 
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
@@ -67,6 +70,7 @@ export default function HomeScreen() {
           post={item.post as GrowPostDetail}
           audioMute={audioMute}
           handlerAudioMute={handlerAudioMute}
+          loadComments={loadComments}
         />
       );
     },
@@ -146,6 +150,15 @@ export default function HomeScreen() {
   ]);
 
 
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        pauseVideo();
+        clearPlayer();
+      };
+    }, [])
+  );
+
   return (
     <Fragment>
       <UpdateAppModal />
@@ -155,6 +168,7 @@ export default function HomeScreen() {
         edges={["top"]}
       >
         <FlashList
+          ref={setFlatListRef}
           className="bg-black-100"
           contentContainerClassName="gap-4"
           data={posts.data}

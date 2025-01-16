@@ -60,8 +60,6 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
   const findAllSocialPost = async (
     params: Pick<TimelineParams, "limit" | "userId" | "skip">
   ): Promise<ReturnType<PostDetail>> => {
-    console.log('findAllSocialPost ', params);
-    
     const socialPosts = await getAllSocialPost(params);
 
     const socialPostsMap = socialPosts.map((socialPost) => {
@@ -179,8 +177,6 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
     queryFn: fetchData,
     enabled: props.userId != null,
     getNextPageParam: (lastPage, allPages) => {
-      console.log('lastPage ', lastPage.nextCursor);
-      
       return lastPage.nextCursor
     },
     initialPageParam: 0,
