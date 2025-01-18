@@ -553,7 +553,7 @@ const CreateBottomSheet = React.forwardRef<
           onClose={() => onChangeButtonSheet(-1)}
           title="Plantas"
           styleScroll={{
-            flexGrow: 1,
+            flex: 1,
             paddingBottom: 20,
           }}
         >

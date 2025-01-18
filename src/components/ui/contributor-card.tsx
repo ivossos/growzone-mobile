@@ -60,22 +60,24 @@ export default function ContributorCard({
       className="bg-black-100 border border-black-90 rounded-lg shadow-lg gap-4"
       style={{ width: cardWidth }}
     >
-      {contributor.image?.image ? (
-        <Image
-          source={{ uri: contributor.image?.image }}
-          className="h-40 rounded-lg"
-          resizeMode="cover"
-          alt="Image user"
-        />
-      ) : (
-        <View className="flex flex-row justify-center items-center bg-black-80 rounded-lg h-40">
-          <Text className="text-brand-green text-center text-7xl">
-            {getInitials(contributor?.name || contributor?.username)}
-          </Text>
-        </View>
-      )}
+      <Link href={{ pathname: "/profile/[id]", params: { id: contributor.id } }} >
+        {contributor.image?.image ? (
+          <Image
+            source={{ uri: contributor.image?.image }}
+            className="h-40 w-full rounded-lg"
+            resizeMode="cover"
+            alt="Image user"
+          />
+        ) : (
+          <View className="flex flex-row justify-center items-center bg-black-80 rounded-t-lg h-40 w-full">
+            <Text className="text-brand-green text-center text-7xl">
+              {getInitials(contributor?.name || contributor?.username)}
+            </Text>
+          </View>
+        )}
+      </Link>
 
-      <View className="px-4 gap-4">
+      <View className="flex gap-2 p-3 pt-1">
         <Text className="text-sm text-white font-semibold">
           {contributor.name || contributor?.username}
         </Text>

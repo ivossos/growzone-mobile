@@ -29,7 +29,7 @@ export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [audioMute, setAudioMute] = useState(false);
 
-  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, isMuted, clearPlayer } =
+  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, isMuted, clearPlayer, getPlayer } =
     useVideoPlayerContext();
 
   const { posts, topContributors } = useHome();
@@ -41,6 +41,8 @@ export default function HomeScreen() {
       posts.data.length === 0 ? "top-contributors" : "home-posts";
     await queryClient.invalidateQueries({ queryKey: [queryKeyValue] });
     setIsRefreshing(false);
+    pauseVideo();
+    clearPlayer();
   }, [posts.data]);
 
   const loadComments = useCallback(async () => {

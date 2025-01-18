@@ -100,7 +100,7 @@ const SelectPhaseDropdown = ({
     };
 
     loadInitialValue();
-  }, [initialValue?.id, value, data]);
+  }, [initialValue?.id, data]);
 
   const loadMoreData = () => {
     if (hasMore && !isLoading) {

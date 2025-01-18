@@ -2,11 +2,10 @@ import React, { FC, useCallback, useMemo, useState } from "react";
 import {
   StyleSheet,
   View,
-  TouchableOpacity,
   Dimensions,
   Pressable,
 } from "react-native";
-import { useVideoPlayer, VideoView } from "expo-video";
+import { VideoView } from "expo-video";
 import Slider from "@react-native-community/slider";
 import { useEvent, useEventListener } from "expo";
 import { Ionicons } from "@expo/vector-icons";
@@ -30,7 +29,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const { handlerTime, playVideo } = useVideoPlayerContext();
+  const { handlerTime, playVideo, getPlayer, setPlayer } = useVideoPlayerContext();
 
   const { isPlaying } = useEvent(player, "playingChange", {
     isPlaying: player.playing,
@@ -43,6 +42,12 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   }, [isPlaying]);
 
   const handlerPlay = useCallback(() => {
+    const currentPlayer = getPlayer();
+    
+    if(!currentPlayer) {
+      setPlayer(player);
+    }
+    
     if (isPlaying) {
       player.pause();
     } else {
@@ -52,7 +57,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
         startPlay(data);
       }
     }
-  }, [isPlaying, startPlay]);
+  }, [isPlaying, startPlay, getPlayer]);
 
   useEventListener(
     player,
