@@ -11,6 +11,7 @@ type VideoPlayerContextType = {
   handlerTime: (value: number) => void;
   isMuted: () => boolean;
   clearPlayer: () => void;
+  replacePlayer: ({ uri }: { uri: string | undefined }) => void;
   player: VideoPlayer;
 };
 
@@ -69,6 +70,13 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({
     currentPlayerRef.current = undefined;
   };
 
+  // TODO? brendo
+  const replacePlayer = ({ uri }: { uri: string | undefined }) => {
+    if (currentPlayerRef.current) {
+      currentPlayerRef.current.replace({ uri })
+    }
+  };
+
   return (
     <VideoPlayerContext.Provider
       value={{
@@ -82,6 +90,7 @@ export const VideoPlayerProvider: React.FC<{ children: ReactNode }> = ({
         player: currentPlayerRef.current as any,
         setPlayer,
         release,
+        replacePlayer,
       }}
     >
       {children}

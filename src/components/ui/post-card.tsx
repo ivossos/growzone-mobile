@@ -26,7 +26,6 @@ import { useVideoPlayerContext } from "@/context/video-player-context";
 
 interface Props {
   post: PostDetail;
-  loadComments: () => Promise<void>;
   handlerAudioMute: (muted: boolean) => void;
   audioMute: boolean;
 }
@@ -34,7 +33,6 @@ interface Props {
 const PostCard = ({
   post,
   audioMute,
-  loadComments,
   handlerAudioMute,
 }: Props) => {
   const { user } = useAuth();
@@ -77,11 +75,12 @@ const PostCard = ({
 
   const handlerOpenCommentSheet = useCallback(() => {
     pauseVideo()
+    console.log('oi');
+    
     openBottomSheet({
       type: "comment",
       id: post.post_id,
       callbackFn: async () => {
-        await loadComments();
         playVideo()
       },
     });

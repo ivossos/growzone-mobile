@@ -44,26 +44,6 @@ export const CommentValidation = z.object({
   comment: z.string().nonempty("Campo obrigatório"),
 });
 
-const CommentInputTextInput = forwardRef<
-  TextInput,
-  TextInputProps & { error: string }
->((data, ref) => {
-  const { error, onChangeText, onBlur } = data;
-  return (
-    <Fragment>
-      <BottomSheetTextInput
-        ref={ref as any}
-        style={styles.input}
-        placeholder="Escreva um comentário..."
-        placeholderTextColor={error ? colors.brand.error : colors.black[30]}
-        onChangeText={onChangeText}
-        multiline
-        numberOfLines={5}
-        onBlur={onBlur}
-      />
-    </Fragment>
-  );
-});
 
 const CommentInput = forwardRef(
   (

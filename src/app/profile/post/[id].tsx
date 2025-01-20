@@ -95,10 +95,6 @@ export default function Post() {
     setAudioMute(value);
   }, []);
 
-  const loadComments = async () => {
-    await Promise.all([fetchPost()]);
-  };
-
   useEffect(() => {
     fetchPost();
   }, [postId]);
@@ -120,7 +116,6 @@ export default function Post() {
               <PostCard
                 handlerAudioMute={handlerAudioMute}
                 audioMute={audioMute}
-                loadComments={loadComments}
                 post={post}
               />
             )}

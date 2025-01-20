@@ -352,7 +352,7 @@ export interface GrowPostDetail {
 
 export interface FeedAllPost {
   type: 'grow' | 'social' | 'reel'
-  post: GrowPostDetail | PostDetail
+  post: GrowPostDetail | PostDetail | ReelsDetail
 }
 
 export interface ReportReason {
@@ -469,6 +469,7 @@ export interface TimelineParams {
   skip: number;
   limit: number;
   userId: number;
+  loadVideoPlayer: boolean;
 }
 
 export interface VideoPlayerHandle {

@@ -1,4 +1,4 @@
-import { useState, Fragment, useRef, useCallback } from "react";
+import React, { useState, Fragment, useRef, useCallback, ReactNode } from "react";
 import {
   View,
   RefreshControl,
@@ -14,12 +14,13 @@ import { colors } from "@/styles/colors";
 
 import { Header } from "@/components/ui/header";
 import PostCard from "@/components/ui/post-card";
+import WeedzPostCard from "@/components/ui/post-weedz-card";
 import GrowPostCard from "@/components/ui/grow-post-card";
 import ContributorCard from "@/components/ui/contributor-card";
 import Loader from "@/components/ui/loader";
 
 import useHome from "@/hooks/useHome";
-import { FeedAllPost, GrowPostDetail, PostDetail } from "@/api/@types/models";
+import { FeedAllPost, GrowPostDetail, PostDetail, ReelsDetail } from "@/api/@types/models";
 import { useVideoPlayerContext } from "@/context/video-player-context";
 import UpdateAppModal from "@/components/ui/update-app";
 import { useScrollToTop } from "@/context/scroll-top-context";
@@ -28,8 +29,9 @@ import { useFocusEffect } from "expo-router";
 export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [audioMute, setAudioMute] = useState(false);
+  const [activePostId, setActivePostId] = useState<number | null>(null);
 
-  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, isMuted, clearPlayer, getPlayer } =
+  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, isMuted, clearPlayer } =
     useVideoPlayerContext();
 
   const { posts, topContributors } = useHome();
@@ -45,38 +47,35 @@ export default function HomeScreen() {
     clearPlayer();
   }, [posts.data]);
 
-  const loadComments = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: ["home-posts"] });
-  }, []);
-
-  const handlerAudioMute = useCallback(async (value: boolean) => {
+  const handlerAudioMute = useCallback((value: boolean) => {
     toggleAudioMute(value)
     setAudioMute(value)
   }, []);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<FeedAllPost>) => {
-
-      if (item.type === "social") {
-        return (
-          <PostCard
-            loadComments={loadComments}
-            handlerAudioMute={handlerAudioMute}
-            audioMute={audioMute}
-            post={item.post as PostDetail}
-          />
-        );
-      }
+      const componentsMap = {
+        ['social']: PostCard,
+        ['grow']: GrowPostCard,
+        ['reel']: WeedzPostCard,
+      };
+  
+      const Component: any = componentsMap[item.type];
+  
+      const commonProps = {
+        post: item.post,
+        audioMute,
+        handlerAudioMute,
+      };
+  
       return (
-        <GrowPostCard
-          post={item.post as GrowPostDetail}
-          audioMute={audioMute}
-          handlerAudioMute={handlerAudioMute}
-          loadComments={loadComments}
+        <Component
+          {...commonProps}
+          {...(item.type === "reel" && { activePostId })}
         />
       );
     },
-    [audioMute, loadComments, handlerAudioMute]
+    [audioMute, activePostId, handlerAudioMute]
   );
 
   const renderHeader = useCallback(
@@ -138,7 +137,14 @@ export default function HomeScreen() {
         }
 
         if (viewableItem) {
-          const [file] = viewableItem.item.post.files;
+          const isSocialOrGrow = ['grow', 'social'].includes(viewableItem.item.type)
+          let file =  (viewableItem.item.post as ReelsDetail).file
+
+          if (isSocialOrGrow) {
+            file = (viewableItem.item.post as GrowPostDetail | PostDetail).files[0]
+          } else {
+            setActivePostId(viewableItem.item.post.id)
+          }
 
           if (file && file.type === "video") {
             const oldPlayerIsMuted = isMuted()

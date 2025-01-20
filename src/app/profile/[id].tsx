@@ -12,7 +12,7 @@ const Profile: React.FC = () => {
   const globalParams = useLocalSearchParams();
   const { id } = (globalParams as { id: string; openReview: string }) || {};
 
-  const userId = id ? Number(id) : 0;
+  const userId = id ? Number(id) : 0;  
 
   const renderReader = () => <Header onBack={() => router.back()} />;
 

@@ -1,5 +1,5 @@
 import { TimelineType } from "@/api/@types/enums";
-import { GrowPost } from "@/api/@types/models";
+import { GrowPost, GrowPostDetail } from "@/api/@types/models";
 import { useAuth } from "@/hooks/use-auth";
 import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
@@ -22,11 +22,11 @@ const w = Dimensions.get("window").width;
 
 type Props = {
   userId: number;
-  data: GrowPost;
+  data: GrowPostDetail;
   index: number;
 };
 
-const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
+const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPostDetail>, Props>(
   ({ userId, data, index }, ref) => {
     const router = useRouter();
     const { user } = useAuth();
@@ -73,6 +73,8 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
       );
     }
 
+    const [file] = data.files
+
     return (
       <TouchableOpacity
         onPress={() =>
@@ -89,15 +91,15 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPost>, Props>(
         className="gap-1 mx-1 py-3"
       >
         <View>
-          {data.file.type === "image" ? (
+          {file.type === "image" ? (
             <Image
-              source={{ uri: data.file.file }}
+              source={{ uri: file.file }}
               style={styles.image}
               resizeMode="cover"
             />
           ) : (
             <Image
-              source={{ uri: replaceMediaUrl(data?.file?.file) }}
+              source={{ uri: replaceMediaUrl(file?.file) }}
               style={styles.image}
               resizeMode="cover"
             />

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { TouchableOpacity, View, Text } from "react-native";
 import { colors } from "@/styles/colors";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
@@ -14,20 +14,29 @@ import Toast from "react-native-toast-message";
 import { router } from "expo-router";
 import { Modal } from "../Modal";
 import Button from "./button";
-import { deleteComment } from "@/api/social/post/comment/delete-comment";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 import { useAuth } from "@/hooks/use-auth";
+import { UseMutateAsyncFunction } from "@tanstack/react-query";
 
 interface Props {
   comment: Comment;
-  loadComments: (comment: Comment) => Promise<void>;
   level?: number;
   canAcceptSubcomments?: boolean;
+  setParentId: (parentId: number | undefined) => void;
   handlerAddParentComment?: (comment: Comment) => void;
   handlerParentComment?: (
     comment: Comment,
     options?: Partial<{ show: boolean }>
   ) => Promise<void>;
+  deleteComment: {
+    deleteComment: UseMutateAsyncFunction<
+      globalThis.Comment,
+      Error,
+      number,
+      unknown
+    >;
+    isPendingDeleteComment: boolean;
+  };
 }
 
 const MAX_LEVEL_COMMENTS = 1;
@@ -36,9 +45,10 @@ export default function CommentCard({
   comment,
   level = 0,
   canAcceptSubcomments = false,
-  loadComments,
+  deleteComment,
   handlerAddParentComment,
   handlerParentComment,
+  setParentId,
 }: Props) {
   const { user } = useAuth();
   const { openBottomSheet } = useBottomSheetContext();
@@ -106,29 +116,9 @@ export default function CommentCard({
   }, [selectedComment]);
 
   const handleDeleteComment = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      await deleteComment(selectedComment.id);
-
-      Toast.show({
-        type: "success",
-        text1: "Sucesso",
-        text2: `Comentário excluído com sucesso.`,
-      });
-
-      await loadComments(selectedComment);
-    } catch (err) {
-      console.log("Erro em handleLike", err);
-      Toast.show({
-        type: "error",
-        text1: "Opss",
-        text2: `Aconteceu um erro para excluír o comentário.`,
-      });
-    }
-
+    await deleteComment.deleteComment(selectedComment.id);
+    setParentId(undefined)
     setSelectedComment({} as Comment);
-    setIsLoading(false);
   }, [selectedComment]);
 
   const modalActionContent = useMemo(() => {
@@ -166,7 +156,7 @@ export default function CommentCard({
             handlePress={handlerButtonSheetReportComment}
             variant="secondary"
             isLoading={isLoading}
-            isDisabled={isLoading}
+            isDisabled={isLoading || user.id === selectedComment.user.id}
             containerStyles="gap-2"
             leftIconProps={{ color: colors.primary }}
             leftIcon={MessageCircleWarning}
@@ -176,8 +166,8 @@ export default function CommentCard({
             title="Excluir comentário"
             handlePress={handleDeleteComment}
             variant="secondary"
-            isLoading={isLoading}
-            isDisabled={isLoading || user.id !== selectedComment.user.id}
+            isLoading={deleteComment.isPendingDeleteComment}
+            isDisabled={deleteComment.isPendingDeleteComment || user.id !== selectedComment.user.id}
             containerStyles="gap-2"
             leftIcon={TrashIcon}
           />
@@ -196,9 +186,7 @@ export default function CommentCard({
         <View className="gap-2">
           <TouchableOpacity onLongPress={() => setSelectedComment(comment)}>
             <View className="gap-2">
-
               <View className="flex items-center justify-between flex-row gap-2">
-
                 <View className="flex items-center flex-row gap-2">
                   <View>
                     <TouchableOpacity onPress={() => redirectProfileUser()}>
@@ -269,7 +257,7 @@ export default function CommentCard({
 
         {canAcceptSubcomments && (
           <View>
-            {comment.subComments?.map((subComment) => (
+            {comment?.subComments?.map((subComment) => (
               <View className="pl-4" key={`${subComment.id}_sub_comment`}>
                 <CommentCard
                   canAcceptSubcomments
@@ -279,13 +267,14 @@ export default function CommentCard({
                   handlerParentComment={() =>
                     handleShowParentComment!(subComment, {
                       show:
-                        subComment.subComments?.length !==
-                        subComment.reply_count,
+                        subComment?.subComments?.length !==
+                        subComment?.reply_count,
                     })
                   }
+                  setParentId={setParentId}
+                  deleteComment={deleteComment}
                   comment={subComment}
                   level={level + 1}
-                  loadComments={() => loadComments(subComment)}
                 />
               </View>
             ))}
@@ -302,7 +291,7 @@ export default function CommentCard({
                 >
                   <Text className="text-base font-regular text-brand-grey">
                     {`${
-                      comment.subComments?.length !== comment.reply_count
+                      comment?.subComments?.length !== comment.reply_count
                         ? "Exibir comentários"
                         : "Visualizar menos"
                     }`}

@@ -25,10 +25,9 @@ import {
 } from "@/api/@types/models";
 import CommentCard from "./comment-card";
 import Loader from "./loader";
-import { Platform, Text, View } from "react-native";
+import { FlatList, Platform, Text, View } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import createComment from "@/api/social/post/comment/create-comment";
-import { orderBy, uniqBy } from "lodash";
 import CommentInput from "./comment-input";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useVideoPlayerContext } from "@/context/video-player-context";
@@ -40,23 +39,20 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const commentInputRef = useRef<{ focusInput: () => void }>(null);
-  const [skip, setSkip] = useState<number | undefined>();
   const [isFocus, setIsFocus] = useState(false);
-  const [isLoadingAddComment, setIsLoadingAddComment] = useState(false);
   const [parentId, setParentId] = useState<number>();
   const [newCommentData, setNewCommentData] = useState<CreateCommentBody>(
     {} as CreateCommentBody
   );
-  const snapPoints = useMemo(() => ["60%", "80%", "92%"], []);
+  const snapPoints = useMemo(() => ["60%", "80%", "90%"], []);
 
   const { postId, isVisible, currentType, closeBottomSheet, callback } =
     useBottomSheetContext();
 
-  const { comments } = useComments({
+  const { comments, submitComment, deleteComment } = useComments({
     postId: postId || 0,
     parentId,
     currentType,
-    skip,
   });
 
   const handlerNewCommentData = useCallback(
@@ -77,37 +73,24 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
   );
 
   const handleClose = useCallback(() => {
-    setSkip(0);
     setIsFocus(false);
     handlerNewCommentData({});
     playVideo();
+    queryClient.removeQueries({ queryKey: ["sub-comments-posts"] });
+    queryClient.removeQueries({ queryKey: ["comments-posts"] });
     closeBottomSheet();
-  }, [closeBottomSheet, handlerNewCommentData]);
+  }, [closeBottomSheet, handlerNewCommentData, queryClient]);
 
   const handleCommentSubmit = useCallback(
     async (value: { comment: string }) => {
       const { comment } = value;
 
       try {
-        setIsLoadingAddComment(true);
-        const res = await createComment({
+        await submitComment.createComment({
           postId: postId!,
           content: comment,
           parentId: newCommentData.parentId,
         });
-
-        if (!newCommentData.parentId) {
-          // const comment = {
-          //   id: res.id,
-          //   content: res.content,
-          //   like_count: 0,
-          //   reply_count: 0,
-          //   created_at: res.created_at,
-          //   user: { ...user, is_following: false },
-          //   is_liked: false,
-          // } as Comment;
-          // setComments((prev) => [...[comment], ...prev]);
-        }
 
         setIsFocus(false);
         handlerNewCommentData({});
@@ -120,115 +103,78 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
           text1: "Opss",
           text2: "Aconteceu um erro ao enviar seu comentário.",
         });
-      } finally {
-        setIsLoadingAddComment(false);
       }
     },
     [postId, newCommentData]
   );
 
+  const removeSubComments = (
+    comments: Array<Comment>,
+    commentToHideId: number | null
+  ): Array<Comment> => {
+    return comments.map((comment) => {
+      if (comment.id === commentToHideId) {
+        return {
+          ...comment,
+          subComments: [],
+        };
+      }
+
+      return {
+        ...comment,
+        subComments: comment.subComments?.length
+          ? removeSubComments(comment.subComments, commentToHideId)
+          : comment.subComments,
+      };
+    });
+  };
+
   const removeSubCommentsFromCache = useCallback(
-    (commentToHideId: number | null, postId: number, parentId?: number) => {
-      // Acesse o cliente do React Query
+    (postId: number, commentToHideId: number | null, parentId?: number) => {
+      const keyCacheAllCommentsPost = ["comments-posts", postId];
 
-      // Recupere os dados do cache
-      const cachedComments: any = queryClient.getQueryData([
-        "comments-posts",
-        { postId, parentId, currentType },
-      ]);
+      const allCommentsInCache: any = queryClient.getQueryData(
+        keyCacheAllCommentsPost
+      );
 
-      if (!cachedComments) {
+      if (!allCommentsInCache) {
         console.error("Comentários não encontrados no cache");
         return;
       }
 
-      // Função recursiva para remover subcomentários
-      const removeSubComments = (
-        comments: Array<Comment>,
-        commentToHideId: number | null
-      ): Array<Comment> => {
-        return comments.map((comment) => {
-          if (comment.id === commentToHideId) {
-            return {
-              ...comment,
-              subComments: [], // Limpa os subcomentários
-            };
-          }
-
-          return {
-            ...comment,
-            subComments: comment.subComments?.length
-              ? removeSubComments(comment.subComments, commentToHideId) // Recursão para subcomentários
-              : comment.subComments,
-          };
-        });
-      };
-
-      // Aplica a remoção dos subcomentários ao cache
       const updatedComments = removeSubComments(
-        cachedComments.pages.flat(),
+        allCommentsInCache?.pages?.flat(),
         commentToHideId
       );
 
-      // Atualiza os dados no cache com os comentários modificados
       queryClient.setQueryData(
-        ["comments-posts", { postId, parentId, currentType }],
-        {
-          pages: [
-            {
-              data: updatedComments,
-            },
-          ],
+        keyCacheAllCommentsPost,
+        (commentsInCache: any) => {
+          return {
+            pageParams: [0],
+            pages: updatedComments,
+          };
         }
       );
+
+      queryClient.removeQueries({
+        queryKey: ["sub-comments-posts", parentId, postId, currentType],
+      });
     },
-    []
+    [currentType]
   );
 
   const handleLoadMore = useCallback(async () => {
     if (comments.hasNextPage) {
       await comments.fetchNextPage();
     }
-  }, []);
+  }, [comments.hasNextPage, comments.fetchNextPage]);
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop {...props} opacity={0.8} appearsOnIndex={1} />
     ),
     []
-  );
-
-  const loadComments = useCallback(
-    async (comment: Comment) => {
-      if (callback) {
-        callback(true);
-      }
-      const cachedComments: any = queryClient.getQueryData([
-        "comments-posts",
-        { postId, parentId, currentType },
-      ]);
-
-      if (!cachedComments) {
-        console.error("Comentários não encontrados no cache");
-        return;
-      }
-
-      const filteredComments = cachedComments.pages
-        .flat()
-        .filter((commentSaved: any) => commentSaved.id !== comment.id);
-
-      queryClient.setQueryData(
-        ["comments-posts", { postId, parentId, currentType }],
-        {
-          pages: [
-            {
-              data: filteredComments,
-            },
-          ],
-        }
-      );
-    },
-    [comments]
   );
 
   const handlerAddParentComment = useCallback(
@@ -249,28 +195,14 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
     ) => {
       const optionsIsNotNull = options && Object.keys(options).length > 0;
 
-      setSkip(0);
-
       if (optionsIsNotNull && !options.show) {
-        removeSubCommentsFromCache(postId, comment.id, parentId);
+        setParentId(undefined);
+        removeSubCommentsFromCache(postId || 0, comment.id, parentId);
       } else {
-        console.log("brendo 2 ", {
-          postId: postId || 0,
-          parentId,
-          currentType,
-          skip,
-        });
-        await queryClient.invalidateQueries({
-          queryKey: [
-            "comments-posts",
-            { postId: postId, currentType: "comment" },
-          ],
-        });
         setParentId(comment.id);
-        setSkip(comment.subComments?.length ?? 0);
       }
     },
-    [postId, comments, skip, removeSubCommentsFromCache, setSkip]
+    [parentId, postId, removeSubCommentsFromCache]
   );
 
   const renderItem = useCallback(
@@ -280,23 +212,16 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
           <CommentCard
             canAcceptSubcomments
             handlerAddParentComment={handlerAddParentComment}
-            loadComments={loadComments}
             handlerParentComment={handlerParentComment}
+            setParentId={setParentId}
+            deleteComment={deleteComment}
             comment={item}
           />
         </BottomSheetView>
       );
     },
-    [handlerAddParentComment, loadComments, handlerParentComment]
+    [deleteComment, setParentId, handlerAddParentComment, handlerParentComment]
   );
-
-  // useEffect(() => {
-  //   if (postId && isVisible) {
-  //     setHasMore(true);
-  //     console.log('brendo 3');
-  //     loadPostComments(true);
-  //   }
-  // }, [postId, isVisible]);
 
   const renderFooter = useCallback(
     (props: BottomSheetFooterProps) => (
@@ -313,40 +238,50 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
           user={user}
           isFocus={isFocus}
           handleCommentSubmit={handleCommentSubmit}
-          isLoadingAddComment={isLoadingAddComment}
+          isLoadingAddComment={submitComment.isPendingCreateComment}
         />
       </BottomSheetFooter>
     ),
-    [commentInputRef, user, isLoadingAddComment, handleCommentSubmit]
+    [commentInputRef, user, submitComment, handleCommentSubmit]
   );
 
   const bottomSheetList = useMemo(() => {
     return (
-      <BottomSheetFlatList
-        data={comments.data}
-        keyExtractor={(item) => "key-" + item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ padding: 20 }}
-        showsVerticalScrollIndicator={false}
-        keyboardDismissMode="none"
-        nestedScrollEnabled
-        keyboardShouldPersistTaps="handled"
-        enableFooterMarginAdjustment
-        ListEmptyComponent={() => {
-          if (!comments.isLoading) {
-            return (
-              <View className="flex flex-col justify-center items-center flex-1 py-10">
-                <Text className="font-medium text-white text-lg">
-                  Nenhum comentário nessa postagem
-                </Text>
-              </View>
-            );
-          }
-        }}
-        onEndReached={handleLoadMore}
-      />
+      <BottomSheetView>
+        <FlatList
+          data={comments.data}
+          keyExtractor={(item, index) => `key-${item.id}-${index}`}
+          renderItem={renderItem}
+          contentContainerStyle={{
+            padding: 20,
+            paddingBottom: insets.bottom + 50,
+          }}
+          showsVerticalScrollIndicator={false}
+          keyboardDismissMode="none"
+          nestedScrollEnabled
+          keyboardShouldPersistTaps="handled"
+          ListFooterComponent={() => {
+            if (comments.isLoading) {
+              return <Loader isLoading />;
+            }
+          }}
+          ListEmptyComponent={() => {
+            if (!comments.isLoading) {
+              return (
+                <View className="flex flex-col justify-center items-center flex-1 py-10">
+                  <Text className="font-medium text-white text-lg">
+                    Nenhum comentário nessa postagem
+                  </Text>
+                </View>
+              );
+            }
+          }}
+          onEndReachedThreshold={0.8}
+          onEndReached={handleLoadMore}
+        />
+      </BottomSheetView>
     );
-  }, [comments, renderItem, handleLoadMore]);
+  }, [comments.data, comments.isLoading, renderItem, handleLoadMore]);
 
   const bottomSheet = useMemo(
     () => (
@@ -364,7 +299,6 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
         keyboardBehavior={Platform.OS === "ios" ? "extend" : "interactive"}
         footerComponent={renderFooter}
       >
-        <Loader isLoading={comments.isLoading} />
         {bottomSheetList}
       </BottomSheet>
     ),
@@ -376,7 +310,6 @@ const CommentBottomSheet = React.forwardRef<BottomSheet>((_, ref) => {
       handleClose,
       bottomSheetList,
       renderFooter,
-      comments,
     ]
   );
 

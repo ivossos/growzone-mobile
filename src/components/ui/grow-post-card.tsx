@@ -27,10 +27,9 @@ interface Props {
   post: GrowPostDetail;
   handlerAudioMute: (muted: boolean) => void;
   audioMute: boolean;
-  loadComments: () => Promise<void>;
 }
 
-const GrowPostCard = ({ post, audioMute, handlerAudioMute, loadComments }: Props) => {
+const GrowPostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -72,9 +71,6 @@ const GrowPostCard = ({ post, audioMute, handlerAudioMute, loadComments }: Props
     openBottomSheet({
       type: "comment",
       id: post.post_id,
-      callbackFn: async () => {
-        await loadComments();
-      },
     });
   }, [post]);
 

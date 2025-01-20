@@ -1,5 +1,5 @@
 import { TimelineType } from "@/api/@types/enums";
-import { SocialPost } from "@/api/@types/models";
+import { ReelsDetail, SocialPost } from "@/api/@types/models";
 import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
 import { useAuth } from "@/hooks/use-auth";
 import { replaceMediaUrl } from "@/lib/utils";
@@ -28,11 +28,11 @@ const w = Dimensions.get("window").width;
 
 type Props = {
   userId: number;
-  data: SocialPost;
+  data: ReelsDetail;
   index: number;
 };
 
-const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
+const ConnectionReelstList = forwardRef<Animated.FlatList<ReelsDetail>, Props>(
   ({ userId, data, index }, ref) => {
     const { user } = useAuth();
 
@@ -75,7 +75,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<SocialPost>, Props>(
         >
           <Eye size={18} color={colors.brand.white} />
           <Text className="text-white text-base font-medium">
-            {data.view_count}
+            {0}
           </Text>
         </LinearGradient>
       </TouchableOpacity>

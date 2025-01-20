@@ -155,7 +155,6 @@ export default function Post() {
               handlerAudioMute={handlerMutedVideo}
               audioMute={mutedVideo}
               post={post}
-              loadComments={async () => {}}
             />
           )}
         </ScrollView>

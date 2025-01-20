@@ -76,11 +76,11 @@ export default function Timeline() {
 
   const [hasScrolledToItem, setHasScrolledToItem] = useState(false);
 
-  // const initialLimit = indexItemSelected + 1;
   const { data, isLoading, hasNextPage, isRefetching, fetchNextPage, refetch } =
     useTimeline({
       userId,
       type: params.type,
+      loadVideoPlayer: true,
     });
 
   const isWeedzScreen = useMemo(() => {
@@ -96,35 +96,33 @@ export default function Timeline() {
     return config;
   }, [isWeedzScreen]);
 
-  const loadComments = async () => {};
-
   const getPlayerValue = useCallback(
     (currentItem: PostDetail | ReelsDetail | GrowPostDetail) => {
       let player: VideoPlayer | undefined = undefined;
+      const isSocialOrGrow = [TimelineType.SOCIAL, TimelineType.GROW].includes(
+        params.type
+      );
 
       if (isWeedzScreen) {
         const item = currentItem as ReelsDetail;
+        item.player.replace({
+          uri: item.file.file,
+          metadata: {
+            title: `title-weedz-${item.id}`,
+            artist: `artist-weedz-${item.id}`,
+          },
+        });
         player = item.player;
       }
 
-      if (params.type === TimelineType.SOCIAL) {
-        const item = currentItem as PostDetail;
+      if (isSocialOrGrow) {
+        const item: GrowPostDetail | PostDetail = currentItem as any;
         const playerItem = item.files.find((file) => {
           return file.type === "video";
         });
 
         if (playerItem) {
-          player = playerItem.player;
-        }
-      }
-
-      if (params.type === TimelineType.GROW) {
-        const item = currentItem as GrowPostDetail;
-        const playerItem = item.files.find((file) => {
-          return file.type === "video";
-        });
-
-        if (playerItem) {
+          playerItem.player.replace({ uri: playerItem.file });
           player = playerItem.player;
         }
       }
@@ -147,42 +145,6 @@ export default function Timeline() {
       setIsRefreshing(false);
     }
   }, []);
-
-  const viewabilityConfigCallbackPairs = useRef([
-    {
-      viewabilityConfig: { itemVisiblePercentThreshold: 50 },
-      onViewableItemsChanged: ({
-        changed,
-        viewableItems,
-      }: {
-        viewableItems: ViewToken<ReelsDetail | PostDetail | GrowPostDetail>[];
-        changed: ViewToken<ReelsDetail | PostDetail | GrowPostDetail>[];
-      }) => {
-        if (viewableItems.length > 0) {
-          const [visibleItem] = viewableItems;
-          const [_, oldVisibleItem] = changed;
-
-          const currentItem = visibleItem?.item ?? null;
-          const currentId = currentItem?.id || 0;
-
-          if (isWeedzScreen) {
-            setCurrentVideoId(currentId);
-          }
-
-          pauseVideo();
-          toggleAudioMute(mutedVideo);
-
-          const playerValue = getPlayerValue(currentItem);
-
-          if (currentItem && currentItem.id) {
-            setPlayer(playerValue);
-            toggleAudioMute(mutedVideo);
-            playVideo();
-          }
-        }
-      },
-    },
-  ]);
 
   const onViewableItemsChanged = useCallback(
     (info: {
@@ -215,10 +177,6 @@ export default function Timeline() {
     },
     [isWeedzScreen, mutedVideo, getPlayerValue]
   );
-
-  const refetchData = useCallback(async () => {
-    await refetch();
-  }, []);
 
   const stickyHeaderHiddenOnScroll = useMemo(() => {
     if (isWeedzScreen) {
@@ -253,18 +211,26 @@ export default function Timeline() {
 
   const handlerPlayerVideo = (indexItem: number) => {
     const isWeedz = params.type === TimelineType.WEEDZ;
-    const isSocial = params.type === TimelineType.SOCIAL;
-    const isGrow = params.type === TimelineType.GROW;
-
+    const isSocialOrGrow = [TimelineType.SOCIAL, TimelineType.GROW].includes(
+      params.type
+    );
     const post = data[indexItem];
 
-    if (isWeedz) {
+    if (isWeedz) {   
       const weedzPost = post as ReelsDetail;
+      weedzPost.player.replace({
+        uri: weedzPost.file.file,
+        metadata: {
+          title: `title-weedz-${weedzPost.id}`,
+          artist: `artist-weedz-${weedzPost.id}`,
+        },
+      });
       setPlayer(weedzPost.player);
+      playVideo();
       setCurrentVideoId(weedzPost.id);
     }
 
-    if (isSocial || isGrow) {
+    if (isSocialOrGrow) {
       const socialPost = post as PostDetail;
 
       const postWithVideo = socialPost.files.find((file) => {
@@ -272,6 +238,7 @@ export default function Timeline() {
       });
 
       if (postWithVideo) {
+        postWithVideo.player.replace({ uri: postWithVideo.file });
         setPlayer(postWithVideo.player);
       }
     }
@@ -289,7 +256,6 @@ export default function Timeline() {
 
   const handlerGoBack = () => {
     pauseVideo();
-    queryClient.removeQueries({ queryKey: ["timeline"] });
     setPlayer(undefined);
     router.back();
   };
@@ -315,7 +281,6 @@ export default function Timeline() {
       [TimelineType.SOCIAL]: (
         <PostCard
           key={`post_card_${index}`}
-          loadComments={loadComments}
           handlerAudioMute={handlerMutedVideo}
           audioMute={mutedVideo}
           post={item as PostDetail}
@@ -335,7 +300,7 @@ export default function Timeline() {
                 controls: {
                   handlerMutedVideo,
                   showProgressBar: true,
-                  showButtonPlay: true,
+                  showButtonPlay: false,
                 },
                 muted: mutedVideo,
                 player: (item as ReelsDetail).player,
@@ -352,7 +317,6 @@ export default function Timeline() {
           handlerAudioMute={handlerMutedVideo}
           audioMute={mutedVideo}
           post={item as GrowPostDetail}
-          loadComments={loadComments}
         />
       ),
     };
@@ -362,39 +326,33 @@ export default function Timeline() {
 
   const handleScrollToIndex = async () => {
     const hasData =
-      !isLoading &&
       data.length > 0 &&
-      postId &&
       flatListRef.current &&
       !hasScrolledToItem;
 
     let indexPostSelected = indexItemSelected;
 
-    if (params.index == "") {
-      indexPostSelected = data.findIndex(
-        (postData) => postData.post_id === postId
-      );
-    }
+    console.log('handleScrollToIndex 1 ', indexItemSelected);
 
     if (hasData) {
-      if (indexPostSelected >= data.length) {
-        await fetchNextPage();
-      } else {
-        const index = indexPostSelected != -1 ? indexPostSelected : 0;
-        setIndexItemSelected(index);
-        handlerPlayerVideo(index);
-        flatListRef.current.scrollToIndex({
-          index,
-          animated: true,
-        });
-        setHasScrolledToItem(true);
-      }
+      console.log('handleScrollToIndex 2');
+      const index = indexPostSelected > 0 ? indexPostSelected : 0;
+      handlerPlayerVideo(index);
+      flatListRef.current.scrollToIndex({
+        index,
+        animated: true,
+      });
+      setHasScrolledToItem(true);
     }
   };
 
   useEffect(() => {
-    handleScrollToIndex();
-  }, [data]);
+    handleScrollToIndex()
+  }, [])
+
+  // useEffect(() => {
+  //   handleScrollToIndex();
+  // }, [data]);
 
   useFocusEffect(
     useCallback(() => {
@@ -459,13 +417,13 @@ export default function Timeline() {
         onViewableItemsChanged={onViewableItemsChanged}
         pagingEnabled={isWeedzScreen}
         onScrollToIndexFailed={handleScrollToIndexFailed}
-        ListFooterComponent={
-          !hasScrolledToItem ? (
-            <View className="flex-1 justify-center items-center bg-black-100">
-              <Loader isLoading />
-            </View>
-          ) : null
-        }
+        // ListFooterComponent={
+        //   !hasScrolledToItem ? (
+        //     <View className="flex-1 justify-center items-center bg-black-100">
+        //       <Loader isLoading />
+        //     </View>
+        //   ) : null
+        // }
       />
     </SafeAreaView>
   );

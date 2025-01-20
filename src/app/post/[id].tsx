@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { colors } from "@/styles/colors";
 import { router, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useEffect} from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,6 +13,7 @@ import Toast from "react-native-toast-message";
 import { getPost } from "@/api/social/post/get-post";
 import Loader from "@/components/ui/loader";
 import { queryClient } from "@/lib/react-query";
+import { useVideoPlayerContext } from "@/context/video-player-context";
 
 const showErrorToast = (message: string) => {
   Toast.show({
@@ -35,22 +36,25 @@ export default function Post() {
   const params = useLocalSearchParams();
   const { id } = (params as { id: string }) || {};
   const { handlePostChange } = useActivePostHome();
+  const { toggleAudioMute } = useVideoPlayerContext();
+
+  const [audioMute, setAudioMute] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["post-data", id],
     queryFn: async () => {
       const postId = Number(id);
-      const [post] = await Promise.all([
-        getPost(postId),
-      ]);
+      const [post] = await Promise.all([getPost(postId)]);
       return { post };
     },
     enabled: !!id,
   });
 
-  const loadComments = async () => {
-    queryClient.removeQueries({ queryKey: ["post-data"] });
-  };
+  const handlerMutedVideo = useCallback(() => {
+    const value = !audioMute;
+    toggleAudioMute(value);
+    setAudioMute(value);
+  }, [audioMute]);
 
   useEffect(() => {
     if (data?.post) {
@@ -86,7 +90,8 @@ export default function Post() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {post && (
             <PostCard
-              loadComments={loadComments}
+              handlerAudioMute={handlerMutedVideo}
+              audioMute={audioMute}
               post={post}
             />
           )}

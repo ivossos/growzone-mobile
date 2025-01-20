@@ -1,6 +1,4 @@
-import { SocialPost } from "@/api/@types/models";
-import { getUserPosts } from "@/api/social/post/get-user-posts";
-import { useAuth } from "@/hooks/use-auth";
+import { PostDetail } from "@/api/@types/models";
 import { replaceMediaUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { router } from "expo-router";
@@ -14,8 +12,6 @@ import {
   View,
 } from "react-native";
 import Animated from "react-native-reanimated";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import Toast from "react-native-toast-message";
 import { TimelineType } from "@/api/@types/enums";
 import { Video } from "lucide-react-native";
 
@@ -23,11 +19,11 @@ const w = Dimensions.get("window").width;
 
 type Props = {
   userId: number;
-  data: SocialPost;
+  data: PostDetail;
   index: number;
 };
 
-const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
+const ConnectionPostList = forwardRef<Animated.FlatList<PostDetail>, Props>(
   ({ userId, data, index }, ref) => {
     if (data.is_compressing) {
       if (data.id !== userId) return null;
@@ -44,6 +40,8 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
       );
     }
 
+    const [file] = data.files
+
     return (
       <TouchableOpacity
         onPress={() =>
@@ -59,21 +57,21 @@ const ConnectionPostList = forwardRef<Animated.FlatList<SocialPost>, Props>(
         }
         className="m-1"
       >
-        {data?.file?.type === "image" ? (
+        {file.type === "image" ? (
           <Image
-            source={{ uri: data?.file?.file }}
+            source={{ uri: file.file }}
             style={styles.image}
             resizeMode="cover"
           />
         ) : (
           <Fragment>
             <Image
-              source={{ uri: replaceMediaUrl(data?.file?.file) }}
+              source={{ uri: replaceMediaUrl(file.file) }}
               style={styles.image}
               resizeMode="cover"
             />
 
-            {data.file.type === "video" && (
+            {file.type === "video" && (
               <View style={styles.videoIconContainer}>
                 <Video size={18} color={colors.brand.white} />
               </View>

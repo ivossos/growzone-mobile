@@ -1,5 +1,11 @@
 import { TimelineType } from "@/api/@types/enums";
-import { GrowPost, SocialPost } from "@/api/@types/models";
+import {
+  GrowPost,
+  GrowPostDetail,
+  PostDetail,
+  ReelsDetail,
+  SocialPost,
+} from "@/api/@types/models";
 import { RefObject } from "react";
 import { FlatList } from "react-native";
 import Animated from "react-native-reanimated";
@@ -30,4 +36,4 @@ export interface TabData {
   value: TimelineType;
 }
 
-export type ItemData = SocialPost | GrowPost
+export type ItemData = PostDetail | ReelsDetail | GrowPostDetail;

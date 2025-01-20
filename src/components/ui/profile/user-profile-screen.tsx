@@ -53,7 +53,14 @@ import {
 } from "@shopify/flash-list";
 import { TimelineType } from "@/api/@types/enums";
 import useProfile from "@/hooks/useProfile";
-import { GrowPost, SocialPost } from "@/api/@types/models";
+import {
+  GrowPost,
+  GrowPostDetail,
+  PostDetail,
+  ReelsDetail,
+  SocialPost,
+} from "@/api/@types/models";
+import useTimeline from "@/hooks/useTimeline";
 
 const TAB_BAR_HEIGHT = 48;
 const HEADER_HEIGHT = 0;
@@ -70,43 +77,50 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   const { user } = useAuth();
   const { openBottomSheet } = useBottomSheetContext();
 
-  const data = useProfile({ userId, type: activeTab });
+  // const data = useProfile({ userId, type: activeTab });
+
+  const { data, isLoading, hasNextPage, isRefetching, fetchNextPage, refetch } =
+    useTimeline({
+      userId,
+      type: activeTab,
+      loadVideoPlayer: true
+    });
 
   const postRef = useRef<FlatList>(null);
   const reelsRef = useRef<FlatList>(null);
   const growPostsRef = useRef<FlatList>(null);
 
   const renderPosts = useCallback(
-    (data: SocialPost, index: number) => (
+    (postDetails: PostDetail, index: number) => (
       <ConnectionPostList
         ref={postRef as any}
         index={index}
         userId={userId}
-        data={data}
+        data={postDetails}
       />
     ),
     [userId, postRef]
   );
 
   const renderReels = useCallback(
-    (data: SocialPost, index: number) => (
+    (reelsDetail: ReelsDetail, index: number) => (
       <ConnectionReelstList
         ref={reelsRef as any}
         index={index}
         userId={userId}
-        data={data}
+        data={reelsDetail}
       />
     ),
     [userId, reelsRef]
   );
 
   const renderGrowPost = useCallback(
-    (data: GrowPost, index: number) => (
+    (growPostDetail: GrowPostDetail, index: number) => (
       <ConnectionGrowPostList
         ref={growPostsRef as any}
         userId={userId}
         index={index}
-        data={data}
+        data={growPostDetail}
       />
     ),
     [growPostsRef, userId]
@@ -115,6 +129,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   const handleRefresh = useCallback(() => {
     try {
       setIsRefreshing(true);
+      queryClient.removeQueries({ queryKey: ["timeline"] });
       queryClient.removeQueries({ queryKey: ["profile"] });
       queryClient.removeQueries({ queryKey: ["follow"] });
       queryClient.removeQueries({ queryKey: ["profile-posts"] });
@@ -138,7 +153,6 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
           { type: TimelineType.WEEDZ, userId: user.id },
         ],
       });
-      queryClient.removeQueries({ queryKey: ["timeline"] });
     } catch (error) {
       console.error("Erro ao atualizar dados:", error);
     } finally {
@@ -223,6 +237,12 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
 
   const handleReviewsPress = (id: number) => {
     openBottomSheet({ type: "reviews-profile", userId: id });
+  };
+
+  const handleLoadMore = async () => {
+    if (hasNextPage && !isLoading && !isRefreshing) {
+      await fetchNextPage();
+    }
   };
 
   const handleRateProfilePress = (id: number) => {
@@ -381,16 +401,17 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   return (
     <MasonryFlashList
       key={`list_${activeTab}`}
-      data={data.data}
+      data={data}
       renderItem={renderItem}
-      keyExtractor={(item) => `tab_${item.id}`}
+      keyExtractor={(item, index) => `post_${item.id}_${index}`}
       estimatedItemSize={100}
       showsVerticalScrollIndicator={false}
       numColumns={getColumnFlex()}
       getColumnFlex={getColumnFlex}
       contentContainerStyle={{ backgroundColor: colors.black[100] }}
-      onEndReached={() => data.hasNextPage && data.fetchNextPage()}
-      onEndReachedThreshold={0.5}
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={0.2}
+      refreshing={isRefreshing}
       refreshControl={
         <RefreshControl
           refreshing={isRefreshing}
@@ -399,12 +420,12 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
         />
       }
       ListFooterComponent={() => {
-        if (data.isLoading) {
+        if (isLoading) {
           return <Loader isLoading />;
         }
       }}
       ListEmptyComponent={() => {
-        if (!data.isLoading && data.data.length === 0) {
+        if (!isLoading && data.length === 0) {
           return (
             <View className="flex flex-col justify-center items-center py-6">
               <Text className="text-base text-brand-grey">
@@ -426,7 +447,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
           >
             {tabData.map((tab, index) => (
               <TouchableOpacity
-                key={`item_${index}`}
+                key={`tab_item_${index}`}
                 onPress={() => handlerChangeTab(tab.value)}
                 style={{
                   alignItems: "center",
