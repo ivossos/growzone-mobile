@@ -136,7 +136,7 @@ export default function HomeScreen() {
     }
 
     return <View className="bg-black-100 h-full" />;
-  }, [topContributors]);
+  }, [topContributors.isLoading, topContributors.data, posts.isLoading]);
 
   const viewabilityConfigCallbackPairs = useRef([
     {

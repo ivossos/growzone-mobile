@@ -80,7 +80,6 @@ export default function Timeline() {
     useTimeline({
       userId,
       type: params.type,
-      loadVideoPlayer: true,
     });
 
   const isWeedzScreen = useMemo(() => {
@@ -216,7 +215,7 @@ export default function Timeline() {
     );
     const post = data[indexItem];
 
-    if (isWeedz) {   
+    if (isWeedz) {
       const weedzPost = post as ReelsDetail;
       weedzPost.player.replace({
         uri: weedzPost.file.file,
@@ -265,12 +264,10 @@ export default function Timeline() {
       return (
         <View
           key={`is_compressing_${index}`}
-          className="bg-black-90 rounded-lg border border-black-80"
+          style={{ width: "90%", height: 550, borderRadius: 16 }}
+          className="bg-black-90 rounded-lg border border-black-80 mx-6"
         >
-          <View
-            className="flex flex-row justify-center items-center"
-            style={styles.image}
-          >
+          <View className="flex justify-center items-center h-full">
             <ActivityIndicator size="small" color={colors.brand.green} />
           </View>
         </View>
@@ -326,16 +323,11 @@ export default function Timeline() {
 
   const handleScrollToIndex = async () => {
     const hasData =
-      data.length > 0 &&
-      flatListRef.current &&
-      !hasScrolledToItem;
+      data.length > 0 && flatListRef.current && !hasScrolledToItem;
 
     let indexPostSelected = indexItemSelected;
 
-    console.log('handleScrollToIndex 1 ', indexItemSelected);
-
     if (hasData) {
-      console.log('handleScrollToIndex 2');
       const index = indexPostSelected > 0 ? indexPostSelected : 0;
       handlerPlayerVideo(index);
       flatListRef.current.scrollToIndex({
@@ -347,12 +339,8 @@ export default function Timeline() {
   };
 
   useEffect(() => {
-    handleScrollToIndex()
-  }, [])
-
-  // useEffect(() => {
-  //   handleScrollToIndex();
-  // }, [data]);
+    handleScrollToIndex();
+  }, []);
 
   useFocusEffect(
     useCallback(() => {

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { TouchableOpacity, Text } from "react-native";
 import BottomSheet, {
   BottomSheetBackdrop,
+  BottomSheetBackdropProps,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
 import { colors } from "@/styles/colors";
@@ -14,6 +15,7 @@ import { ReportReason } from "@/api/@types/models";
 import { createReport } from "@/api/social/post/report/create-report";
 import Loader from "./loader";
 import AnimatedSuccess from "./animated-success";
+import { createReportComment } from "@/api/social/post/report/create-report-comment";
 
 interface ReportCommentBottomSheetProps {
   onClose: () => void;
@@ -23,21 +25,20 @@ const ReportCommentBottomSheet = React.forwardRef<
   BottomSheet,
   ReportCommentBottomSheetProps
 >(({ onClose }, ref) => {
-  const [reportSubmitted, setReportSubmitted] = useState(false);
+  const [reportCommentSubmitted, setReportCommentSubmitted] = useState(false);
   const [reportReasons, setReportReasons] = useState<ReportReason[]>([]);
-  const [reportSuccess, setReportSuccess] = useState(false);
   const [isLoadingFetchReportReasons, setIsLoadingFetchReportReasons] =
     useState(false);
   const [isDecided, setIsDecided] = useState<ReportReason | null>(null);
   const snapPoints = useMemo(() => ["30%", "40%", "70%", "90%"], []);
 
-  const { postId, data: commentData, isVisible, currentType, closeBottomSheet, callback } =
+  const { data: commentData, isVisible, currentType, closeBottomSheet, callback } =
     useBottomSheetContext();
 
   const fetchReportReasons = useCallback(async () => {
-    try {
-      setIsLoadingFetchReportReasons(true);
+    setIsLoadingFetchReportReasons(true);
 
+    try {
       const data = await getReportReasons({});
       setReportReasons(data);
     } catch (error) {
@@ -55,7 +56,7 @@ const ReportCommentBottomSheet = React.forwardRef<
   const handleClose = async () => {
     onClose();
     closeBottomSheet();
-    setReportSubmitted(false);
+    setReportCommentSubmitted(false);
     setIsDecided(null);
     if (callback) {
       await callback({ ok: true });
@@ -63,37 +64,36 @@ const ReportCommentBottomSheet = React.forwardRef<
   };
 
   const renderBackdrop = useCallback(
-    (props: any) => (
+    (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop {...props} opacity={0.8} appearsOnIndex={1} />
     ),
     []
   );
 
-  const handleReportSubmit = useCallback(async () => {
-    if (!postId || !isDecided) {
+  const handleReportCommentSubmit = useCallback(async () => {
+    if (!commentData || !isDecided) {
       Toast.show({
         type: "error",
         text1: "Erro",
         text2: "Não foi possível reportar o post. Tente novamente.",
       });
-      setReportSuccess(false);
       return;
     }
 
+    const commentInfo: { commentId: number } = commentData
+
     try {
-      await createReport(postId, isDecided.id);
-      setReportSubmitted(true);
-      setReportSuccess(true);
+      await createReportComment(commentInfo.commentId, isDecided.id);
+      setReportCommentSubmitted(true);
       ref?.current?.snapToIndex(2);
     } catch (error) {
-      setReportSuccess(false);
       Toast.show({
         type: "error",
         text1: "Erro",
         text2: "Falha ao enviar o report, tente novamente.",
       });
     }
-  }, [postId, isDecided]);
+  }, [commentData, isDecided]);
 
   useEffect(() => {
     if (isVisible && currentType === "report-comment") {
@@ -133,7 +133,7 @@ const ReportCommentBottomSheet = React.forwardRef<
 
       <TouchableOpacity
         className="flex justify-center items-center min-h-[56px] px-4 bg-brand-green rounded-lg w-full"
-        onPress={handleReportSubmit}
+        onPress={handleReportCommentSubmit}
       >
         <Text className="text-brand-black text-base font-medium">Reportar</Text>
       </TouchableOpacity>
@@ -192,7 +192,7 @@ const ReportCommentBottomSheet = React.forwardRef<
       backdropComponent={renderBackdrop}
       onClose={closeBottomSheet}
     >
-      {reportSubmitted ? (
+      {reportCommentSubmitted ? (
         <ReportedSuccessfully />
       ) : isDecided ? (
         <ReportedDecision />

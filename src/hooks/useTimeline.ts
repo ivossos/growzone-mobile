@@ -20,32 +20,30 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
   ): Promise<Array<ReelsDetail>> => {
     let weedzPosts = await getAllWeedzPost(params);
 
-    if (props.loadVideoPlayer) {
-      weedzPosts = weedzPosts.map((weedzPost, index) => {
-        if (weedzPost.file.type === "image") {
-          return weedzPost;
-        }
+    weedzPosts = weedzPosts.map((weedzPost, index) => {
+      if (weedzPost.file.type === "image") {
+        return weedzPost;
+      }
 
-        const player = createVideoPlayer({
-          metadata: {
-            title: `title-weedz-${index}`,
-            artist: `artist-weedz-${index}`,
-          },
-        });
-
-        player.loop = true;
-        player.muted = false;
-        player.timeUpdateEventInterval = 2;
-        player.volume = 1.0;
-
-        weedzPost.file.player = player;
-
-        return {
-          ...weedzPost,
-          player,
-        };
+      const player = createVideoPlayer({
+        metadata: {
+          title: `title-weedz-${index}`,
+          artist: `artist-weedz-${index}`,
+        },
       });
-    }
+
+      player.loop = true;
+      player.muted = false;
+      player.timeUpdateEventInterval = 2;
+      player.volume = 1.0;
+
+      weedzPost.file.player = player;
+
+      return {
+        ...weedzPost,
+        player,
+      };
+    });
 
     return weedzPosts;
   };
@@ -55,37 +53,35 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
   ): Promise<Array<PostDetail>> => {
     let socialPosts = await getAllSocialPost(params);
 
-    if (props.loadVideoPlayer) {
-      socialPosts = socialPosts.map((socialPost) => {
-        const files = socialPost.files.map((file, index) => {
-          if (file.type === "image") {
-            return file;
-          }
+    socialPosts = socialPosts.map((socialPost) => {
+      const files = socialPost.files.map((file, index) => {
+        if (file.type === "image") {
+          return file;
+        }
 
-          const player = createVideoPlayer({
-            metadata: {
-              title: `title-social-post-${index}`,
-              artist: `artist-social-post-${index}`,
-            },
-          });
-
-          player.loop = true;
-          player.muted = false;
-          player.timeUpdateEventInterval = 2;
-          player.volume = 1.0;
-
-          return {
-            ...file,
-            player,
-          };
+        const player = createVideoPlayer({
+          metadata: {
+            title: `title-social-post-${index}`,
+            artist: `artist-social-post-${index}`,
+          },
         });
 
+        player.loop = true;
+        player.muted = false;
+        player.timeUpdateEventInterval = 2;
+        player.volume = 1.0;
+
         return {
-          ...socialPost,
-          files,
+          ...file,
+          player,
         };
       });
-    }
+
+      return {
+        ...socialPost,
+        files,
+      };
+    });
 
     return socialPosts;
   };
@@ -95,37 +91,35 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
   ): Promise<Array<GrowPostDetail>> => {
     let growPosts = await getAllGrowPost(params);
 
-    if (props.loadVideoPlayer) {
-      growPosts = growPosts.map((growPost) => {
-        const files = growPost.files.map((file, index) => {
-          if (file.type === "image") {
-            return file;
-          }
+    growPosts = growPosts.map((growPost) => {
+      const files = growPost.files.map((file, index) => {
+        if (file.type === "image") {
+          return file;
+        }
 
-          const player = createVideoPlayer({
-            metadata: {
-              title: `title-grow-post-${index}`,
-              artist: `artist-grow-post-${index}`,
-            },
-          });
-
-          player.loop = true;
-          player.muted = false;
-          player.timeUpdateEventInterval = 2;
-          player.volume = 1.0;
-
-          return {
-            ...file,
-            player,
-          };
+        const player = createVideoPlayer({
+          metadata: {
+            title: `title-grow-post-${index}`,
+            artist: `artist-grow-post-${index}`,
+          },
         });
 
+        player.loop = true;
+        player.muted = false;
+        player.timeUpdateEventInterval = 2;
+        player.volume = 1.0;
+
         return {
-          ...growPost,
-          files,
+          ...file,
+          player,
         };
       });
-    }
+
+      return {
+        ...growPost,
+        files,
+      };
+    });
 
     return growPosts;
   };

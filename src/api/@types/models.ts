@@ -470,7 +470,6 @@ export interface TimelineParams {
   skip: number;
   limit: number;
   userId: number;
-  loadVideoPlayer: boolean;
 }
 
 export interface VideoPlayerHandle {

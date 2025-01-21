@@ -5,7 +5,6 @@ import { router } from "expo-router";
 import React, { forwardRef, Fragment, memo } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   Image,
   StyleSheet,
   TouchableOpacity,
@@ -14,8 +13,6 @@ import {
 import Animated from "react-native-reanimated";
 import { TimelineType } from "@/api/@types/enums";
 import { Video } from "lucide-react-native";
-
-const w = Dimensions.get("window").width;
 
 type Props = {
   userId: number;
@@ -26,10 +23,8 @@ type Props = {
 const ConnectionPostList = forwardRef<Animated.FlatList<PostDetail>, Props>(
   ({ userId, data, index }, ref) => {
     if (data.is_compressing) {
-      if (data.id !== userId) return null;
-
       return (
-        <View className="mb-1 bg-black-90">
+        <View className="m-1 bg-black-90">
           <View
             className="flex flex-row justify-center items-center"
             style={styles.image}
@@ -40,7 +35,7 @@ const ConnectionPostList = forwardRef<Animated.FlatList<PostDetail>, Props>(
       );
     }
 
-    const [file] = data.files
+    const [file] = data.files;
 
     return (
       <TouchableOpacity

@@ -81,8 +81,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   const { data, isLoading, hasNextPage, isRefetching, fetchNextPage, refetch } =
     useTimeline({
       userId,
-      type: activeTab,
-      loadVideoPlayer: true
+      type: activeTab
     });
 
   const postRef = useRef<FlatList>(null);
@@ -239,7 +238,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   };
 
   const handleLoadMore = async () => {
-    if (hasNextPage && !isLoading && !isRefreshing) {
+    if (hasNextPage) {
       await fetchNextPage();
     }
   };

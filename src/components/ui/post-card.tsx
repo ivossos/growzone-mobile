@@ -75,7 +75,6 @@ const PostCard = ({
 
   const handlerOpenCommentSheet = useCallback(() => {
     pauseVideo()
-    console.log('oi');
     
     openBottomSheet({
       type: "comment",
