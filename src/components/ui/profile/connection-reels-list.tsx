@@ -75,7 +75,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<ReelsDetail>, Props>(
         >
           <Eye size={18} color={colors.brand.white} />
           <Text className="text-white text-base font-medium">
-            {0}
+            {data.view_count || 0}
           </Text>
         </LinearGradient>
       </TouchableOpacity>

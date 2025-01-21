@@ -1,5 +1,5 @@
 import { VideoPlayer, VideoSource } from "expo-video";
-import { GlobalSearchType, TimelineType } from "./enums";
+import { GlobalSearchType, PostType, TimelineType } from "./enums";
 
 export interface User {
   id: number;
@@ -236,6 +236,7 @@ export interface ReelsDetail {
   like_count: number;
   comment_count: number;
   created_at: string;
+  view_count: number;
   is_compressing: boolean;
   is_liked: boolean;
   is_viewed: boolean;
@@ -351,7 +352,7 @@ export interface GrowPostDetail {
 }
 
 export interface FeedAllPost {
-  type: 'grow' | 'social' | 'reel'
+  type: PostType
   post: GrowPostDetail | PostDetail | ReelsDetail
 }
 

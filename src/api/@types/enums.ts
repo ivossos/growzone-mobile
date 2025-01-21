@@ -10,8 +10,8 @@ export enum TimelineType {
 }
 
 export enum PostType {
-  GROW_POST = 'grow_post',
-  SOCIAL_POST = 'social_post',
-  WEEDZ_POST = 'weedz_post',
+  GROW_POST = 'grow',
+  SOCIAL_POST = 'social',
+  WEEDZ_POST = 'reel',
 }
 

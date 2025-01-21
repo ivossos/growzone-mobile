@@ -139,9 +139,6 @@ const useTimeline = (props: Omit<TimelineParams, "limit" | "skip">) => {
       type,
     };
 
-    console.log('parou request');
-    
-
     const handlers = {
       [TimelineType.SOCIAL]: () =>
         findAllSocialPost({ ...params, skip: pageParam, limit }),

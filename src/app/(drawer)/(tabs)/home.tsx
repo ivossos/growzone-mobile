@@ -1,4 +1,10 @@
-import React, { useState, Fragment, useRef, useCallback, ReactNode } from "react";
+import React, {
+  useState,
+  Fragment,
+  useRef,
+  useCallback,
+  ReactNode,
+} from "react";
 import {
   View,
   RefreshControl,
@@ -20,19 +26,31 @@ import ContributorCard from "@/components/ui/contributor-card";
 import Loader from "@/components/ui/loader";
 
 import useHome from "@/hooks/useHome";
-import { FeedAllPost, GrowPostDetail, PostDetail, ReelsDetail } from "@/api/@types/models";
+import {
+  FeedAllPost,
+  GrowPostDetail,
+  PostDetail,
+  ReelsDetail,
+} from "@/api/@types/models";
 import { useVideoPlayerContext } from "@/context/video-player-context";
 import UpdateAppModal from "@/components/ui/update-app";
 import { useScrollToTop } from "@/context/scroll-top-context";
 import { useFocusEffect } from "expo-router";
+import { PostType } from "@/api/@types/enums";
 
 export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [audioMute, setAudioMute] = useState(false);
   const [activePostId, setActivePostId] = useState<number | null>(null);
 
-  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, isMuted, clearPlayer } =
-    useVideoPlayerContext();
+  const {
+    pauseVideo,
+    toggleAudioMute,
+    playVideo,
+    setPlayer,
+    isMuted,
+    clearPlayer,
+  } = useVideoPlayerContext();
 
   const { posts, topContributors } = useHome();
   const { setFlatListRef } = useScrollToTop();
@@ -41,37 +59,37 @@ export default function HomeScreen() {
     setIsRefreshing(true);
     const queryKeyValue =
       posts.data.length === 0 ? "top-contributors" : "home-posts";
-    await queryClient.invalidateQueries({ queryKey: [queryKeyValue] });
-    setIsRefreshing(false);
+    queryClient.removeQueries({ queryKey: [queryKeyValue] });
     pauseVideo();
     clearPlayer();
+    setIsRefreshing(false);
   }, [posts.data]);
 
   const handlerAudioMute = useCallback((value: boolean) => {
-    toggleAudioMute(value)
-    setAudioMute(value)
+    toggleAudioMute(value);
+    setAudioMute(value);
   }, []);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<FeedAllPost>) => {
       const componentsMap = {
-        ['social']: PostCard,
-        ['grow']: GrowPostCard,
-        ['reel']: WeedzPostCard,
+        [PostType.SOCIAL_POST]: PostCard,
+        [PostType.GROW_POST]: GrowPostCard,
+        [PostType.WEEDZ_POST]: WeedzPostCard,
       };
-  
+
       const Component: any = componentsMap[item.type];
-  
+
       const commonProps = {
         post: item.post,
         audioMute,
         handlerAudioMute,
       };
-  
+
       return (
         <Component
           {...commonProps}
-          {...(item.type === "reel" && { activePostId })}
+          {...(item.type === PostType.WEEDZ_POST && { activePostId })}
         />
       );
     },
@@ -106,6 +124,7 @@ export default function HomeScreen() {
           <FlashList
             data={topContributors.data}
             horizontal
+            estimatedItemSize={50}
             showsHorizontalScrollIndicator={false}
             keyExtractor={(user) => user.id.toString()}
             renderItem={({ item }) => (
@@ -137,26 +156,30 @@ export default function HomeScreen() {
         }
 
         if (viewableItem) {
-          const isSocialOrGrow = ['grow', 'social'].includes(viewableItem.item.type)
-          let file =  (viewableItem.item.post as ReelsDetail).file
+          const isSocialOrGrow = [
+            PostType.GROW_POST,
+            PostType.SOCIAL_POST,
+          ].includes(viewableItem.item.type);
+          let file = (viewableItem.item.post as ReelsDetail).file;
 
           if (isSocialOrGrow) {
-            file = (viewableItem.item.post as GrowPostDetail | PostDetail).files[0]
+            file = (viewableItem.item.post as GrowPostDetail | PostDetail)
+              .files[0];
           } else {
-            setActivePostId(viewableItem.item.post.id)
+            setActivePostId(viewableItem.item.post.id);
           }
 
-          if (file && file.type === "video") {
-            const oldPlayerIsMuted = isMuted()
+          if (file && file.type === "video") {   
+            const oldPlayerIsMuted = isMuted();
+            pauseVideo();
             setPlayer(file.player);
-            toggleAudioMute(oldPlayerIsMuted)
+            toggleAudioMute(oldPlayerIsMuted);
             playVideo();
           }
         }
       },
     },
   ]);
-
 
   useFocusEffect(
     useCallback(() => {
@@ -198,7 +221,7 @@ export default function HomeScreen() {
           }
           onEndReached={() => {
             if (posts.hasNextPage) {
-              posts.fetchNextPage()
+              posts.fetchNextPage();
             }
           }}
           onEndReachedThreshold={0.8}

@@ -18,6 +18,7 @@ import Toast from "react-native-toast-message";
 
 import React, {
   ElementType,
+  Fragment,
   memo,
   useCallback,
   useMemo,
@@ -76,8 +77,6 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
 
   const { user } = useAuth();
   const { openBottomSheet } = useBottomSheetContext();
-
-  // const data = useProfile({ userId, type: activeTab });
 
   const { data, isLoading, hasNextPage, isRefetching, fetchNextPage, refetch } =
     useTimeline({
@@ -305,7 +304,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
       [TimelineType.GROW]: renderGrowPost,
     };
 
-    const Component = screens[activeTab];
+    const Component = screens[activeTab] || <Fragment />;
     return Component(item as any, index);
   };
 
