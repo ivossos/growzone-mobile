@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import React, { useRef } from "react";
 import icons from "@/constants/icons";
-import { Image, ImageSourcePropType, View } from "react-native";
+import { Image, ImageSourcePropType, Platform, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import "@/styles/global.css";
 import BottomSheet from "@gorhom/bottom-sheet";
@@ -32,7 +32,7 @@ type TabIconProps = {
 const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
   return focused ? (
     <LinearGradient
-      className="flex-1"
+      className="flex items-center justify-center flex-1 h-full"
       colors={[
         "#161616",
         "#161616",
@@ -53,7 +53,7 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
       </View>
     </LinearGradient>
   ) : (
-    <View className="flex items-center justify-center w-16 h-full">
+    <View className="flex items-center justify-center w-16 h-full flex-1">
       <Image
         source={icon}
         resizeMode="contain"
@@ -132,10 +132,10 @@ export default function TabLayout() {
         <Tabs
           screenOptions={{
             tabBarActiveTintColor: "#2CC420",
-            tabBarInactiveTintColor: "#565656",
+            tabBarInactiveTintColor: "#FFF",
             tabBarShowLabel: false,
             tabBarStyle: {
-              height: 82,
+              height: Platform.OS === 'ios' ? 72 : 60,
               backgroundColor: "#161616",
               borderTopColor: "#161616",
             },
