@@ -54,6 +54,7 @@ import { BottomSheetMethods } from "@gorhom/bottom-sheet/lib/typescript/types";
 import { useVideoPlayerContext } from "@/context/video-player-context";
 import { PostType } from "@/api/@types/enums";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useCreatePostProgress } from "@/hooks/use-create-post-progress";
 
 export const GrowPostValidation = z.object({
   day: z.string().min(1, "Adicione os dias desse cultivo"),
@@ -153,6 +154,7 @@ const CreateBottomSheet = React.forwardRef<
 >(({ onClose, handlerCreateBottomSheet }, ref) => {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const { createSocialPost, createReelsPost, createGrowPost } = useCreatePostProgress();
   const { pauseVideo, setPlayer } = useVideoPlayerContext();
   const [currentAction, setCurrentAction] = useState<PostType | null>(null);
   const [postDescription, setPostDescription] = useState("");
@@ -219,26 +221,32 @@ const CreateBottomSheet = React.forwardRef<
 
     setIsLoadingCreatePost(true);
 
-    const uploadPromises = [];
-
     try {
-      const post = await createSocialPost({
-        images: selectedImages,
-        video_count: selectedVideos.length,
+
+      createSocialPost({
+        userId: user.id, 
+        images: selectedImages, 
+        videos: selectedVideos, 
         description: postDescription,
       });
+      
+      // const post = await createSocialPost({
+      //   images: selectedImages,
+      //   video_count: selectedVideos.length,
+      //   description: postDescription,
+      // });
 
-      for (const video of selectedVideos) {
-        const uploadPromise = uploadVideo(post.post_id, video).catch(
-          (error) => {
-            console.error(`Erro ao enviar o vídeo ${video}`, error);
-            return Promise.reject(error);
-          }
-        );
-        uploadPromises.push(uploadPromise);
-      }
+      // for (const video of selectedVideos) {
+      //   const uploadPromise = uploadVideo(post.post_id, video).catch(
+      //     (error) => {
+      //       console.error(`Erro ao enviar o vídeo ${video}`, error);
+      //       return Promise.reject(error);
+      //     }
+      //   );
+      //   uploadPromises.push(uploadPromise);
+      // }
 
-      await Promise.all(uploadPromises);
+      // await Promise.all(uploadPromises);
 
       form.reset();
       setCurrentAction(null);
@@ -266,10 +274,17 @@ const CreateBottomSheet = React.forwardRef<
 
     setIsLoadingCreateReels(true);
     try {
-      const reels = await createReels({
+      // const reels = await createReels({
+      //   description: postDescription,
+      // });
+      // await uploadVideo(reels.post_id, selectedVideos[0]);
+
+      createReelsPost({ 
+        userId: user.id,  
         description: postDescription,
-      });
-      await uploadVideo(reels.post_id, selectedVideos[0]);
+        video: selectedVideos[0]
+      })
+
       setSelectedVideos([]);
       pauseVideo();
       setPlayer(undefined);
@@ -302,22 +317,23 @@ const CreateBottomSheet = React.forwardRef<
 
     setIsLoadingCreateGrowPost(true);
     try {
-      const post = await createGrowPost({
+      createGrowPost({
+        userId: user.id, 
         images: selectedImages,
-        video_count: selectedVideos.length,
+        videos: selectedVideos,
         description: postDescription,
         day: Number(values.day),
         strain_id: values.genetic.id!,
         phase_id: values.phase.id!,
       });
 
-      for (const video of selectedVideos) {
-        try {
-          await uploadVideo(post.post_id, video);
-        } catch (error) {
-          console.error(`Erro ao enviar o vídeo ${video}`, error);
-        }
-      }
+      // for (const video of selectedVideos) {
+      //   try {
+      //     await uploadVideo(post.post_id, video);
+      //   } catch (error) {
+      //     console.error(`Erro ao enviar o vídeo ${video}`, error);
+      //   }
+      // }
 
       setCurrentAction(null);
       setSelectedImages([]);

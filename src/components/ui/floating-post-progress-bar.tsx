@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { Progress } from '../Progress';
-import { useProgress } from '@/hooks/use-progress';
+import { useCreatePostProgress } from '@/hooks/use-create-post-progress';
 
 const FloatingPostProgressBar = () => {
-  const { isProcessing, progress, shouldVibrate, resetProgress } = useProgress();
+  const { isProcessing, progress, shouldVibrate, resetProgress } = useCreatePostProgress();
   const shakeAnimation = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -48,9 +48,9 @@ const FloatingPostProgressBar = () => {
     ],
   };
 
-  // if (!isProcessing && progress === 0) {
-  //   return null;
-  // }
+  if (!isProcessing && progress === 0) {
+    return null;
+  }
 
   return (
     <Animated.View style={[styles.container, shakeStyle]}>
@@ -61,9 +61,9 @@ const FloatingPostProgressBar = () => {
           <Progress value={progress} className="max-h-1 h-1" />
         </View>
       }
-      {!isProcessing && progress === 100 && <View className="flex flex-row items-center gap-4 px-6 bg-brand-black" style={styles.content}>
+      {!isProcessing && progress === 100 && <View className="flex flex-row items-center justify-between gap-4 px-6 bg-brand-black" style={styles.content}>
         <Text className="text-brand-white text-base font-medium">Seu post foi concluido com sucesso</Text>
-        <TouchableOpacity className="flex justify-center items-center min-h-[32px] px-4  bg-brand-green rounded-lg " onPress={resetProgress}>
+        <TouchableOpacity className="flex justify-center items-center min-h-[32px] px-4  bg-brand-green rounded-lg " onPress={() => resetProgress()}>
           <Text className="text-brand-black text-base font-medium">Ok</Text>
         </TouchableOpacity>
       </View>}

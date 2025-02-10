@@ -1,5 +1,6 @@
 {
   "expo": {
+    "owner": "growzone.inc",
     "name": "Growzone",
     "slug": "growzone",
     "version": "1.0.10",

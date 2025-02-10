@@ -25,9 +25,11 @@ export default async function createNewSocialPost({ images, videos, description 
     } as unknown as File));
   });
 
-  videos.forEach((video) => {
-    formData.append('videos', video);
-  });
+  if(videos.length > 0) {
+    videos.forEach((video) => {
+      formData.append('videos', video);
+    });
+  }
   
   formData.append('description', description ?? '');
 

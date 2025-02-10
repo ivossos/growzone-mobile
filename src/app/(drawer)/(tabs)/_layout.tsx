@@ -21,6 +21,7 @@ import ReportCommentBottomSheet from "@/components/ui/report-comment-bottom-shee
 import PostBottomSheet from "@/components/ui/post/post-bottom-sheet";
 import DeletePostBottomSheet from "@/components/ui/post/delete-post-bottom-sheet";
 import { useVideoPlayerContext } from "@/context/video-player-context";
+import { useCreatePostProgress } from "@/hooks/use-create-post-progress";
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -32,7 +33,7 @@ type TabIconProps = {
 const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
   return focused ? (
     <LinearGradient
-      className="flex items-center justify-center flex-1 h-full"
+      className="flex items-center justify-center flex-1 h-full "
       colors={[
         "#161616",
         "#161616",
@@ -53,7 +54,7 @@ const TabIcon = ({ icon, color, name, focused }: TabIconProps) => {
       </View>
     </LinearGradient>
   ) : (
-    <View className="flex items-center justify-center w-16 h-full flex-1">
+    <View className="flex items-center justify-center w-16 h-full flex-1 ">
       <Image
         source={icon}
         resizeMode="contain"
@@ -79,6 +80,7 @@ export default function TabLayout() {
   const { scrollToTop } = useScrollToTop();
   const { user } = useAuth();
   const { pauseVideo } = useVideoPlayerContext();
+  const { isProcessing, toggleVibration } = useCreatePostProgress();
 
   const openBottomSheet = () => {
     bottomSheetRef.current?.snapToIndex(1);
@@ -135,9 +137,10 @@ export default function TabLayout() {
             tabBarInactiveTintColor: "#FFF",
             tabBarShowLabel: false,
             tabBarStyle: {
-              height: Platform.OS === 'ios' ? 72 : 60,
+              height: Platform.OS === 'ios' ? 72 : 66,
               backgroundColor: "#161616",
-              borderTopColor: "#161616",
+              justifyContent: 'center',
+              alignItems: 'center'
             },
           }}
         >
@@ -190,6 +193,10 @@ export default function TabLayout() {
             listeners={{
               tabPress: (e) => {
                 e.preventDefault();
+                if(isProcessing) {
+                  toggleVibration();  
+                  return;
+                }
                 pauseVideo();
                 openBottomSheet();
               },
