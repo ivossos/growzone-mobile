@@ -31,7 +31,7 @@
     "date-fns": "^4.1.0",
     "expo": "^52.0.26",
     "expo-blur": "^14.0.2",
-    "expo-camera": "^16.0.12",
+    "expo-camera": "16.0.13",
     "expo-constants": "^17.0.4",
     "expo-device": "^7.0.2",
     "expo-file-system": "^18.0.7",
@@ -76,7 +76,8 @@
     "react-native-web": "^0.19.13",
     "tailwind-merge": "^2.6.0",
     "zod": "^3.24.1",
-    "@shopify/flash-list": "1.7.1"
+    "@shopify/flash-list": "1.7.1",
+    "expo-dev-client": "~5.0.12"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
