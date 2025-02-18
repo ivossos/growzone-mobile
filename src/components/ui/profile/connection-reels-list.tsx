@@ -1,19 +1,15 @@
 import { TimelineType } from "@/api/@types/enums";
-import { ReelsDetail, SocialPost } from "@/api/@types/models";
-import { getUserReelsPosts } from "@/api/social/post/get-user-reels-posts";
+import { ReelsDetail } from "@/api/@types/models";
 import { useAuth } from "@/hooks/use-auth";
-import { replaceMediaUrl } from "@/lib/utils";
+import { getMuxThumbnailUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import { uniqBy } from "lodash";
 import { Eye } from "lucide-react-native";
 import React, { forwardRef, memo } from "react";
 import {
   ActivityIndicator,
   Dimensions,
-  FlatListProps,
   Image,
   StyleSheet,
   Text,
@@ -21,7 +17,6 @@ import {
   View,
 } from "react-native";
 import Animated from "react-native-reanimated";
-import Toast from "react-native-toast-message";
 
 const numColumns = 2;
 const w = Dimensions.get("window").width;
@@ -65,7 +60,7 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<ReelsDetail>, Props>(
         className="m-1"
       >
         <Image
-          source={{ uri: replaceMediaUrl(data?.file?.file) }}
+          source={{ uri: getMuxThumbnailUrl(data?.file?.file) }}
           style={styles.image}
           resizeMode="cover"
         />

@@ -36,7 +36,7 @@ import {
   buildErrorMessage,
   getInitials,
   getUserName,
-  replaceMediaUrl,
+  getMuxThumbnailUrl,
 } from "@/lib/utils";
 import { deleteFollow } from "@/api/social/follow/delete-follow";
 import { createFollow } from "@/api/social/follow/create-follow";
@@ -353,7 +353,7 @@ export default function SearchScreen() {
               source={{
                 uri: plant.file.type.includes("image")
                   ? plant.file.file
-                  : replaceMediaUrl(plant.file.file),
+                  : getMuxThumbnailUrl(plant.file.file),
               }}
               resizeMode="cover"
               style={styles.file}

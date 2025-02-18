@@ -1,11 +1,10 @@
-import { GrowPost, VideoPlayerHandle } from "@/api/@types/models";
+import { GrowPost } from "@/api/@types/models";
 import { colors } from "@/styles/colors";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { CalendarDaysIcon, Video } from "lucide-react-native";
-import { Fragment, useCallback, useRef } from "react";
+import { Fragment, useCallback } from "react";
 import { Image, Pressable, Text, useWindowDimensions, View } from "react-native";
-import VideoPlayer from "../VideoPlayer";
-import { replaceMediaUrl } from "@/lib/utils";
+import { getMuxThumbnailUrl } from "@/lib/utils";
 
 export function TrendingGrowCard({ item }: { item: GrowPost }) {
 
@@ -32,7 +31,7 @@ export function TrendingGrowCard({ item }: { item: GrowPost }) {
               uri:
                 item.file.type === "image"
                   ? item.file.file
-                  : replaceMediaUrl(item.file.file),
+                  : getMuxThumbnailUrl(item.file.file),
             }}
             className="w-full h-64 rounded-lg"
             resizeMode="cover"

@@ -1,9 +1,10 @@
-import React, { FC, useCallback, useMemo, useState } from "react";
+import React, { FC, useCallback, useMemo, useState, useEffect, useRef } from "react";
 import {
   StyleSheet,
   View,
   Dimensions,
   Pressable,
+  AppState,
 } from "react-native";
 import { VideoView } from "expo-video";
 import Slider from "@react-native-community/slider";
@@ -32,7 +33,7 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   const { handlerTime, playVideo, getPlayer, setPlayer } = useVideoPlayerContext();
 
   const { isPlaying } = useEvent(player, "playingChange", {
-    isPlaying: player.playing,
+    isPlaying: player ? player.playing : false,
   });
 
   const iconControlPlay = useMemo(() => {
@@ -44,6 +45,10 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   const handlerPlay = useCallback(() => {
     const currentPlayer = getPlayer();
     
+    if (currentPlayer && currentPlayer !== player) {
+      currentPlayer.pause();
+    }
+
     if(!currentPlayer) {
       setPlayer(player);
     }
@@ -80,6 +85,19 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
       }
     }
   });
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === "active") {
+        player?.pause();
+        player?.replay();
+        setDuration(0)
+      }
+    };
+  
+    const subscription = AppState.addEventListener("change", handleAppStateChange);
+    return () => subscription.remove();
+  }, []);
 
   return (
     <Pressable

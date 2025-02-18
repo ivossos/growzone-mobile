@@ -4,6 +4,7 @@ import { getTopContributors } from "@/api/social/contributor/get-top-contributor
 import { getPosts } from "@/api/social/post/get-posts";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { createVideoPlayer } from "expo-video";
+import { uniqBy } from "lodash";
 import Toast from "react-native-toast-message";
 
 const useHome = () => {
@@ -111,7 +112,7 @@ const useHome = () => {
 
   return {
     posts: {
-      data: isPostsSuccess ? postsData.pages.flat() : [],
+      data: isPostsSuccess ? uniqBy(postsData.pages.flat(), 'post.post_id')  : [],
       isLoading: isPostsLoading,
       fetchNextPage,
       hasNextPage,

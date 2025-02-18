@@ -1,7 +1,7 @@
 import { TimelineType } from "@/api/@types/enums";
-import { GrowPost, GrowPostDetail } from "@/api/@types/models";
+import { GrowPostDetail } from "@/api/@types/models";
 import { useAuth } from "@/hooks/use-auth";
-import { replaceMediaUrl } from "@/lib/utils";
+import { getMuxThumbnailUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { useRouter } from "expo-router";
 import { CalendarDaysIcon, } from "lucide-react-native";
@@ -99,7 +99,7 @@ const ConnectionGrowPostList = forwardRef<Animated.FlatList<GrowPostDetail>, Pro
             />
           ) : (
             <Image
-              source={{ uri: replaceMediaUrl(file?.file) }}
+              source={{ uri: getMuxThumbnailUrl(file?.file) }}
               style={styles.image}
               resizeMode="cover"
             />

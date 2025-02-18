@@ -1,11 +1,10 @@
-import { Image, StyleSheet, View, Text, Pressable, useWindowDimensions } from "react-native";
+import { Image, StyleSheet, Text, Pressable, useWindowDimensions } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { SocialPost } from "@/api/@types/models";
-import { Link, router } from "expo-router";
-import { replaceMediaUrl } from "@/lib/utils";
-import { TimelineType } from "@/api/@types/enums";
+import { router } from "expo-router";
+import { getMuxThumbnailUrl } from "@/lib/utils";
 import { useCallback } from "react";
 
 export default function ReelsCard(item: SocialPost) {
@@ -40,7 +39,7 @@ export default function ReelsCard(item: SocialPost) {
       className="flex bg-black-100 border border-black-90 rounded-lg shadow-lg overflow-hidden"
     >
       <Image
-        source={{ uri: replaceMediaUrl(item?.file?.file) }}
+        source={{ uri: getMuxThumbnailUrl(item?.file?.file) }}
         className="w-full h-64 rounded-lg"
         resizeMode="cover"
       />

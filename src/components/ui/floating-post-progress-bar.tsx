@@ -62,8 +62,8 @@ const FloatingPostProgressBar = () => {
         </View>
       }
       {!isProcessing && progress === 100 && <View className="flex flex-row items-center justify-between gap-4 px-6 bg-brand-black" style={styles.content}>
-        <Text className="text-brand-white text-base font-medium">Seu post foi concluido com sucesso</Text>
-        <TouchableOpacity className="flex justify-center items-center min-h-[32px] px-4  bg-brand-green rounded-lg " onPress={() => resetProgress()}>
+        <Text className="text-brand-white text-base font-medium">Seu post foi publicado!🚀</Text>
+        <TouchableOpacity className="flex justify-center items-center min-h-[32px] px-3  bg-brand-green rounded-lg " onPress={() => resetProgress()}>
           <Text className="text-brand-black text-base font-medium">Ok</Text>
         </TouchableOpacity>
       </View>}

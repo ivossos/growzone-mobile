@@ -1,5 +1,5 @@
 import { PostDetail } from "@/api/@types/models";
-import { replaceMediaUrl } from "@/lib/utils";
+import { getMuxThumbnailUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { router } from "expo-router";
 import React, { forwardRef, Fragment, memo } from "react";
@@ -61,7 +61,7 @@ const ConnectionPostList = forwardRef<Animated.FlatList<PostDetail>, Props>(
         ) : (
           <Fragment>
             <Image
-              source={{ uri: replaceMediaUrl(file.file) }}
+              source={{ uri: getMuxThumbnailUrl(file.file) }}
               style={styles.image}
               resizeMode="cover"
             />

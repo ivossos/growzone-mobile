@@ -124,7 +124,7 @@ export default function HomeScreen() {
           <FlashList
             data={topContributors.data}
             horizontal
-            estimatedItemSize={50}
+            estimatedItemSize={100}
             showsHorizontalScrollIndicator={false}
             keyExtractor={(user) => user.id.toString()}
             renderItem={({ item }) => (
@@ -203,7 +203,8 @@ export default function HomeScreen() {
           className="bg-black-100"
           contentContainerClassName="gap-4"
           data={posts.data}
-          estimatedItemSize={100}
+          estimatedItemSize={600}
+          disableAutoLayout
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => `key-${item.post.id}-${item.post.post_id}`}
           renderItem={renderItem}
@@ -226,7 +227,7 @@ export default function HomeScreen() {
           }}
           onEndReachedThreshold={0.8}
           ListFooterComponent={
-            posts.isFetchingNextPage ? <Loader isLoading /> : null
+            posts.isFetchingNextPage ? <Loader isLoading /> : <View style={{ height: 100 }} />
           }
         />
       </SafeAreaView>

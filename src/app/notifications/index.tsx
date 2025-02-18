@@ -8,7 +8,7 @@ import NotificationIcon from "@/assets/icons/notification-green.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/Avatar";
 import { getNotifications } from "@/api/social/notification/get-notifications";
 import { Notification } from "@/api/@types/models";
-import { formatDistance, getInitials, replaceMediaUrl } from "@/lib/utils";
+import { formatDistance, getInitials, getMuxThumbnailUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { orderBy, uniqBy } from "lodash";
 import { useAuth } from "@/hooks/use-auth";
@@ -146,7 +146,7 @@ export default function NotificationsScreen() {
           )}
           {item.post.file.type === 'video'  && (
             <Image
-            source={{ uri: replaceMediaUrl(item.post.file.file) }}
+            source={{ uri: getMuxThumbnailUrl(item.post.file.file) }}
             style={{
               height: 40, 
               width: 40,

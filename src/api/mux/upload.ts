@@ -73,8 +73,8 @@ async function processPost({
     if(videos.length > 0) {
       const uploadIds = await uploadVideos(videos, onProgress);
 
-      const { message } = await getVideoUrl({ uploadIds });
-      videoUrls = message;
+      // const { message } = await getVideoUrl({ uploadIds });
+      videoUrls = uploadIds;
 
       completedSteps++;
       onProgress((completedSteps / totalSteps) * 100);

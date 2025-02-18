@@ -149,3 +149,8 @@ export const buildErrorMessage = (fieldName: string, error?: FieldError) => {
     return message;
   }
 };
+
+export const getMuxThumbnailUrl = (videoUrl: string): string | undefined => {
+  const match = videoUrl.match(/stream\.mux\.com\/([^.]+)\.m3u8/);
+  return match ? `https://image.mux.com/${match[1]}/thumbnail.jpg` : undefined;
+};
