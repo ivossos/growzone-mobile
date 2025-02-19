@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
   View,
   StatusBar,
   Dimensions,
@@ -14,10 +13,10 @@ import { FlatList } from "react-native-gesture-handler";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { colors } from "@/styles/colors";
-import ReelsPost from "@/components/ui/reels-post";
 import { getReels } from "@/api/social/post/get-reels";
-import { createVideoPlayer } from "expo-video";
-import { useVideoPlayerContext } from "@/context/video-player-context";
+
+// import { useEvent } from "expo";
+import { useVideoPlayer, VideoView } from "expo-video";
 
 const statusBarHeight =
   Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -25,43 +24,83 @@ const ScreenHeight =
   Dimensions.get("window").height -
   (Platform.OS === "ios" ? 72 : statusBarHeight);
 
-export default function Reels() {
-  const {
-    pauseVideo,
-    toggleAudioMute,
-    playVideo,
-    setPlayer,
-    handlerTime,
-    clearPlayer,
-    getPlayer,
-  } = useVideoPlayerContext();
+const VideoItem = ({
+  uri,
+  isVisible,
+  shouldPause,
+}: {
+  uri: string;
+  isVisible: boolean;
+  shouldPause: boolean;
+}) => {
+  const player = useVideoPlayer(uri, (player) => {
+    player.loop = true;
+    player.muted = false;
+    player.timeUpdateEventInterval = 2;
+    player.volume = 1.0;
+    if (isVisible) player.play();
+  });
 
-  const [mutedVideo, setMutedVideo] = useState(false);
-  const [activePostId, setActivePostId] = useState<number>();
-  const [isScreenFocused, setIsScreenFocused] = useState(false);
+  useEffect(() => {
+    if (isVisible) {
+      console.log(`🎥 Video ${uri} está visível. Tocando...`);
+      player.play();
+    } else if (shouldPause) {
+      console.log(`⏸️ Pausando vídeo ${uri} porque a tela perdeu o foco.`);
+      player.pause();
+    } else {
+      console.log(`⏸️ Video ${uri} saiu da tela. Pausando...`);
+      player.pause();
+    }
+  }, [isVisible, shouldPause]);
+
+  return (
+    <VideoView
+      player={player}
+      allowsFullscreen
+      allowsPictureInPicture
+      // nativeControls={false}
+      contentFit="cover"
+      style={{ width: "100%", height: "100%" }}
+    />
+  );
+};
+
+export default function Reels() {
+  const [shouldPause, setShouldPause] = useState(false);
+  const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
+  const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
+
+  const onViewableItemsChanged = useRef(
+    ({ viewableItems }: { viewableItems: any }) => {
+      const newVisibleItems = new Set(
+        viewableItems.map((item: { item: { id: any } }) => item.item.id)
+      );
+      setVisibleItems(newVisibleItems);
+
+      console.log("👀 Vídeos visíveis:", Array.from(newVisibleItems));
+    }
+  ).current;
+
+  // Pausa todos os vídeos ao sair da tela
+  useFocusEffect(
+    useCallback(() => {
+      console.log("✅ Tela com vídeos ganhou foco.");
+      setShouldPause(false);
+
+      return () => {
+        console.log("⏹ Tela com vídeos perdeu foco, pausando tudo.");
+        setShouldPause(true);
+      };
+    }, [])
+  );
 
   const fetchReelsData = async ({ pageParam = 0 }: any) => {
     const data = await getReels({ skip: pageParam, limit: 10 });
-    const weedz = data.map((reel, index) => {
-      const player = createVideoPlayer({
-        uri: reel.file.file,
-        metadata: {
-          title: `title-reel-${index}`,
-          artist: `artist-reel-${index}`,
-        },
-      });
-
-      player.loop = true;
-      player.muted = false;
-      player.timeUpdateEventInterval = 2;
-      player.volume = 1.0;
-
-      return {
-        ...reel,
-        player,
-      };
-    });
-    
+    const weedz = data.map((item) => ({
+      id: item.id,
+      uri: item.file.file,
+    }));
     return weedz;
   };
 
@@ -82,124 +121,68 @@ export default function Reels() {
     initialPageParam: 0,
   });
 
-  const viewabilityConfig: ViewabilityConfig = useMemo(() => {
-    return {
-      itemVisiblePercentThreshold: 80,
-      waitForInteraction: true,
-    };
-  }, []);
-
-  const onViewableItemsChanged = ({ viewableItems }: any) => {
-    if (viewableItems.length > 0) {
-      const currentItem = viewableItems[0]?.item;
-      toggleAudioMute(mutedVideo);
-      pauseVideo();
-      handlerTime(0);
-      
-      if (currentItem) {
-        setActivePostId(currentItem?.post_id);
-        setPlayer(currentItem.player);
-        toggleAudioMute(mutedVideo);
-        playVideo();
-      }
-    }
-  };
-
-  const handlerMutedVideo = useCallback(() => {
-    const value = !mutedVideo;
-    toggleAudioMute(value);
-    setMutedVideo(value);
-  }, [mutedVideo]);
-
-  useEffect(() => {
-    const setupPlayer = () => {
-      const player = getPlayer();
-
-      if (!player) {
-        const currentPost = reelsData?.pages
-          .flat()
-          .find((item) => item.post_id === activePostId);
-
-        if (currentPost) {
-          setPlayer(currentPost.player);
-        } else {
-          const firstPost = reelsData?.pages.flat()[0];
-          if (firstPost) {
-            setPlayer(firstPost.player);
-          }
-        }
-
-        playVideo();
-      } else {
-        playVideo();
-      }
-    };
-
-    if (isScreenFocused) {
-      setupPlayer();
-    }
-  }, [activePostId, reelsData, isScreenFocused])
-
-  useFocusEffect(
-    useCallback(() => {
-      setIsScreenFocused(true);
-      playVideo();
-
-      return () => {
-        setIsScreenFocused(false);
-        pauseVideo();
-        clearPlayer();
-      };
-    }, [])
-  );
-  
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          height: ScreenHeight,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "black",
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.brand.green} />
+      </View>
+    );
+  }
 
   return (
     <View>
       <StatusBar translucent backgroundColor={"transparent"} />
-
-      {isLoading ? (
-        <ActivityIndicator size="large" color={colors.brand.green} />
-      ) : (
-        <FlatList
-          data={reelsData?.pages.flat() || []}
-          renderItem={({ item }) => (
-            <View style={styles.fullscreenItem}>
-              <ReelsPost
-                post={item}
-                activePostId={activePostId || 0}
-                video={{
-                  controls: {
-                    showButtonPlay: false,
-                    showProgressBar: true,
-                    handlerMutedVideo,
-                  },
-                  player: item.player,
-                  muted: mutedVideo,
-                }}
-              />
-            </View>
-          )}
-          keyExtractor={(item, index) => `${item.id}-${index}`}
-          snapToInterval={ScreenHeight}
-          snapToAlignment="start"
-          decelerationRate="fast"
-          pagingEnabled
-          viewabilityConfig={viewabilityConfig}
-          onViewableItemsChanged={onViewableItemsChanged}
-          showsVerticalScrollIndicator={false}
-          onEndReached={() => hasNextPage && fetchNextPage()}
-          onEndReachedThreshold={0.3}
-          refreshControl={
-            <RefreshControl
-              refreshing={isFetchingNextPage}
-              onRefresh={() => refetch()}
+      <FlatList
+        data={reelsData?.pages.flat() || []}
+        renderItem={({ item }) => (
+          <View style={styles.fullscreenItem}>
+            <VideoItem
+              isVisible={viewableItems.has(item.id)}
+              shouldPause={shouldPause}
+              uri={item.uri}
             />
-          }
-          initialNumToRender={5}
-          windowSize={5}
-        />
-      )}
+          </View>
+        )}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        snapToInterval={ScreenHeight}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        pagingEnabled
+        viewabilityConfig={viewabilityConfig}
+        onViewableItemsChanged={onViewableItemsChanged}
+        showsVerticalScrollIndicator={false}
+        onEndReached={() => hasNextPage && fetchNextPage()}
+        onEndReachedThreshold={0.3}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetchingNextPage}
+            onRefresh={() => refetch()}
+          />
+        }
+        initialNumToRender={5}
+        windowSize={5}
+        ListFooterComponent={
+          isFetchingNextPage ? (
+            <View
+              style={{
+                height: ScreenHeight,
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "black",
+              }}
+            >
+              <ActivityIndicator size="large" color={colors.brand.green} />
+            </View>
+          ) : null
+        }
+      />
     </View>
   );
 }
@@ -207,5 +190,6 @@ export default function Reels() {
 const styles = StyleSheet.create({
   fullscreenItem: {
     height: ScreenHeight,
+    justifyContent: "center",
   },
 });
