@@ -6,7 +6,6 @@ import {
   StatusBar,
   Dimensions,
   Platform,
-  ViewabilityConfig,
   StyleSheet,
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
@@ -14,8 +13,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { colors } from "@/styles/colors";
 import { getReels } from "@/api/social/post/get-reels";
-
-// import { useEvent } from "expo";
+import ReelsPost from "@/components/ui/reels-post";
 import { useVideoPlayer, VideoView } from "expo-video";
 
 const statusBarHeight =
@@ -27,11 +25,13 @@ const ScreenHeight =
 const VideoItem = ({
   uri,
   isVisible,
-  shouldPause,
+  playerRef,
+  id,
 }: {
+  id: number;
   uri: string;
   isVisible: boolean;
-  shouldPause: boolean;
+  playerRef: any;
 }) => {
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
@@ -43,31 +43,35 @@ const VideoItem = ({
 
   useEffect(() => {
     if (isVisible) {
-      console.log(`🎥 Video ${uri} está visível. Tocando...`);
       player.play();
-    } else if (shouldPause) {
-      console.log(`⏸️ Pausando vídeo ${uri} porque a tela perdeu o foco.`);
-      player.pause();
     } else {
-      console.log(`⏸️ Video ${uri} saiu da tela. Pausando...`);
       player.pause();
     }
-  }, [isVisible, shouldPause]);
+  }, [isVisible]);
+
+  useEffect(() => {
+    playerRef.current.set(id, player);
+    return () => {
+      playerRef.current.delete(id);
+    };
+  }, [id, player, playerRef]);
 
   return (
-    <VideoView
-      player={player}
-      allowsFullscreen
-      allowsPictureInPicture
-      // nativeControls={false}
-      contentFit="cover"
-      style={{ width: "100%", height: "100%" }}
-    />
+    <View>
+      <VideoView
+        contentFit="cover"
+        player={player}
+        allowsFullscreen
+        allowsPictureInPicture
+        nativeControls
+        style={{ width: "100%", height: "100%" }}
+      />
+    </View>
   );
 };
 
 export default function Reels() {
-  const [shouldPause, setShouldPause] = useState(false);
+  const playerRefs = useRef(new Map());
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
   const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
 
@@ -77,30 +81,27 @@ export default function Reels() {
         viewableItems.map((item: { item: { id: any } }) => item.item.id)
       );
       setVisibleItems(newVisibleItems);
-
       console.log("👀 Vídeos visíveis:", Array.from(newVisibleItems));
     }
   ).current;
 
-  // Pausa todos os vídeos ao sair da tela
   useFocusEffect(
     useCallback(() => {
-      console.log("✅ Tela com vídeos ganhou foco.");
-      setShouldPause(false);
+      viewableItems.forEach((id) => {
+        const player = playerRefs.current.get(id);
+        if (player) {
+          player.play();
+        }
+      });
 
       return () => {
-        console.log("⏹ Tela com vídeos perdeu foco, pausando tudo.");
-        setShouldPause(true);
+        playerRefs.current.forEach((player) => player.pause());
       };
-    }, [])
+    }, [viewableItems])
   );
 
   const fetchReelsData = async ({ pageParam = 0 }: any) => {
-    const data = await getReels({ skip: pageParam, limit: 10 });
-    const weedz = data.map((item) => ({
-      id: item.id,
-      uri: item.file.file,
-    }));
+    const weedz = await getReels({ skip: pageParam, limit: 10 });
     return weedz;
   };
 
@@ -142,13 +143,16 @@ export default function Reels() {
       <FlatList
         data={reelsData?.pages.flat() || []}
         renderItem={({ item }) => (
-          <View style={styles.fullscreenItem}>
-            <VideoItem
-              isVisible={viewableItems.has(item.id)}
-              shouldPause={shouldPause}
-              uri={item.uri}
-            />
-          </View>
+          <ReelsPost post={item}>
+            <View style={styles.fullscreenItem}>
+              <VideoItem
+                id={item.id}
+                playerRef={playerRefs}
+                isVisible={viewableItems.has(item.id)}
+                uri={item.file.file}
+              />
+            </View>
+          </ReelsPost>
         )}
         keyExtractor={(item, index) => `${item.id}-${index}`}
         snapToInterval={ScreenHeight}
