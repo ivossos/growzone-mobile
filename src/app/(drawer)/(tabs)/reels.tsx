@@ -7,6 +7,7 @@ import {
   Dimensions,
   Platform,
   StyleSheet,
+  Pressable,
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -15,6 +16,9 @@ import { colors } from "@/styles/colors";
 import { getReels } from "@/api/social/post/get-reels";
 import ReelsPost from "@/components/ui/reels-post";
 import { useVideoPlayer, VideoView } from "expo-video";
+import Slider from "@react-native-community/slider";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useEventListener } from "expo";
 
 const statusBarHeight =
   Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -33,6 +37,10 @@ const VideoItem = ({
   isVisible: boolean;
   playerRef: any;
 }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const insets = useSafeAreaInsets();
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
     player.muted = false;
@@ -40,6 +48,32 @@ const VideoItem = ({
     player.volume = 1.0;
     if (isVisible) player.play();
   });
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      player.pause();
+    } else {
+      player.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const handlerTime = (value: number) => {
+    if (playerRef.current) {
+      player.currentTime = value;
+    }
+  };
+
+  useEventListener(
+    player,
+    "timeUpdate",
+    ({ currentTime, bufferedPosition }) => {
+      if (currentTime && bufferedPosition) {
+        setCurrentTime(currentTime);
+        setDuration(bufferedPosition);
+      }
+    }
+  );
 
   useEffect(() => {
     if (isVisible) {
@@ -57,16 +91,30 @@ const VideoItem = ({
   }, [id, player, playerRef]);
 
   return (
-    <View>
+    <Pressable onPress={togglePlayPause}>
       <VideoView
         contentFit="cover"
         player={player}
-        allowsFullscreen
-        allowsPictureInPicture
-        nativeControls
+        allowsFullscreen={false}
+        allowsPictureInPicture={false}
+        nativeControls={false}
         style={{ width: "100%", height: "100%" }}
       />
-    </View>
+      <View style={[styles.sliderContainer, { bottom: insets.bottom - 30 }]}>
+        <View style={{ flex: 1 }}>
+          <Slider
+            style={styles.slider}
+            minimumValue={0}
+            maximumValue={duration}
+            value={currentTime}
+            onValueChange={handlerTime}
+            minimumTrackTintColor="#FFFFFF"
+            maximumTrackTintColor="#555555"
+            thumbTintColor="#FFFFFF"
+          />
+        </View>
+      </View>
+    </Pressable>
   );
 };
 
@@ -81,7 +129,6 @@ export default function Reels() {
         viewableItems.map((item: { item: { id: any } }) => item.item.id)
       );
       setVisibleItems(newVisibleItems);
-      console.log("👀 Vídeos visíveis:", Array.from(newVisibleItems));
     }
   ).current;
 
@@ -124,14 +171,7 @@ export default function Reels() {
 
   if (isLoading) {
     return (
-      <View
-        style={{
-          height: ScreenHeight,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "black",
-        }}
-      >
+      <View style={styles.loading}>
         <ActivityIndicator size="large" color={colors.brand.green} />
       </View>
     );
@@ -174,14 +214,7 @@ export default function Reels() {
         windowSize={5}
         ListFooterComponent={
           isFetchingNextPage ? (
-            <View
-              style={{
-                height: ScreenHeight,
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "black",
-              }}
-            >
+            <View style={styles.loading}>
               <ActivityIndicator size="large" color={colors.brand.green} />
             </View>
           ) : null
@@ -195,5 +228,22 @@ const styles = StyleSheet.create({
   fullscreenItem: {
     height: ScreenHeight,
     justifyContent: "center",
+  },
+  loading: {
+    height: ScreenHeight,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
+  },
+  sliderContainer: {
+    position: "absolute",
+    flexDirection: "row",
+    alignContent: "center",
+    alignItems: "center",
+    marginHorizontal: 10,
+  },
+  slider: {
+    width: "100%",
+    height: 60,
   },
 });
