@@ -5,16 +5,16 @@
   },
   "build": {
     "development": {
-      "channel": "development",
       "developmentClient": true,
+      "channel": "development",
       "distribution": "internal",
       "ios": {
-        "image": "latest",
-        "autoIncrement": "buildNumber"
+        "simulator": true
       },
       "android": {
-        "image": "latest",
-        "autoIncrement": "versionCode"
+        "distribution": "internal",
+        "autoIncrement": "versionCode",
+        "buildType": "apk"
       }
     },
     "preview": {
@@ -26,6 +26,7 @@
       }
     },
     "production": {
+      "distribution": "store",
       "autoIncrement": true,
       "android": {
         "autoIncrement": "versionCode"
