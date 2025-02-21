@@ -140,7 +140,7 @@ export async function processReels({
       videos: [video],
       description,
       onProgress,
-      createPostFn: createNewReels,
+      createPostFn: ({videos, ...props}) =>  createNewReels({...props, video: videos[0] } ),
       queryKey: "profile-reels",
     });
   } catch (error) {

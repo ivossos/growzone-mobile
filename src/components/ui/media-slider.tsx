@@ -51,7 +51,9 @@ const MediaSlider = ({
         const item = items[index];
         if (item.type === "video") {
           pauseVideo();
-          setPlayer(item.player);
+          const player = item.player;
+          player.replace({ uri: item.file });
+          setPlayer(player);
 
           toggleAudioMute(audioMute);
 
