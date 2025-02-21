@@ -3,7 +3,7 @@ import PostCard from "@/components/ui/post-card";
 import { useActivePostHome } from "@/hooks/use-active-post-home";
 import { useQuery } from "@tanstack/react-query";
 import { colors } from "@/styles/colors";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -14,6 +14,7 @@ import { getPost } from "@/api/social/post/get-post";
 import Loader from "@/components/ui/loader";
 import { queryClient } from "@/lib/react-query";
 import { useVideoPlayerContext } from "@/context/video-player-context";
+import { createVideoPlayer } from "expo-video";
 
 const showErrorToast = (message: string) => {
   Toast.show({
@@ -36,7 +37,8 @@ export default function Post() {
   const params = useLocalSearchParams();
   const { id } = (params as { id: string }) || {};
   const { handlePostChange } = useActivePostHome();
-  const { toggleAudioMute } = useVideoPlayerContext();
+  const { toggleAudioMute, setPlayer, pauseVideo, clearPlayer } = useVideoPlayerContext();
+
 
   const [audioMute, setAudioMute] = useState(false);
 
@@ -45,10 +47,50 @@ export default function Post() {
     queryFn: async () => {
       const postId = Number(id);
       const [post] = await Promise.all([getPost(postId)]);
-      return { post };
+      
+      const filesMap = mapPost(post);
+
+      setPlayerValue(filesMap);
+
+      return { post: filesMap };
     },
     enabled: !!id,
   });
+
+  const mapPost = (data: PostDetail): PostDetail => {
+      const files = data.files.map((file, index) => {
+        const player = createVideoPlayer({
+          uri: file.file,
+          metadata: {
+            title: `title-post-social-${index}`,
+            artist: `artist-post-social-${index}`,
+          },
+        });
+  
+        player.loop = true;
+        player.muted = false;
+        player.timeUpdateEventInterval = 2;
+        player.volume = 1.0;
+  
+        return {
+          ...file,
+          player,
+        };
+      });
+  
+      return {
+        ...data,
+        files,
+      };
+    };
+  
+    const setPlayerValue = (postData: PostDetail) => {
+      const [file] = postData.files
+  
+      if (file.type === 'video') {
+        setPlayer(file.player)
+      }
+    }
 
   const handlerMutedVideo = useCallback(() => {
     const value = !audioMute;
@@ -61,6 +103,15 @@ export default function Post() {
       handlePostChange(data.post.post_id);
     }
   }, [data, handlePostChange]);
+
+  useFocusEffect(
+      useCallback(() => {
+        return () => {
+          pauseVideo();
+          clearPlayer();
+        };
+      }, [])
+    );
 
   if (error) {
     showErrorToast(

@@ -116,11 +116,9 @@ export default function Timeline() {
 
       if (isSocialOrGrow) {
         const item: GrowPostDetail | PostDetail = currentItem as any;
-        const playerItem = item.files.find((file) => {
-          return file.type === "video";
-        });
+        const playerItem = item.files[0]
 
-        if (playerItem) {
+        if (playerItem.type === "video") {
           playerItem.player.replace({ uri: playerItem.file });
           player = playerItem.player;
         }
@@ -167,7 +165,7 @@ export default function Timeline() {
 
         const playerValue = getPlayerValue(currentItem);
 
-        if (currentItem && currentItem.id) {
+        if (playerValue && currentItem && currentItem.id) {
           setPlayer(playerValue);
           toggleAudioMute(mutedVideo);
           playVideo();
@@ -232,13 +230,11 @@ export default function Timeline() {
     if (isSocialOrGrow) {
       const socialPost = post as PostDetail;
 
-      const postWithVideo = socialPost.files.find((file) => {
-        return file.type === "video";
-      });
+      const firstPost = socialPost.files[0];
 
-      if (postWithVideo) {
-        postWithVideo.player.replace({ uri: postWithVideo.file });
-        setPlayer(postWithVideo.player);
+      if (firstPost && firstPost.type === "video") {
+        firstPost.player.replace({ uri: firstPost.file });
+        setPlayer(firstPost.player);
       }
     }
   };

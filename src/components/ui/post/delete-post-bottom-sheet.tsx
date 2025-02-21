@@ -115,6 +115,8 @@ const DeletePostBottomSheet = React.forwardRef<BottomSheet, Props>(
           ],
         });
 
+        queryClient.removeQueries({ queryKey: ["timeline"] });
+        
         queryClient.invalidateQueries({ queryKey: ["profile-reels", user.id] });
         queryClient.setQueryData<{ pages: FeedAllPost[][]; pageParams: any }>(
           ["home-posts"],
