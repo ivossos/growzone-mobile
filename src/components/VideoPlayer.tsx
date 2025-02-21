@@ -1,4 +1,11 @@
-import React, { FC, useCallback, useMemo, useState, useEffect, useRef } from "react";
+import React, {
+  FC,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import {
   StyleSheet,
   View,
@@ -30,7 +37,8 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  const { handlerTime, playVideo, getPlayer, setPlayer } = useVideoPlayerContext();
+  const { handlerTime, playVideo, getPlayer, setPlayer } =
+    useVideoPlayerContext();
 
   const { isPlaying } = useEvent(player, "playingChange", {
     isPlaying: player ? player.playing : false,
@@ -44,15 +52,15 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
 
   const handlerPlay = useCallback(() => {
     const currentPlayer = getPlayer();
-    
+
     if (currentPlayer && currentPlayer !== player) {
       currentPlayer.pause();
     }
 
-    if(!currentPlayer) {
+    if (!currentPlayer) {
       setPlayer(player);
     }
-    
+
     if (isPlaying) {
       player.pause();
     } else {
@@ -91,11 +99,14 @@ const VideoPlayer: FC<VideoPlayerProps> = ({
       if (nextAppState === "active") {
         player?.pause();
         player?.replay();
-        setDuration(0)
+        setDuration(0);
       }
     };
-  
-    const subscription = AppState.addEventListener("change", handleAppStateChange);
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
     return () => subscription.remove();
   }, []);
 

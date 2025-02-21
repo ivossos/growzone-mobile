@@ -8,6 +8,7 @@ import {
   Platform,
   StyleSheet,
   Pressable,
+  AppState,
 } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -89,6 +90,29 @@ const VideoItem = ({
       playerRef.current.delete(id);
     };
   }, [id, player, playerRef]);
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === "active" && isVisible) {
+        player.muted = false;
+        player.currentTime = 0;
+        player.play();
+        setDuration(0);
+        setCurrentTime(0);
+      } else {
+        player.pause();
+      }
+    };
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [isVisible, player]);
 
   return (
     <Pressable onPress={togglePlayPause}>
