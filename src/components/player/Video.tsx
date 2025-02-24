@@ -11,11 +11,17 @@ const VideoPlayer = ({
   uri,
   isVisible,
   playerRef,
+  showProgressBar,
+  isMuted,
+  playVideo,
 }: {
   videoId: number;
   uri: string;
   isVisible: boolean;
   playerRef: any;
+  showProgressBar?: boolean;
+  isMuted?: boolean;
+  playVideo?: () => void;
 }) => {
   const params = useLocalSearchParams();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -24,7 +30,7 @@ const VideoPlayer = ({
   const insets = useSafeAreaInsets();
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
-    player.muted = false;
+    player.muted = isMuted || false;
     player.timeUpdateEventInterval = 2;
     player.volume = 1.0;
     if (isVisible) player.play();
@@ -56,6 +62,14 @@ const VideoPlayer = ({
     }
   );
 
+  useEventListener(player, "statusChange", ({ status: statusChangeValue }) => {
+    const readyToStartVideo = statusChangeValue === "readyToPlay";
+
+    if (readyToStartVideo && playVideo) {
+      playVideo();
+    }
+  });
+
   useEffect(() => {
     if (isVisible) {
       player.play();
@@ -74,7 +88,7 @@ const VideoPlayer = ({
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === "active" && isVisible) {
-        player.muted = false;
+        player.muted = isMuted || false;
         player.currentTime = 0;
         player.play();
         setDuration(0);
@@ -92,7 +106,11 @@ const VideoPlayer = ({
     return () => {
       subscription.remove();
     };
-  }, [isVisible, player]);
+  }, [isVisible, player, isMuted]);
+
+  useEffect(() => {
+    player.muted = isMuted || false;
+  }, [isMuted, player]);
 
   const bottom = useMemo(() => {
     switch (params.type) {
@@ -114,20 +132,22 @@ const VideoPlayer = ({
         nativeControls={false}
         style={styles.video}
       />
-      <View style={[styles.sliderContainer, { bottom: bottom }]}>
-        <View style={{ flex: 1 }}>
-          <Slider
-            style={styles.slider}
-            minimumValue={0}
-            maximumValue={duration}
-            value={currentTime}
-            onValueChange={handlerTime}
-            minimumTrackTintColor="#FFFFFF"
-            maximumTrackTintColor="#555555"
-            thumbTintColor="#FFFFFF"
-          />
+      {showProgressBar && (
+        <View style={[styles.sliderContainer, { bottom: bottom }]}>
+          <View style={{ flex: 1 }}>
+            <Slider
+              style={styles.slider}
+              minimumValue={0}
+              maximumValue={duration}
+              value={currentTime}
+              onValueChange={handlerTime}
+              minimumTrackTintColor="#FFFFFF"
+              maximumTrackTintColor="#555555"
+              thumbTintColor="#FFFFFF"
+            />
+          </View>
         </View>
-      </View>
+      )}
     </Pressable>
   );
 };

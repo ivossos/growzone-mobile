@@ -125,6 +125,7 @@ const ReelsPost = ({
           videoId={videoId}
           playerRef={playerRef}
           isVisible={isVisible}
+          showProgressBar
         />
       </View>
       <View style={[styles.footer, { bottom: bottom }]}>

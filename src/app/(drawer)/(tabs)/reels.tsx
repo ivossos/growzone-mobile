@@ -98,9 +98,9 @@ export default function Reels() {
           <ReelsPost
             videoId={item.id}
             playerRef={playerRefs}
-            isVisible={viewableItems.has(item.id)}
             uri={item.file.file}
             post={item}
+            isVisible={viewableItems.has(item.id)}
           />
         )}
         refreshControl={
