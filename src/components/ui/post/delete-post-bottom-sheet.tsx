@@ -15,6 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { router } from "expo-router";
 import { FeedAllPost, ReelsDetail } from "@/api/@types/models";
 import { TimelineType } from "@/api/@types/enums";
+import { useVideoPlayerContext } from "@/context/video-player-context";
 
 interface Props {
   onClose: () => void;
@@ -28,6 +29,8 @@ const DeletePostBottomSheet = React.forwardRef<BottomSheet, Props>(
     const { user } = useAuth();
     const { postId, isVisible, currentType, closeBottomSheet, callback } =
       useBottomSheetContext();
+
+    const { clearPlayer } = useVideoPlayerContext();
 
     function handleClose(submitted = false) {
       setReportSubmitted(false);
@@ -118,34 +121,11 @@ const DeletePostBottomSheet = React.forwardRef<BottomSheet, Props>(
         queryClient.removeQueries({ queryKey: ["timeline"] });
         
         queryClient.invalidateQueries({ queryKey: ["profile-reels", user.id] });
-        queryClient.setQueryData<{ pages: FeedAllPost[][]; pageParams: any }>(
-          ["home-posts"],
-          (oldData) => {
-            if (!oldData) return oldData;
 
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page) =>
-                page.filter((post) => post.post.post_id !== postId)
-              ),
-            };
-          }
-        );
+        queryClient.invalidateQueries({ queryKey: ["home-posts"] });
+        queryClient.invalidateQueries({ queryKey: ["reels"] });
 
-        queryClient.setQueryData<{ pages: ReelsDetail[][]; pageParams: any }>(
-          ["reels"],
-          (oldData) => {
-            if (!oldData) return oldData;
-
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page) =>
-                page.filter((post) => post.post_id !== postId)
-              ),
-            };
-          }
-        );
-
+        clearPlayer();
         setReportSubmitted(true);
       } catch (error) {
         Toast.show({
