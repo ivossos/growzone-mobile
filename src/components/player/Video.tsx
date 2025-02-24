@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { View, StyleSheet, Pressable, AppState } from "react-native";
+import { View, StyleSheet, Pressable, AppState, Platform } from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
 import Slider from "@react-native-community/slider";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -118,7 +118,9 @@ const VideoPlayer = ({
         return insets.bottom;
 
       default:
-        return insets.bottom - 30;
+        return Platform.OS === "android"
+          ? insets.bottom + 30
+          : insets.bottom - 30;
     }
   }, [params]);
 

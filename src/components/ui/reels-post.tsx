@@ -111,9 +111,9 @@ const ReelsPost = ({
   const bottom = useMemo(() => {
     switch (params.type) {
       case "weedz":
-        return 76;
+        return Platform.OS === "android" ? 60 : 76;
       default:
-        return 50;
+        return Platform.OS === "android" ? 80 : 50;
     }
   }, [params]);
 
