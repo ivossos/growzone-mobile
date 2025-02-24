@@ -1,6 +1,5 @@
 import { ReelsDetail } from "@/api/@types/models";
 import { VideoContentFit, VideoPlayer } from "expo-video";
-import React from "react";
 import { StyleProp, ViewStyle } from "react-native";
 
 export interface VideoPlayerProps {
@@ -21,5 +20,8 @@ export interface VideoPlayerProps {
 
 export type ReelsPostProps = {
   post: ReelsDetail;
-  children: React.ReactNode;
+  videoId: number;
+  playerRef: any;
+  isVisible: boolean;
+  uri: string;
 };

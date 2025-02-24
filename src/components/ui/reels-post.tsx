@@ -1,37 +1,20 @@
-import React, {
-  forwardRef,
-  memo,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  Pressable,
   ActivityIndicator,
   TouchableOpacity,
-  Dimensions,
   Platform,
   StatusBar,
-  Image,
+  Dimensions,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
-import {
-  EllipsisIcon,
-  MessageCircleMore,
-  VolumeX,
-  Volume2,
-} from "lucide-react-native";
+import { EllipsisIcon, MessageCircleMore } from "lucide-react-native";
 import { colors } from "@/styles/colors";
-import { Link, router } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import ExpandableText from "./expandable-text";
-import { ReelsDetail } from "@/api/@types/models";
 import { getInitials } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
@@ -42,17 +25,29 @@ import { createLike } from "@/api/social/post/like/create-like";
 import { deleteLike } from "@/api/social/post/like/delete-like";
 import LikeIcon from "@/assets/icons/like-white.svg";
 import LikedIcon from "@/assets/icons/liked.svg";
-import { createView } from "@/api/social/post/view/create-view";
 import { ReelsPostProps } from "../Types";
+import VideoPlayer from "@/components/player/Video";
 
-const ReelsPost = ({ children, post }: ReelsPostProps) => {
+const statusBarHeight =
+  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
+const ScreenHeight =
+  Dimensions.get("window").height -
+  (Platform.OS === "ios" ? 72 : statusBarHeight);
+
+const ReelsPost = ({
+  post,
+  videoId,
+  playerRef,
+  isVisible,
+  uri,
+}: ReelsPostProps) => {
   const { user } = useAuth();
+  const params = useLocalSearchParams();
   const [follow, setFollow] = useState<boolean>(post.user.is_following);
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [commentCount, setCommentCount] = useState(post.comment_count);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
-  const [isViewed, setIsViewed] = useState(post.is_viewed);
   const { openBottomSheet } = useBottomSheetContext();
 
   const handleBottomSheet = (postId: any) => {
@@ -90,17 +85,6 @@ const ReelsPost = ({ children, post }: ReelsPostProps) => {
     }
   };
 
-  const viewVideo = async (post: ReelsDetail) => {
-    try {
-      if (!isViewed) {
-        await createView(post.post_id);
-        setIsViewed(true);
-      }
-    } catch (err) {
-      console.error("Erro marcar video como visto:", err);
-    }
-  };
-
   const handleLike = async () => {
     try {
       if (liked) {
@@ -124,14 +108,26 @@ const ReelsPost = ({ children, post }: ReelsPostProps) => {
     }
   };
 
-  const startPlay = (postData: ReelsDetail) => {
-    viewVideo(postData).then();
-  };
+  const bottom = useMemo(() => {
+    switch (params.type) {
+      case "weedz":
+        return 76;
+      default:
+        return 50;
+    }
+  }, [params]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
-      {children}
-      <View style={[styles.footer]}>
+      <View style={styles.videoPlayer}>
+        <VideoPlayer
+          uri={uri}
+          videoId={videoId}
+          playerRef={playerRef}
+          isVisible={isVisible}
+        />
+      </View>
+      <View style={[styles.footer, { bottom: bottom }]}>
         <View style={{ flex: 1 }} className="flex gap-2">
           <View
             key={post.user.id}
@@ -254,24 +250,6 @@ const ReelsPost = ({ children, post }: ReelsPostProps) => {
             )}
           </View>
 
-          {/* <View className="flex flex-col items-center justify-center gap-2">
-            <TouchableOpacity onPress={video.controls?.handlerMutedVideo}>
-              <LinearGradient
-                colors={[
-                  "rgba(255, 255, 255, 0.16)",
-                  "rgba(255, 255, 255, 0.32)",
-                ]}
-                style={styles.blurContainer}
-              >
-                {video.muted ? (
-                  <VolumeX size={20} color={colors.brand.white} />
-                ) : (
-                  <Volume2 size={20} color={colors.brand.white} />
-                )}
-              </LinearGradient>
-            </TouchableOpacity>
-          </View> */}
-
           {user.id !== post.user.id && (
             <View className="flex flex-col items-center justify-center gap-2">
               <TouchableOpacity
@@ -320,6 +298,10 @@ const ReelsPost = ({ children, post }: ReelsPostProps) => {
 };
 
 const styles = StyleSheet.create({
+  videoPlayer: {
+    height: ScreenHeight,
+    justifyContent: "center",
+  },
   blurContainer: {
     padding: 12,
     borderRadius: 9999,
@@ -337,7 +319,6 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 24,
     position: "absolute",
-    bottom: 46,
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 16,
@@ -347,4 +328,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default memo(ReelsPost);
+export default ReelsPost;

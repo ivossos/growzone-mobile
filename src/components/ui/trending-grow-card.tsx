@@ -3,12 +3,16 @@ import { colors } from "@/styles/colors";
 import { router } from "expo-router";
 import { CalendarDaysIcon, Video } from "lucide-react-native";
 import { Fragment, useCallback } from "react";
-import { Image, Pressable, Text, useWindowDimensions, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { getMuxThumbnailUrl } from "@/lib/utils";
 
 export function TrendingGrowCard({ item }: { item: GrowPost }) {
-
-  
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth * 0.42;
   const handlerPress = useCallback(() => {

@@ -1,11 +1,18 @@
 import { colors } from "@/styles/colors";
 import { ArrowLeft } from "lucide-react-native";
-import { Text, TouchableOpacity, View, StyleSheet, StyleProp, ViewStyle } from "react-native";
+import {
+  Text,
+  TouchableOpacity,
+  View,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+} from "react-native";
 
 interface ButtonHeader {
   onBack: () => void;
   title?: string;
-  containerStyle?: StyleProp<ViewStyle>
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 export default function HeaderGoBack({
@@ -32,7 +39,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderColor: colors.brand.black[80],
-    backgroundColor: '#0D0D0D',
+    backgroundColor: "#0D0D0D",
   },
   row: {
     flexDirection: "row",

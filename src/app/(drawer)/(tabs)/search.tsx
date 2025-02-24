@@ -166,7 +166,6 @@ export default function SearchScreen() {
   const setValueFormFilter = async (
     filterData: Omit<FormFilterGenetic, "strain">
   ) => {
-
     form.setValue("phase", {
       id: filterData.phase?.id || null,
       name: filterData.phase?.name || null,
@@ -424,35 +423,35 @@ export default function SearchScreen() {
 
   const openGlobalSearchPlants = useCallback(
     async (type: "buds" | "plants" | "extractions") => {
-      const phaseMap: Record<string, typeof EXTRACTIONS_PHASE | typeof RESULT_PHASE | null> = {
+      const phaseMap: Record<
+        string,
+        typeof EXTRACTIONS_PHASE | typeof RESULT_PHASE | null
+      > = {
         extractions: EXTRACTIONS_PHASE,
         buds: RESULT_PHASE,
         plants: null,
       };
-  
+
       const phase = phaseMap[type];
       if (phase) {
         form.setValue("phase", phase);
       }
-  
+
       setGlobalSectionSelected(GlobalSearchType.GROW_POST);
       setStartSearch(true);
     },
     []
   );
 
-  const handlerChangeSearchUserGlobal = useCallback(
-    (text: string) => {
-      const hasText = !!text;
-      setQuery(text);
-      setStartSearch(hasText ? true : false);
+  const handlerChangeSearchUserGlobal = useCallback((text: string) => {
+    const hasText = !!text;
+    setQuery(text);
+    setStartSearch(hasText ? true : false);
 
-      if (!hasText) {
-        form.reset();
-      }
-    },
-    []
-  );
+    if (!hasText) {
+      form.reset();
+    }
+  }, []);
 
   const handlerGoBack = useCallback(() => {
     setGlobalSectionSelected(GlobalSearchType.USER);
@@ -505,7 +504,11 @@ export default function SearchScreen() {
           return (
             <Section
               title="Top Extrações"
-              data={trendingGrowPostsExtration}
+              data={
+                trendingGrowPostsExtration.length > 6
+                  ? trendingGrowPostsExtration
+                  : []
+              }
               showMore
               onPress={() => openGlobalSearchPlants("extractions")}
               renderItem={({ item }) => (
