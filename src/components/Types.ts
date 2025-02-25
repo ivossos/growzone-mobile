@@ -18,25 +18,10 @@ export interface VideoPlayerProps {
   }>;
 }
 
-// export interface VideoPlayerProps {
-//   source: { uri: string };
-//   data?: any;
-//   autoplay?: boolean;
-//   resizeMode?: VideoContentFit;
-//   startPlay?: (value: any) => void;
-//   styleContainer?: StyleProp<ViewStyle>;
-//   muted?: boolean;
-//   loop?: boolean;
-//   controls?: Partial<{
-//     showProgressBar: boolean;
-//     showMutedButton: boolean;
-//     handlerMutedVideo: () => void;
-//     muted: boolean;
-//   }>;
-// }
-
 export type ReelsPostProps = {
   post: ReelsDetail;
-  activePostId: number | null;
-  video: VideoPlayerProps;
+  videoId: number;
+  playerRef: any;
+  isVisible: boolean;
+  uri: string;
 };

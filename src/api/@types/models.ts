@@ -352,8 +352,8 @@ export interface GrowPostDetail {
 }
 
 export interface FeedAllPost {
-  type: PostType
-  post: GrowPostDetail | PostDetail | ReelsDetail
+  type: PostType;
+  post: GrowPostDetail | PostDetail | ReelsDetail;
 }
 
 export interface ReportReason {
@@ -480,9 +480,9 @@ export interface VideoPlayerHandle {
 }
 
 export interface UpdateGrowPost {
-  post_id: number
+  post_id: number;
   description?: string;
   day: number;
   strain_id: number;
-  phase_id: number
+  phase_id: number;
 }

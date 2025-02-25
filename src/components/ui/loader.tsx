@@ -1,4 +1,5 @@
 import { View, ActivityIndicator, Dimensions, Platform } from "react-native";
+import { colors } from "@/styles/colors";
 
 const Loader = ({ isLoading }: { isLoading: boolean }) => {
   const osName = Platform.OS;
@@ -15,7 +16,7 @@ const Loader = ({ isLoading }: { isLoading: boolean }) => {
     >
       <ActivityIndicator
         animating={isLoading}
-        color="#fff"
+        color={colors.brand.green}
         size={osName === "ios" ? "large" : 50}
       />
     </View>

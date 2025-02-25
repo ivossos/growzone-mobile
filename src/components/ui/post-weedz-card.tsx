@@ -1,14 +1,12 @@
-import React, { memo, useCallback, useMemo, useState } from "react";
+import React, { memo, useCallback, useState, useRef, useEffect } from "react";
 import {
   ActivityIndicator,
-  Dimensions,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import {
-  CalendarDaysIcon,
   ChevronRight,
   EllipsisIcon,
   Volume2,
@@ -16,21 +14,26 @@ import {
 } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { colors } from "@/styles/colors";
-import MediaSlider from "./media-slider";
 import LikeIcon from "@/assets/icons/like.svg";
 import LikedIcon from "@/assets/icons/liked.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
 import { router } from "expo-router";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
-import { GrowPostDetail, ReelsDetail } from "@/api/@types/models";
+import { ReelsDetail } from "@/api/@types/models";
 import { formatDistance, getInitials } from "@/lib/utils";
 import Toast from "react-native-toast-message";
 import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
-import { PostType } from "@/api/@types/enums";
-import VideoPlayer from "../VideoPlayer";
+import VideoPlayer from "@/components/player/Video";
 import { createView } from "@/api/social/post/view/create-view";
+import { useFocusEffect } from "expo-router";
+
+import {
+  getGlobalMute,
+  subscribeToMuteState,
+  setGlobalMute,
+} from "@/components/player/mute"; // Função de controle global
 
 interface Props {
   post: ReelsDetail;
@@ -39,14 +42,7 @@ interface Props {
   audioMute: boolean;
 }
 
-const { width } = Dimensions.get("window");
-
-const WeedzPostCard = ({
-  post,
-  audioMute,
-  activePostId,
-  handlerAudioMute,
-}: Props) => {
+const WeedzPostCard = ({ post, activePostId }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -54,6 +50,13 @@ const WeedzPostCard = ({
   const [isViewed, setIsViewed] = useState(post.is_viewed);
   const { openBottomSheet } = useBottomSheetContext();
   const { user } = useAuth();
+  const playerRefs = useRef(new Map());
+  const [isMuted, setIsMuted] = useState(getGlobalMute());
+
+  useEffect(() => {
+    const unsubscribe = subscribeToMuteState(setIsMuted);
+    return () => unsubscribe();
+  }, []);
 
   const handleToggleDescription = useCallback(() => {
     setIsExpanded((prev) => !prev);
@@ -96,18 +99,27 @@ const WeedzPostCard = ({
     }
   };
 
-  const startPlay = (postData: ReelsDetail) => {
-    viewVideo(postData).then();
-  };
-
   const handlerOpenCommentSheet = useCallback(() => {
-    console.log('handlerOpenCommentSheet ', post.post_id);
-    
     openBottomSheet({
       type: "comment",
       id: post.post_id,
     });
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const player = playerRefs.current.get(activePostId);
+
+      if (player) {
+        player.currentTime = 0;
+        player.play();
+      }
+
+      return () => {
+        playerRefs.current.forEach((player) => player.pause());
+      };
+    }, [activePostId])
+  );
 
   return (
     <View className="flex flex-1 gap-5 my-3">
@@ -167,19 +179,13 @@ const WeedzPostCard = ({
 
       <View style={styles.aspectView}>
         <VideoPlayer
-          loop
-          data={post}
-          styleContainer={styles.aspectView}
-          startPlay={startPlay}
-          controls={{
-            handlerMutedVideo: () => {
-              handlerAudioMute(!audioMute);
-            },
-            showButtonPlay: false,
-            showProgressBar: false,
-          }}
-          autoplay={activePostId === post.id}
-          player={post.file.player}
+          isMuted={isMuted}
+          showProgressBar={false}
+          uri={post.file?.file as any}
+          videoId={post.id}
+          playerRef={playerRefs}
+          isVisible={activePostId === post.id}
+          playVideo={() => viewVideo(post)}
         />
       </View>
 
@@ -187,8 +193,12 @@ const WeedzPostCard = ({
         <View className="relative">
           <View className="absolute bottom-12 w-full flex flex-row justify-between items-center px-4">
             <View className="border border-black-80 bg-white px-4 py-2 rounded-full">
-              <TouchableOpacity onPress={() => handlerAudioMute(!audioMute)}>
-                {audioMute ? (
+              <TouchableOpacity
+                onPress={() =>
+                  setGlobalMute((prevMuteState: any) => !prevMuteState)
+                }
+              >
+                {isMuted ? (
                   <VolumeX size={20} color={colors.brand.black} />
                 ) : (
                   <Volume2 size={20} color={colors.brand.black} />

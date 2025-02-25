@@ -30,11 +30,7 @@ interface Props {
   audioMute: boolean;
 }
 
-const PostCard = ({
-  post,
-  audioMute,
-  handlerAudioMute,
-}: Props) => {
+const PostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
   const { user } = useAuth();
   const { playVideo, pauseVideo } = useVideoPlayerContext();
   const [liked, setLiked] = useState(post.is_liked);
@@ -74,13 +70,13 @@ const PostCard = ({
   };
 
   const handlerOpenCommentSheet = useCallback(() => {
-    pauseVideo()
-    
+    pauseVideo();
+
     openBottomSheet({
       type: "comment",
       id: post.post_id,
       callbackFn: async () => {
-        playVideo()
+        playVideo();
       },
     });
   }, [post]);

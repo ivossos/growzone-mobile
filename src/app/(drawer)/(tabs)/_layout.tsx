@@ -95,7 +95,6 @@ export default function TabLayout() {
     bottomSheetRef.current?.expand();
   };
 
-
   const closeReportBottomSheet = () => {
     reportSheetRef.current?.close();
   };
@@ -137,10 +136,10 @@ export default function TabLayout() {
             tabBarInactiveTintColor: "#FFF",
             tabBarShowLabel: false,
             tabBarStyle: {
-              height: Platform.OS === 'ios' ? 72 : 66,
+              height: Platform.OS === "ios" ? 72 : 66,
               backgroundColor: "#161616",
-              justifyContent: 'center',
-              alignItems: 'center'
+              justifyContent: "center",
+              alignItems: "center",
             },
           }}
         >
@@ -158,7 +157,7 @@ export default function TabLayout() {
                 } else {
                   navigation.navigate(route.name);
                 }
-              }
+              },
             })}
             options={{
               title: "Home",
@@ -193,8 +192,8 @@ export default function TabLayout() {
             listeners={{
               tabPress: (e) => {
                 e.preventDefault();
-                if(isProcessing) {
-                  toggleVibration();  
+                if (isProcessing) {
+                  toggleVibration();
                   return;
                 }
                 pauseVideo();

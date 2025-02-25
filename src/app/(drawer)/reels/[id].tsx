@@ -25,8 +25,9 @@ import Loader from "@/components/ui/loader";
 
 export default function Reels() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const postId = Number(id)
-  const { playVideo, toggleAudioMute, setPlayer, pauseVideo, clearPlayer } = useVideoPlayerContext();
+  const postId = Number(id);
+  const { playVideo, toggleAudioMute, setPlayer, pauseVideo, clearPlayer } =
+    useVideoPlayerContext();
 
   const [mutedVideo, setMutedVideo] = useState(false);
 
@@ -38,11 +39,11 @@ export default function Reels() {
   } = useQuery<ReelsDetail>({
     queryKey: ["reels", postId],
     queryFn: async () => {
-      const weedz = await getReel(postId)
+      const weedz = await getReel(postId);
 
-      let player: VideoPlayer | undefined = undefined
+      let player: VideoPlayer | undefined = undefined;
 
-      if (weedz.file.type === 'video') {
+      if (weedz.file.type === "video") {
         player = createVideoPlayer({
           uri: weedz.file.file,
           metadata: {
@@ -50,7 +51,7 @@ export default function Reels() {
             artist: `artist-weedz-${weedz.id}`,
           },
         });
-  
+
         player.loop = true;
         player.muted = false;
         player.timeUpdateEventInterval = 2;
@@ -68,12 +69,12 @@ export default function Reels() {
     enabled: !!postId,
   });
 
-    const handlerGoBack = useCallback(() => {
-      pauseVideo();
-      setPlayer(undefined);
-      queryClient.removeQueries({ queryKey: ['reels', postId] })
-      router.back();
-    }, []);
+  const handlerGoBack = useCallback(() => {
+    pauseVideo();
+    setPlayer(undefined);
+    queryClient.removeQueries({ queryKey: ["reels", postId] });
+    router.back();
+  }, []);
 
   const handlerMutedVideo = useCallback(() => {
     const value = !mutedVideo;

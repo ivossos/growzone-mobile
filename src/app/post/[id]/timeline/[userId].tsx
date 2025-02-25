@@ -1,10 +1,5 @@
 import { TimelineType } from "@/api/@types/enums";
-import {
-  GrowPostDetail,
-  PostDetail,
-  ReelsDetail,
-  VideoPlayerHandle,
-} from "@/api/@types/models";
+import { GrowPostDetail, PostDetail, ReelsDetail } from "@/api/@types/models";
 import Divider from "@/components/ui/divider";
 import GrowPostCard from "@/components/ui/grow-post-card";
 import Loader from "@/components/ui/loader";
@@ -23,10 +18,10 @@ import {
   View,
   ViewabilityConfig,
   ViewToken,
+  Text,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FlatList, TouchableOpacity } from "react-native-gesture-handler";
-import Animated from "react-native-reanimated";
+import { FlatList } from "react-native-gesture-handler";
 import {
   Fragment,
   useCallback,
@@ -55,15 +50,14 @@ type TimelineParams = {
   index: string;
 };
 
-type Item = PostDetail | ReelsDetail | GrowPostDetail;
-
 export default function Timeline() {
   const params = useLocalSearchParams<TimelineParams>();
   const userId = Number(params.userId);
-  const postId = Number(params.id);
+  const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
 
-  const { pauseVideo, toggleAudioMute, playVideo, setPlayer, clearPlayer } =
-    useVideoPlayerContext();
+  const playerRefs = useRef(new Map());
+
+  const { pauseVideo, toggleAudioMute, setPlayer } = useVideoPlayerContext();
 
   const flatListRef = useRef<FlatList>(null);
 
@@ -85,6 +79,13 @@ export default function Timeline() {
   const isWeedzScreen = useMemo(() => {
     return params.type === TimelineType.WEEDZ;
   }, [params.type]);
+
+  const initialScrollIndex = useMemo(() => {
+    if (isWeedzScreen && data.length > 0) {
+      return data.findIndex((item) => item.post_id === Number(params.id));
+    }
+    return 0;
+  }, [isWeedzScreen, data, params.id]);
 
   const viewabilityConfig: ViewabilityConfig = useMemo(() => {
     const config = {
@@ -116,7 +117,7 @@ export default function Timeline() {
 
       if (isSocialOrGrow) {
         const item: GrowPostDetail | PostDetail = currentItem as any;
-        const playerItem = item.files[0]
+        const playerItem = item.files[0];
 
         if (playerItem.type === "video") {
           playerItem.player.replace({ uri: playerItem.file });
@@ -168,11 +169,29 @@ export default function Timeline() {
         if (playerValue && currentItem && currentItem.id) {
           setPlayer(playerValue);
           toggleAudioMute(mutedVideo);
-          playVideo();
         }
       }
     },
     [isWeedzScreen, mutedVideo, getPlayerValue]
+  );
+
+  const onViewableItemsChangedWeedz = useCallback(
+    ({ viewableItems }: { viewableItems: any }) => {
+      const newVisibleItems = new Set(
+        viewableItems.map((item: { item: { id: any } }) => item.item.id)
+      );
+
+      setVisibleItems((prevVisibleItems) => {
+        if (
+          prevVisibleItems.size === newVisibleItems.size &&
+          [...prevVisibleItems].every((id) => newVisibleItems.has(id))
+        ) {
+          return prevVisibleItems;
+        }
+        return newVisibleItems;
+      });
+    },
+    []
   );
 
   const stickyHeaderHiddenOnScroll = useMemo(() => {
@@ -207,25 +226,11 @@ export default function Timeline() {
   }, [mutedVideo, setMutedVideo]);
 
   const handlerPlayerVideo = (indexItem: number) => {
-    const isWeedz = params.type === TimelineType.WEEDZ;
     const isSocialOrGrow = [TimelineType.SOCIAL, TimelineType.GROW].includes(
       params.type
     );
-    const post = data[indexItem];
 
-    if (isWeedz) {
-      const weedzPost = post as ReelsDetail;
-      weedzPost.player.replace({
-        uri: weedzPost.file.file,
-        metadata: {
-          title: `title-weedz-${weedzPost.id}`,
-          artist: `artist-weedz-${weedzPost.id}`,
-        },
-      });
-      setPlayer(weedzPost.player);
-      playVideo();
-      setCurrentVideoId(weedzPost.id);
-    }
+    const post = data[indexItem];
 
     if (isSocialOrGrow) {
       const socialPost = post as PostDetail;
@@ -250,72 +255,66 @@ export default function Timeline() {
   };
 
   const handlerGoBack = () => {
-    pauseVideo();
-    setPlayer(undefined);
     router.back();
   };
 
-  const renderItem = ({ item, index }: { index: number; item: Item }) => {
-    if (item.is_compressing) {
-      return (
-        <View
-          key={`is_compressing_${index}`}
-          style={{ width: "90%", height: 550, borderRadius: 16 }}
-          className="bg-black-90 rounded-lg border border-black-80 mx-6"
-        >
-          <View className="flex justify-center items-center h-full">
-            <ActivityIndicator size="small" color={colors.brand.green} />
+  const renderItem = useCallback(
+    ({ item, index }: { index: number; item: any }) => {
+      if (item.is_compressing) {
+        return (
+          <View
+            key={`is_compressing_${index}`}
+            style={{ width: "90%", height: 550, borderRadius: 16 }}
+            className="bg-black-90 rounded-lg border border-black-80 mx-6"
+          >
+            <View className="flex justify-center items-center h-full">
+              <ActivityIndicator size="small" color={colors.brand.green} />
+            </View>
           </View>
-        </View>
-      );
-    }
+        );
+      }
 
-    const screen = {
-      [TimelineType.SOCIAL]: (
-        <PostCard
-          key={`post_card_${index}`}
-          handlerAudioMute={handlerMutedVideo}
-          audioMute={mutedVideo}
-          post={item as PostDetail}
-        />
-      ),
-      [TimelineType.WEEDZ]: (
-        <Fragment key={`weedz_card_${index}`}>
-          <HeaderGoBack
-            onBack={handlerGoBack}
-            title="Publicações"
-            containerStyle={styles.header}
+      const screen = {
+        [TimelineType.SOCIAL]: (
+          <PostCard
+            key={`post_card_${index}`}
+            handlerAudioMute={handlerMutedVideo}
+            audioMute={mutedVideo}
+            post={item as PostDetail}
           />
-
-          <View style={styles.fullscreenItem}>
-            <ReelsPost
-              video={{
-                controls: {
-                  handlerMutedVideo,
-                  showProgressBar: true,
-                  showButtonPlay: false,
-                },
-                muted: mutedVideo,
-                player: (item as ReelsDetail).player,
-              }}
-              activePostId={currentVideoId}
-              post={item as ReelsDetail}
+        ),
+        [TimelineType.WEEDZ]: (
+          <Fragment key={`weedz_card_${index}`}>
+            <HeaderGoBack
+              onBack={handlerGoBack}
+              title="Publicações"
+              containerStyle={styles.header}
             />
-          </View>
-        </Fragment>
-      ),
-      [TimelineType.GROW]: (
-        <GrowPostCard
-          key={`grow_card_${index}`}
-          handlerAudioMute={handlerMutedVideo}
-          audioMute={mutedVideo}
-          post={item as GrowPostDetail}
-        />
-      ),
-    };
+            <View style={styles.fullscreenItem}>
+              <ReelsPost
+                videoId={item.id}
+                playerRef={playerRefs}
+                isVisible={viewableItems.has(item.id)}
+                uri={item.file?.file}
+                post={item as ReelsDetail}
+              />
+            </View>
+          </Fragment>
+        ),
+        [TimelineType.GROW]: (
+          <GrowPostCard
+            key={`grow_card_${index}`}
+            handlerAudioMute={handlerMutedVideo}
+            audioMute={mutedVideo}
+            post={item as GrowPostDetail}
+          />
+        ),
+      };
 
-    return screen[params.type];
-  };
+      return screen[params.type];
+    },
+    [viewableItems]
+  );
 
   const handleScrollToIndex = async () => {
     const hasData =
@@ -334,18 +333,53 @@ export default function Timeline() {
     }
   };
 
+  const index = useMemo(() => {
+    if (isWeedzScreen) {
+      return initialScrollIndex >= 0 ? initialScrollIndex : 0;
+    }
+
+    return indexItemSelected;
+  }, []);
+
   useEffect(() => {
     handleScrollToIndex();
   }, []);
 
   useFocusEffect(
     useCallback(() => {
+      viewableItems.forEach((id) => {
+        const player = playerRefs.current.get(id);
+        if (player) {
+          player.play();
+        }
+      });
+
       return () => {
-        pauseVideo();
-        clearPlayer();
+        playerRefs.current.forEach((player) => player.pause());
       };
-    }, [])
+    }, [viewableItems])
   );
+
+  useEffect(() => {
+    if (isWeedzScreen && initialScrollIndex >= 0) {
+      flatListRef.current?.scrollToIndex({
+        index: initialScrollIndex,
+        animated: true,
+      });
+
+      const currentVideo = data.find(
+        (item) => item.post_id === Number(params.id)
+      )?.id;
+
+      setTimeout(() => {
+        const player = playerRefs.current.get(Number(currentVideo));
+        if (player) {
+          player.play();
+        }
+      }, 500);
+      return;
+    }
+  }, [isWeedzScreen]);
 
   if (isLoading) {
     return (
@@ -360,7 +394,7 @@ export default function Timeline() {
       <FlatList
         data={data as any}
         ref={flatListRef}
-        initialScrollIndex={indexItemSelected}
+        initialScrollIndex={index}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item, index) => `post_timeline_${index}`}
@@ -377,8 +411,8 @@ export default function Timeline() {
         onEndReached={() => hasNextPage && fetchNextPage()}
         onEndReachedThreshold={0.5}
         snapToInterval={isWeedzScreen ? screenHeight : undefined}
-        initialNumToRender={5}
-        windowSize={5}
+        initialNumToRender={3}
+        windowSize={3}
         ItemSeparatorComponent={() => {
           if (isWeedzScreen) {
             return null;
@@ -398,16 +432,11 @@ export default function Timeline() {
           />
         }
         viewabilityConfig={viewabilityConfig}
-        onViewableItemsChanged={onViewableItemsChanged}
+        onViewableItemsChanged={
+          isWeedzScreen ? onViewableItemsChangedWeedz : onViewableItemsChanged
+        }
         pagingEnabled={isWeedzScreen}
         onScrollToIndexFailed={handleScrollToIndexFailed}
-        // ListFooterComponent={
-        //   !hasScrolledToItem ? (
-        //     <View className="flex-1 justify-center items-center bg-black-100">
-        //       <Loader isLoading />
-        //     </View>
-        //   ) : null
-        // }
       />
     </SafeAreaView>
   );

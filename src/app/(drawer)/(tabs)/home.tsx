@@ -42,15 +42,7 @@ export default function HomeScreen() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [audioMute, setAudioMute] = useState(false);
   const [activePostId, setActivePostId] = useState<number | null>(null);
-
-  const {
-    pauseVideo,
-    toggleAudioMute,
-    playVideo,
-    setPlayer,
-    isMuted,
-    clearPlayer,
-  } = useVideoPlayerContext();
+  const { pauseVideo, clearPlayer } = useVideoPlayerContext();
 
   const { posts, topContributors } = useHome();
   const { setFlatListRef } = useScrollToTop();
@@ -65,11 +57,6 @@ export default function HomeScreen() {
     setIsRefreshing(false);
   }, [posts.data]);
 
-  const handlerAudioMute = useCallback((value: boolean) => {
-    toggleAudioMute(value);
-    setAudioMute(value);
-  }, []);
-
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<FeedAllPost>) => {
       const componentsMap = {
@@ -83,7 +70,6 @@ export default function HomeScreen() {
       const commonProps = {
         post: item.post,
         audioMute,
-        handlerAudioMute,
       };
 
       return (
@@ -93,7 +79,7 @@ export default function HomeScreen() {
         />
       );
     },
-    [audioMute, activePostId, handlerAudioMute]
+    [audioMute, activePostId]
   );
 
   const renderHeader = useCallback(
@@ -168,27 +154,10 @@ export default function HomeScreen() {
           } else {
             setActivePostId(viewableItem.item.post.id);
           }
-
-          if (file && file.type === "video") {   
-            const oldPlayerIsMuted = isMuted();
-            pauseVideo();
-            setPlayer(file.player);
-            toggleAudioMute(oldPlayerIsMuted);
-            playVideo();
-          }
         }
       },
     },
   ]);
-
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        pauseVideo();
-        clearPlayer();
-      };
-    }, [])
-  );
 
   return (
     <Fragment>
@@ -227,7 +196,11 @@ export default function HomeScreen() {
           }}
           onEndReachedThreshold={0.8}
           ListFooterComponent={
-            posts.isFetchingNextPage ? <Loader isLoading /> : <View style={{ height: 100 }} />
+            posts.isFetchingNextPage ? (
+              <Loader isLoading />
+            ) : (
+              <View style={{ height: 100 }} />
+            )
           }
         />
       </SafeAreaView>
