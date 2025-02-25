@@ -41,7 +41,6 @@ import Toast from "react-native-toast-message";
 import { buildErrorMessage, getInitials } from "@/lib/utils";
 import VideoPicker from "./video-picker";
 import createReels from "@/api/social/post/create-reels";
-import { uploadVideo } from "@/api/compress/upload-video";
 import { z } from "zod";
 import createGrowPost from "@/api/social/post/create-grow-post";
 import { Controller, FieldError, useForm } from "react-hook-form";
@@ -154,7 +153,8 @@ const CreateBottomSheet = React.forwardRef<
 >(({ onClose, handlerCreateBottomSheet }, ref) => {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
-  const { createSocialPost, createReelsPost, createGrowPost } = useCreatePostProgress();
+  const { createSocialPost, createReelsPost, createGrowPost } =
+    useCreatePostProgress();
   const { pauseVideo, setPlayer } = useVideoPlayerContext();
   const [currentAction, setCurrentAction] = useState<PostType | null>(null);
   const [postDescription, setPostDescription] = useState("");
@@ -222,31 +222,12 @@ const CreateBottomSheet = React.forwardRef<
     setIsLoadingCreatePost(true);
 
     try {
-
       createSocialPost({
-        userId: user.id, 
-        images: selectedImages, 
-        videos: selectedVideos, 
+        userId: user.id,
+        images: selectedImages,
+        videos: selectedVideos,
         description: postDescription,
       });
-      
-      // const post = await createSocialPost({
-      //   images: selectedImages,
-      //   video_count: selectedVideos.length,
-      //   description: postDescription,
-      // });
-
-      // for (const video of selectedVideos) {
-      //   const uploadPromise = uploadVideo(post.post_id, video).catch(
-      //     (error) => {
-      //       console.error(`Erro ao enviar o vídeo ${video}`, error);
-      //       return Promise.reject(error);
-      //     }
-      //   );
-      //   uploadPromises.push(uploadPromise);
-      // }
-
-      // await Promise.all(uploadPromises);
 
       form.reset();
       setCurrentAction(null);
@@ -274,16 +255,11 @@ const CreateBottomSheet = React.forwardRef<
 
     setIsLoadingCreateReels(true);
     try {
-      // const reels = await createReels({
-      //   description: postDescription,
-      // });
-      // await uploadVideo(reels.post_id, selectedVideos[0]);
-
-      createReelsPost({ 
-        userId: user.id,  
+      createReelsPost({
+        userId: user.id,
         description: postDescription,
-        video: selectedVideos[0]
-      })
+        video: selectedVideos[0],
+      });
 
       setSelectedVideos([]);
       pauseVideo();
@@ -318,7 +294,7 @@ const CreateBottomSheet = React.forwardRef<
     setIsLoadingCreateGrowPost(true);
     try {
       createGrowPost({
-        userId: user.id, 
+        userId: user.id,
         images: selectedImages,
         videos: selectedVideos,
         description: postDescription,
@@ -326,14 +302,6 @@ const CreateBottomSheet = React.forwardRef<
         strain_id: values.genetic.id!,
         phase_id: values.phase.id!,
       });
-
-      // for (const video of selectedVideos) {
-      //   try {
-      //     await uploadVideo(post.post_id, video);
-      //   } catch (error) {
-      //     console.error(`Erro ao enviar o vídeo ${video}`, error);
-      //   }
-      // }
 
       setCurrentAction(null);
       setSelectedImages([]);

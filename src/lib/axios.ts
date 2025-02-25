@@ -19,7 +19,6 @@ type APIInstanceProps = AxiosInstance & {
 
 const authBaseURL = "https://dev1.auth.growzone.co/api/v1";
 const socialBaseURL = "https://dev1.social.growzone.co/api/v1";
-const compressBaseURL = "https://dev.compress.growzone.co/api/v1";
 
 const createAPIInstance = (baseURL: string): APIInstanceProps => {
   const api = axios.create({ baseURL }) as APIInstanceProps;
@@ -146,6 +145,5 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 
 const authApi = createAPIInstance(authBaseURL);
 const socialApi = createAPIInstance(socialBaseURL);
-const compressApi = createAPIInstance(compressBaseURL);
 
-export { authApi, socialApi, compressApi };
+export { authApi, socialApi };
