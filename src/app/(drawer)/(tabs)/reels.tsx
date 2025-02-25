@@ -6,7 +6,8 @@ import {
   Dimensions,
   Platform,
 } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
+
+import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { getReels } from "@/api/social/post/get-reels";
@@ -27,14 +28,24 @@ export default function Reels() {
     waitForInteraction: true,
   };
 
-  const onViewableItemsChanged = useRef(
+  const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
         viewableItems.map((item: { item: { id: any } }) => item.item.id)
       );
-      setVisibleItems(newVisibleItems);
-    }
-  ).current;
+
+      setVisibleItems((prevVisibleItems) => {
+        if (
+          prevVisibleItems.size === newVisibleItems.size &&
+          [...prevVisibleItems].every((id) => newVisibleItems.has(id))
+        ) {
+          return prevVisibleItems;
+        }
+        return newVisibleItems;
+      });
+    },
+    []
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -55,6 +66,19 @@ export default function Reels() {
     const weedz = await getReels({ skip: pageParam, limit: 10 });
     return weedz;
   };
+
+  const renderItem = useCallback(
+    ({ item }: any) => (
+      <ReelsPost
+        videoId={item.id}
+        playerRef={playerRefs}
+        uri={item.file.file}
+        post={item}
+        isVisible={viewableItems.has(item.id)}
+      />
+    ),
+    [viewableItems]
+  );
 
   const {
     data: reelsData,
@@ -78,38 +102,30 @@ export default function Reels() {
   }
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <StatusBar translucent backgroundColor={"transparent"} />
-      <FlatList
-        windowSize={5}
-        initialNumToRender={5}
-        onEndReachedThreshold={0.3}
+      <FlashList
         data={reelsData?.pages.flat() || []}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
+        estimatedItemSize={ScreenHeight}
         snapToInterval={ScreenHeight}
         snapToAlignment="start"
-        decelerationRate="fast"
         pagingEnabled
+        decelerationRate="fast"
+        removeClippedSubviews
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        onEndReached={() => hasNextPage && fetchNextPage()}
+        onEndReachedThreshold={0.3}
+        showsVerticalScrollIndicator={false}
         viewabilityConfig={viewabilityConfig}
         onViewableItemsChanged={onViewableItemsChanged}
-        showsVerticalScrollIndicator={false}
-        onEndReached={() => hasNextPage && fetchNextPage()}
-        renderItem={({ item }) => (
-          <ReelsPost
-            videoId={item.id}
-            playerRef={playerRefs}
-            uri={item.file.file}
-            post={item}
-            isVisible={viewableItems.has(item.id)}
-          />
-        )}
+        ListFooterComponent={isFetchingNextPage ? <Loader isLoading /> : null}
         refreshControl={
           <RefreshControl
             refreshing={isFetchingNextPage}
             onRefresh={() => refetch()}
           />
         }
-        ListFooterComponent={isFetchingNextPage ? <Loader isLoading /> : null}
       />
     </View>
   );

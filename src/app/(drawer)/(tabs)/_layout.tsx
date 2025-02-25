@@ -136,7 +136,7 @@ export default function TabLayout() {
             tabBarInactiveTintColor: "#FFF",
             tabBarShowLabel: false,
             tabBarStyle: {
-              height: Platform.OS === "ios" ? 72 : 50,
+              height: Platform.OS === "ios" ? 72 : 66,
               backgroundColor: "#161616",
               justifyContent: "center",
               alignItems: "center",

@@ -18,6 +18,7 @@ import {
   View,
   ViewabilityConfig,
   ViewToken,
+  Text,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FlatList } from "react-native-gesture-handler";
@@ -174,14 +175,24 @@ export default function Timeline() {
     [isWeedzScreen, mutedVideo, getPlayerValue]
   );
 
-  const onViewableItemsChangedWeedz = useRef(
+  const onViewableItemsChangedWeedz = useCallback(
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
         viewableItems.map((item: { item: { id: any } }) => item.item.id)
       );
-      setVisibleItems(newVisibleItems);
-    }
-  ).current;
+
+      setVisibleItems((prevVisibleItems) => {
+        if (
+          prevVisibleItems.size === newVisibleItems.size &&
+          [...prevVisibleItems].every((id) => newVisibleItems.has(id))
+        ) {
+          return prevVisibleItems;
+        }
+        return newVisibleItems;
+      });
+    },
+    []
+  );
 
   const stickyHeaderHiddenOnScroll = useMemo(() => {
     if (isWeedzScreen) {
@@ -247,60 +258,63 @@ export default function Timeline() {
     router.back();
   };
 
-  const renderItem = ({ item, index }: { index: number; item: any }) => {
-    if (item.is_compressing) {
-      return (
-        <View
-          key={`is_compressing_${index}`}
-          style={{ width: "90%", height: 550, borderRadius: 16 }}
-          className="bg-black-90 rounded-lg border border-black-80 mx-6"
-        >
-          <View className="flex justify-center items-center h-full">
-            <ActivityIndicator size="small" color={colors.brand.green} />
+  const renderItem = useCallback(
+    ({ item, index }: { index: number; item: any }) => {
+      if (item.is_compressing) {
+        return (
+          <View
+            key={`is_compressing_${index}`}
+            style={{ width: "90%", height: 550, borderRadius: 16 }}
+            className="bg-black-90 rounded-lg border border-black-80 mx-6"
+          >
+            <View className="flex justify-center items-center h-full">
+              <ActivityIndicator size="small" color={colors.brand.green} />
+            </View>
           </View>
-        </View>
-      );
-    }
+        );
+      }
 
-    const screen = {
-      [TimelineType.SOCIAL]: (
-        <PostCard
-          key={`post_card_${index}`}
-          handlerAudioMute={handlerMutedVideo}
-          audioMute={mutedVideo}
-          post={item as PostDetail}
-        />
-      ),
-      [TimelineType.WEEDZ]: (
-        <Fragment key={`weedz_card_${index}`}>
-          <HeaderGoBack
-            onBack={handlerGoBack}
-            title="Publicações"
-            containerStyle={styles.header}
+      const screen = {
+        [TimelineType.SOCIAL]: (
+          <PostCard
+            key={`post_card_${index}`}
+            handlerAudioMute={handlerMutedVideo}
+            audioMute={mutedVideo}
+            post={item as PostDetail}
           />
-          <View style={styles.fullscreenItem}>
-            <ReelsPost
-              videoId={item.id}
-              playerRef={playerRefs}
-              isVisible={viewableItems.has(item.id)}
-              uri={item.file?.file}
-              post={item as ReelsDetail}
+        ),
+        [TimelineType.WEEDZ]: (
+          <Fragment key={`weedz_card_${index}`}>
+            <HeaderGoBack
+              onBack={handlerGoBack}
+              title="Publicações"
+              containerStyle={styles.header}
             />
-          </View>
-        </Fragment>
-      ),
-      [TimelineType.GROW]: (
-        <GrowPostCard
-          key={`grow_card_${index}`}
-          handlerAudioMute={handlerMutedVideo}
-          audioMute={mutedVideo}
-          post={item as GrowPostDetail}
-        />
-      ),
-    };
+            <View style={styles.fullscreenItem}>
+              <ReelsPost
+                videoId={item.id}
+                playerRef={playerRefs}
+                isVisible={viewableItems.has(item.id)}
+                uri={item.file?.file}
+                post={item as ReelsDetail}
+              />
+            </View>
+          </Fragment>
+        ),
+        [TimelineType.GROW]: (
+          <GrowPostCard
+            key={`grow_card_${index}`}
+            handlerAudioMute={handlerMutedVideo}
+            audioMute={mutedVideo}
+            post={item as GrowPostDetail}
+          />
+        ),
+      };
 
-    return screen[params.type];
-  };
+      return screen[params.type];
+    },
+    [viewableItems]
+  );
 
   const handleScrollToIndex = async () => {
     const hasData =
@@ -397,8 +411,8 @@ export default function Timeline() {
         onEndReached={() => hasNextPage && fetchNextPage()}
         onEndReachedThreshold={0.5}
         snapToInterval={isWeedzScreen ? screenHeight : undefined}
-        initialNumToRender={5}
-        windowSize={5}
+        initialNumToRender={3}
+        windowSize={3}
         ItemSeparatorComponent={() => {
           if (isWeedzScreen) {
             return null;
