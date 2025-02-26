@@ -81,7 +81,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
   const { data, isLoading, hasNextPage, isRefetching, fetchNextPage, refetch } =
     useTimeline({
       userId,
-      type: activeTab
+      type: activeTab,
     });
 
   const postRef = useRef<FlatList>(null);

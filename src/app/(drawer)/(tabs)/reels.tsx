@@ -1,11 +1,6 @@
 import { useState, useRef, useCallback } from "react";
-import {
-  RefreshControl,
-  View,
-  StatusBar,
-  Dimensions,
-  Platform,
-} from "react-native";
+import { RefreshControl, StatusBar, Dimensions, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -102,7 +97,7 @@ export default function Reels() {
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <SafeAreaView className="flex-1 bg-black-100" edges={["top"]}>
       <StatusBar translucent backgroundColor={"transparent"} />
       <FlashList
         data={reelsData?.pages.flat() || []}
@@ -127,6 +122,6 @@ export default function Reels() {
           />
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
