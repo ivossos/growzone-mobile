@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { View, StyleSheet, Pressable } from "react-native";
+import { View, StyleSheet, Pressable, AppState } from "react-native";
 import Slider from "@react-native-community/slider";
 import { useEventListener } from "expo";
 import { usePlayerContext } from "@/context/player-context";
@@ -69,6 +69,29 @@ const VideoPlayer = ({
       }
     }
   );
+
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: string) => {
+      if (nextAppState === "active") {
+        player.muted = false;
+        player.currentTime = 0;
+        player.play();
+        setDuration(0);
+        setCurrentTime(0);
+      } else {
+        player.pause();
+      }
+    };
+
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, [player]);
 
   useEffect(() => {
     if (player) {
