@@ -17,8 +17,8 @@ type APIInstanceProps = AxiosInstance & {
   registerInterceptTokenManager: (signOut: SignOut) => () => void;
 };
 
-const authBaseURL = "https://dev.auth.growzone.co/api/v1";
-const socialBaseURL = "https://dev.social.growzone.co/api/v1";
+const authBaseURL = "https://dev1.auth.growzone.co/api/v1";
+const socialBaseURL = "https://dev1.social.growzone.co/api/v1";
 
 const createAPIInstance = (baseURL: string): APIInstanceProps => {
   const api = axios.create({ baseURL }) as APIInstanceProps;

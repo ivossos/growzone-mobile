@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { RefreshControl, StatusBar, Dimensions, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -18,29 +18,24 @@ const ScreenHeight =
 export default function Reels() {
   const playerRefs = useRef(new Map());
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
+  const firstVideoId = useRef<number | null>(null);
+
   const viewabilityConfig = {
     itemVisiblePercentThreshold: 50,
     waitForInteraction: true,
   };
 
-  const onViewableItemsChanged = useCallback(
+  const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: any }) => {
+      if (!viewableItems.length) return;
+
       const newVisibleItems = new Set(
-        viewableItems.map((item: { item: { id: any } }) => item.item.id)
+        viewableItems.map((item: { item: { id: number } }) => item.item.id)
       );
 
-      setVisibleItems((prevVisibleItems) => {
-        if (
-          prevVisibleItems.size === newVisibleItems.size &&
-          [...prevVisibleItems].every((id) => newVisibleItems.has(id))
-        ) {
-          return prevVisibleItems;
-        }
-        return newVisibleItems;
-      });
-    },
-    []
-  );
+      setVisibleItems(newVisibleItems);
+    }
+  ).current;
 
   useFocusEffect(
     useCallback(() => {
@@ -69,7 +64,6 @@ export default function Reels() {
         playerRef={playerRefs}
         uri={item.file.file}
         post={item}
-        isVisible={viewableItems.has(item.id)}
       />
     ),
     [viewableItems]
@@ -91,6 +85,22 @@ export default function Reels() {
     },
     initialPageParam: 0,
   });
+
+  useEffect(() => {
+    if (!firstVideoId.current && reelsData?.pages?.length) {
+      const firstItem = reelsData?.pages
+        .flat()
+        .map((item) => item.id)
+        .shift();
+
+      if (firstItem) {
+        const firstPlayer = playerRefs.current.get(firstItem);
+        if (firstPlayer) {
+          firstPlayer.play();
+        }
+      }
+    }
+  }, [reelsData]);
 
   if (isLoading) {
     return <Loader isLoading />;

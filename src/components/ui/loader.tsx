@@ -9,7 +9,7 @@ const Loader = ({ isLoading }: { isLoading: boolean }) => {
 
   return (
     <View
-      className="absolute flex justify-center items-center w-full h-full bg-black-100/60 z-50"
+      className="absolute flex justify-center items-center w-full h-full bg-black-100 z-50"
       style={{
         height: screenHeight,
       }}

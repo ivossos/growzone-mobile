@@ -56,6 +56,7 @@ export default function Timeline() {
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
 
   const playerRefs = useRef(new Map());
+  const playerRef = useRef(new Map<number, any>());
 
   const { pauseVideo, toggleAudioMute, setPlayer } = useVideoPlayerContext();
 
@@ -277,6 +278,7 @@ export default function Timeline() {
       const screen = {
         [TimelineType.SOCIAL]: (
           <PostCard
+            playerRef={playerRefs}
             key={`post_card_${index}`}
             handlerAudioMute={handlerMutedVideo}
             audioMute={mutedVideo}
@@ -294,7 +296,6 @@ export default function Timeline() {
               <ReelsPost
                 videoId={item.id}
                 playerRef={playerRefs}
-                isVisible={viewableItems.has(item.id)}
                 uri={item.file?.file}
                 post={item as ReelsDetail}
               />
@@ -303,9 +304,8 @@ export default function Timeline() {
         ),
         [TimelineType.GROW]: (
           <GrowPostCard
+            playerRef={playerRefs}
             key={`grow_card_${index}`}
-            handlerAudioMute={handlerMutedVideo}
-            audioMute={mutedVideo}
             post={item as GrowPostDetail}
           />
         ),

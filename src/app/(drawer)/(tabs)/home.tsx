@@ -163,7 +163,7 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
-    loadData(); // Carregar dados na montagem
+    loadData();
   }, [loadData]);
 
   useFocusEffect(

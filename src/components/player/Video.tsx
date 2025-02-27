@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { View, StyleSheet, Pressable, AppState } from "react-native";
+import { View, StyleSheet, Pressable } from "react-native";
 import Slider from "@react-native-community/slider";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEventListener } from "expo";
 import { usePlayerContext } from "@/context/player-context";
 
@@ -11,6 +10,7 @@ interface VideoPlayerProps {
   videoId: number;
   playerRef: any;
   progressBar?: boolean;
+  progressBarBottom?: number;
   playVideo?: () => void;
 }
 
@@ -19,10 +19,10 @@ const VideoPlayer = ({
   videoId,
   playerRef,
   progressBar,
+  progressBarBottom,
   playVideo,
 }: VideoPlayerProps) => {
   const ref = useRef(null);
-  const insets = useSafeAreaInsets();
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -31,7 +31,6 @@ const VideoPlayer = ({
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
     player.muted = false;
-    player.timeUpdateEventInterval = 2;
     player.volume = 1.0;
   });
 
@@ -42,12 +41,14 @@ const VideoPlayer = ({
   };
 
   const handlerClickPlayer = () => {
-    if (isPlaying) {
-      player.pause();
-    } else {
-      player.play();
+    if (playerRef.current) {
+      if (isPlaying) {
+        player.pause();
+      } else {
+        player.play();
+      }
+      setIsPlaying(!isPlaying);
     }
-    setIsPlaying(!isPlaying);
   };
 
   useEventListener(player, "statusChange", ({ status: statusChangeValue }) => {
@@ -70,29 +71,6 @@ const VideoPlayer = ({
   );
 
   useEffect(() => {
-    const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === "active") {
-        player.muted = false;
-        player.currentTime = 0;
-        player.play();
-        setDuration(0);
-        setCurrentTime(0);
-      } else {
-        player.pause();
-      }
-    };
-
-    const subscription = AppState.addEventListener(
-      "change",
-      handleAppStateChange
-    );
-
-    return () => {
-      subscription.remove();
-    };
-  }, [player]);
-
-  useEffect(() => {
     if (player) {
       player.muted = isMuted;
       playerRef.current.set(videoId, player);
@@ -101,18 +79,6 @@ const VideoPlayer = ({
       playerRef.current.delete(videoId);
     };
   }, [player, videoId, isMuted]);
-
-  // const bottom = useMemo(() => {
-  //   switch (params.type) {
-  //     case "weedz":
-  //       return insets.bottom;
-
-  //     default:
-  //       return Platform.OS === "android"
-  //         ? insets.bottom + 30
-  //         : insets.bottom - 30;
-  //   }
-  // }, [params]);
 
   return (
     <Pressable onPress={handlerClickPlayer}>
@@ -126,7 +92,7 @@ const VideoPlayer = ({
         style={styles.video}
       />
       {progressBar && (
-        <View style={[styles.sliderContainer, { bottom: insets.bottom + 30 }]}>
+        <View style={[styles.sliderContainer, { bottom: progressBarBottom }]}>
           <View style={{ flex: 1 }}>
             <Slider
               style={styles.slider}

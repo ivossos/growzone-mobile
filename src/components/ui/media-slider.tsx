@@ -25,6 +25,7 @@ const MediaSlider = ({
   items,
   postType,
   playerRef,
+  postId,
 }: MediaSliderProps) => {
   const { isMuted, toggleMute } = usePlayerContext();
 
@@ -57,7 +58,7 @@ const MediaSlider = ({
             <VideoPlayer
               playerRef={playerRef}
               uri={item.file}
-              videoId={item.id}
+              videoId={postId}
             />
           </View>
 

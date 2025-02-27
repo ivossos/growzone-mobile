@@ -30,8 +30,7 @@ export default function Post() {
   const [isLoadingPostLikes, setIsLoadingPostLikes] = useState(false);
   const [audioMute, setAudioMute] = useState(false);
   const [post, setPost] = useState<PostDetail>();
-  const { toggleAudioMute, setPlayer } =
-    useVideoPlayerContext();
+  const { toggleAudioMute, setPlayer } = useVideoPlayerContext();
 
   const mapPost = (data: PostDetail): PostDetail => {
     const files = data.files.map((file, index) => {
@@ -61,13 +60,12 @@ export default function Post() {
   };
 
   const setPlayerValue = (postData: PostDetail) => {
-    const [file] = postData.files
+    const [file] = postData.files;
 
-    if (file.type === 'video') {
-      setPlayer(file.player)
+    if (file.type === "video") {
+      setPlayer(file.player);
     }
-  }
-  
+  };
 
   const fetchPost = async () => {
     try {

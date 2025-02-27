@@ -1,4 +1,10 @@
-import { Image, StyleSheet, Text, Pressable, useWindowDimensions } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  Pressable,
+  useWindowDimensions,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye } from "lucide-react-native";
 import { colors } from "@/styles/colors";
@@ -8,27 +14,13 @@ import { getMuxThumbnailUrl } from "@/lib/utils";
 import { useCallback } from "react";
 
 export default function ReelsCard(item: SocialPost) {
-    const { width: screenWidth } = useWindowDimensions();
-    const cardWidth = screenWidth * 0.42; // 40% da largura da tela
-  // const videoRef = useRef<(Video | null)>(null);
-
-  // useEffect(() => {
-  //   return () => {
-  //     const releaseVideo = async () => {
-  //       if (videoRef.current) {
-  //         await videoRef.current.pauseAsync();
-  //         await videoRef.current.unloadAsync();
-  //       }
-  //     };
-
-  //     releaseVideo().catch(error => console.error("Erro ao liberar o vídeo:", error));
-  //   };
-  // }, []);
+  const { width: screenWidth } = useWindowDimensions();
+  const cardWidth = screenWidth * 0.42;
 
   const handlerPress = useCallback(() => {
     router.push({
       pathname: "/post/[id]/reels",
-      params: { id: item.post_id },
+      params: { id: item.post_id, type: "reelsCard" },
     });
   }, [item]);
 
