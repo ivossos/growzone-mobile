@@ -1,22 +1,14 @@
-import React, {
-  useState,
-  Fragment,
-  useRef,
-  useCallback,
-  ReactNode,
-} from "react";
-import {
-  View,
-  RefreshControl,
-  ActivityIndicator,
-  Text,
-  ViewToken,
-} from "react-native";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { View, Text, RefreshControl, ActivityIndicator } from "react-native";
+import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { FlashList, ListRenderItemInfo } from "@shopify/flash-list";
-import { queryClient } from "@/lib/react-query";
-import { colors } from "@/styles/colors";
+import { useFocusEffect } from "expo-router";
+
+import { getPosts } from "@/api/social/post/get-posts";
+import { PostType } from "@/api/@types/enums";
+
+import { FeedAllPost } from "@/api/@types/models";
 
 import { Header } from "@/components/ui/header";
 import PostCard from "@/components/ui/post-card";
@@ -24,74 +16,45 @@ import WeedzPostCard from "@/components/ui/post-weedz-card";
 import GrowPostCard from "@/components/ui/grow-post-card";
 import ContributorCard from "@/components/ui/contributor-card";
 import Loader from "@/components/ui/loader";
-
 import useHome from "@/hooks/useHome";
-import {
-  FeedAllPost,
-  GrowPostDetail,
-  PostDetail,
-  ReelsDetail,
-} from "@/api/@types/models";
-import { useVideoPlayerContext } from "@/context/video-player-context";
-import UpdateAppModal from "@/components/ui/update-app";
-import { useScrollToTop } from "@/context/scroll-top-context";
-import { useFocusEffect } from "expo-router";
-import { PostType } from "@/api/@types/enums";
+
+import { colors } from "@/styles/colors";
 
 export default function HomeScreen() {
+  const [data, setData] = useState<any>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
+  const [page, setPage] = useState(1);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [audioMute, setAudioMute] = useState(false);
-  const [activePostId, setActivePostId] = useState<number | null>(null);
-  const { pauseVideo, clearPlayer } = useVideoPlayerContext();
+  const playerRef = useRef(new Map<number, any>());
+  const lastActivePostId = useRef<number | any>(null);
+  const viewabilityConfig = { itemVisiblePercentThreshold: 80 };
+  const { topContributors } = useHome();
 
-  const { posts, topContributors } = useHome();
-  const { setFlatListRef } = useScrollToTop();
+  const onViewableItemsChanged = ({ viewableItems }: any) => {
+    if (viewableItems.length === 0) return;
 
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    const queryKeyValue =
-      posts.data.length === 0 ? "top-contributors" : "home-posts";
-    queryClient.removeQueries({ queryKey: [queryKeyValue] });
-    pauseVideo();
-    clearPlayer();
-    setIsRefreshing(false);
-  }, [posts.data]);
+    viewableItems.forEach((item: any) => {
+      const newActivePostId = item.item.post.id;
+      const newPlayer = playerRef.current.get(newActivePostId);
+      const lastPlayer = playerRef.current.get(lastActivePostId.current);
 
-  const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<FeedAllPost>) => {
-      const componentsMap = {
-        [PostType.SOCIAL_POST]: PostCard,
-        [PostType.GROW_POST]: GrowPostCard,
-        [PostType.WEEDZ_POST]: WeedzPostCard,
-      };
+      if (lastPlayer && lastActivePostId.current !== newActivePostId) {
+        lastPlayer.pause();
+      }
 
-      const Component: any = componentsMap[item.type];
-
-      const commonProps = {
-        post: item.post,
-        audioMute,
-      };
-
-      return (
-        <Component
-          {...commonProps}
-          {...(item.type === PostType.WEEDZ_POST && { activePostId })}
-        />
-      );
-    },
-    [audioMute, activePostId]
-  );
-
-  const renderHeader = useCallback(
-    () => (
-      <Fragment>
-        <Header />
-      </Fragment>
-    ),
-    []
-  );
+      if (newPlayer) {
+        newPlayer.play();
+        lastActivePostId.current = newActivePostId;
+      }
+    });
+  };
 
   const renderEmptyComponent = useCallback(() => {
+    if (loading) {
+      return null;
+    }
+
     if (topContributors.isLoading) {
       return (
         <ActivityIndicator
@@ -103,7 +66,7 @@ export default function HomeScreen() {
       );
     }
 
-    if (topContributors.data.length > 0 && !posts.isLoading) {
+    if (topContributors.data.length > 0) {
       return (
         <View className="flex flex-1 flex-col gap-5 px-6 my-6">
           <Text className="text-lg text-white font-semibold">Sugestões</Text>
@@ -122,89 +85,138 @@ export default function HomeScreen() {
     }
 
     return <View className="bg-black-100 h-full" />;
-  }, [topContributors.isLoading, topContributors.data, posts.isLoading]);
+  }, [topContributors.isLoading, topContributors.data, loading]);
 
-  const viewabilityConfigCallbackPairs = useRef([
-    {
-      viewabilityConfig: { itemVisiblePercentThreshold: 80 },
-      onViewableItemsChanged: ({
-        changed,
-        viewableItems,
-      }: {
-        viewableItems: ViewToken<FeedAllPost>[];
-        changed: ViewToken<FeedAllPost>[];
-      }) => {
-        const [change] = changed;
-        const [viewableItem] = viewableItems;
+  const fetchData = async (pageNum: number) => {
+    try {
+      const data = await getPosts({
+        limit: 10,
+        skip: pageNum,
+        types: [
+          PostType.GROW_POST,
+          PostType.SOCIAL_POST,
+          PostType.WEEDZ_POST,
+        ] as PostType[],
+      });
+      return data;
+    } catch (err) {
+      setError("Erro ao carregar dados");
+    }
+  };
 
-        if (change && !change.isViewable) {
-          pauseVideo();
+  const loadData = useCallback(
+    async (isRefresh = false) => {
+      if (isRefresh) {
+        setIsRefreshing(true);
+        setPage(1);
+      }
+
+      setLoading(true);
+
+      try {
+        const result = await fetchData(isRefresh ? 1 : page);
+
+        if (isRefresh) {
+          setData(result);
+        } else {
+          setData((prevData: any) => [...prevData, ...(result as any)]);
         }
-
-        if (viewableItem) {
-          const isSocialOrGrow = [
-            PostType.GROW_POST,
-            PostType.SOCIAL_POST,
-          ].includes(viewableItem.item.type);
-          let file = (viewableItem.item.post as ReelsDetail).file;
-
-          if (isSocialOrGrow) {
-            file = (viewableItem.item.post as GrowPostDetail | PostDetail)
-              .files[0];
-          } else {
-            setActivePostId(viewableItem.item.post.id);
-          }
-        }
-      },
+      } catch (err) {
+        setError("Erro ao carregar dados");
+      } finally {
+        setLoading(false);
+        setIsRefreshing(false);
+      }
     },
-  ]);
+    [page]
+  );
+
+  const onRefresh = () => {
+    console.log("Carregar dados novamente com refresh");
+    loadData(true);
+  };
+
+  const handleEndReached = () => {
+    if (!loading) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  };
+
+  const renderItem = useCallback(
+    ({ item }: ListRenderItemInfo<FeedAllPost>) => {
+      const componentsMap = {
+        [PostType.SOCIAL_POST]: PostCard,
+        [PostType.GROW_POST]: GrowPostCard,
+        [PostType.WEEDZ_POST]: WeedzPostCard,
+      };
+
+      const Component: any = componentsMap[item.type];
+
+      const commonProps = {
+        post: item.post,
+        playerRef,
+      };
+
+      return <Component {...commonProps} />;
+    },
+    []
+  );
+
+  useEffect(() => {
+    loadData(); // Carregar dados na montagem
+  }, [loadData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const currentPlayer = playerRef.current.get(lastActivePostId.current);
+      if (currentPlayer) {
+        currentPlayer.play();
+      }
+
+      return () => {
+        const currentPlayer = playerRef.current.get(lastActivePostId.current);
+        if (currentPlayer) {
+          currentPlayer.pause();
+        }
+      };
+    }, [])
+  );
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text>{error}</Text>
+      </View>
+    );
+  }
 
   return (
-    <Fragment>
-      <UpdateAppModal />
-      <SafeAreaView
-        style={{ flex: 1 }}
-        className="bg-black-100"
-        edges={["top"]}
-      >
-        <FlashList
-          ref={setFlatListRef}
-          className="bg-black-100"
-          contentContainerClassName="gap-4"
-          data={posts.data}
-          estimatedItemSize={600}
-          disableAutoLayout
-          showsVerticalScrollIndicator={false}
-          keyExtractor={(item) => `key-${item.post.id}-${item.post.post_id}`}
-          renderItem={renderItem}
-          numColumns={1}
-          ListHeaderComponent={renderHeader}
-          ListEmptyComponent={renderEmptyComponent}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-          viewabilityConfigCallbackPairs={
-            viewabilityConfigCallbackPairs.current
-          }
-          onEndReached={() => {
-            if (posts.hasNextPage) {
-              posts.fetchNextPage();
-            }
-          }}
-          onEndReachedThreshold={0.8}
-          ListFooterComponent={
-            posts.isFetchingNextPage ? (
-              <Loader isLoading />
-            ) : (
-              <View style={{ height: 100 }} />
-            )
-          }
-        />
-      </SafeAreaView>
+    <SafeAreaView style={{ flex: 1 }} className="bg-black-100" edges={["top"]}>
+      <FlashList
+        data={data}
+        renderItem={renderItem}
+        estimatedItemSize={600}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.8}
+        numColumns={1}
+        disableAutoLayout
+        onViewableItemsChanged={onViewableItemsChanged}
+        refreshing={isRefreshing}
+        viewabilityConfig={viewabilityConfig}
+        ListHeaderComponent={<Header />}
+        ListEmptyComponent={renderEmptyComponent}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
+        ListFooterComponent={
+          loading && !isRefreshing ? (
+            <Loader isLoading />
+          ) : (
+            <View style={{ height: 100 }} />
+          )
+        }
+      />
       <StatusBar backgroundColor={colors.black[100]} style="light" />
-    </Fragment>
+    </SafeAreaView>
   );
 }

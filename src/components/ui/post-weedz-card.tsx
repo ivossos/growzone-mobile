@@ -27,22 +27,17 @@ import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
 import VideoPlayer from "@/components/player/Video";
 import { createView } from "@/api/social/post/view/create-view";
-import { useFocusEffect } from "expo-router";
-
-import {
-  getGlobalMute,
-  subscribeToMuteState,
-  setGlobalMute,
-} from "@/components/player/mute"; // Função de controle global
+import { usePlayerContext } from "@/context/player-context";
 
 interface Props {
   post: ReelsDetail;
   handlerAudioMute: (muted: boolean) => void;
   activePostId: number | null;
   audioMute: boolean;
+  playerRef: any;
 }
 
-const WeedzPostCard = ({ post, activePostId }: Props) => {
+const WeedzPostCard = ({ post, playerRef }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -50,13 +45,8 @@ const WeedzPostCard = ({ post, activePostId }: Props) => {
   const [isViewed, setIsViewed] = useState(post.is_viewed);
   const { openBottomSheet } = useBottomSheetContext();
   const { user } = useAuth();
-  const playerRefs = useRef(new Map());
-  const [isMuted, setIsMuted] = useState(getGlobalMute());
 
-  useEffect(() => {
-    const unsubscribe = subscribeToMuteState(setIsMuted);
-    return () => unsubscribe();
-  }, []);
+  const { isMuted, toggleMute } = usePlayerContext();
 
   const handleToggleDescription = useCallback(() => {
     setIsExpanded((prev) => !prev);
@@ -105,21 +95,6 @@ const WeedzPostCard = ({ post, activePostId }: Props) => {
       id: post.post_id,
     });
   }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      const player = playerRefs.current.get(activePostId);
-
-      if (player) {
-        player.currentTime = 0;
-        player.play();
-      }
-
-      return () => {
-        playerRefs.current.forEach((player) => player.pause());
-      };
-    }, [activePostId])
-  );
 
   return (
     <View className="flex flex-1 gap-5 my-3">
@@ -179,12 +154,9 @@ const WeedzPostCard = ({ post, activePostId }: Props) => {
 
       <View style={styles.aspectView}>
         <VideoPlayer
-          isMuted={isMuted}
-          showProgressBar={false}
-          uri={post.file?.file as any}
+          playerRef={playerRef}
+          uri={post.file?.file}
           videoId={post.id}
-          playerRef={playerRefs}
-          isVisible={activePostId === post.id}
           playVideo={() => viewVideo(post)}
         />
       </View>
@@ -193,11 +165,7 @@ const WeedzPostCard = ({ post, activePostId }: Props) => {
         <View className="relative">
           <View className="absolute bottom-12 w-full flex flex-row justify-between items-center px-4">
             <View className="border border-black-80 bg-white px-4 py-2 rounded-full">
-              <TouchableOpacity
-                onPress={() =>
-                  setGlobalMute((prevMuteState: any) => !prevMuteState)
-                }
-              >
+              <TouchableOpacity onPress={toggleMute}>
                 {isMuted ? (
                   <VolumeX size={20} color={colors.brand.black} />
                 ) : (

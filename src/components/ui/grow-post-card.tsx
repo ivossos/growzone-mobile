@@ -25,11 +25,10 @@ import { PostType } from "@/api/@types/enums";
 
 interface Props {
   post: GrowPostDetail;
-  handlerAudioMute: (muted: boolean) => void;
-  audioMute: boolean;
+  playerRef: any;
 }
 
-const GrowPostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
+const GrowPostCard = ({ post, playerRef }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -131,11 +130,10 @@ const GrowPostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
 
       <MediaSlider
         post={post}
-        postType={PostType.GROW_POST}
+        postType={PostType.SOCIAL_POST}
         items={post.files}
-        audioMute={audioMute}
-        handlerAudioMute={handlerAudioMute}
         postId={post.post_id}
+        playerRef={playerRef}
       />
 
       <View className="flex flex-col gap-2">

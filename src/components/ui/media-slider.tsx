@@ -1,73 +1,32 @@
 import { StyleSheet, Image, View, TouchableOpacity, Text } from "react-native";
-import React, {
-  Fragment,
-  memo,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { memo } from "react";
 import Carousel from "pinar";
 import { colors } from "@/styles/colors";
 import {
   GrowPostDetail,
   PostDetail,
   SocialPostFile,
-  VideoPlayerHandle,
 } from "@/api/@types/models";
-import VideoPlayer from "../VideoPlayer";
-import { useVideoPlayerContext } from "@/context/video-player-context";
+import { usePlayerContext } from "@/context/player-context";
 import { Volume2, VolumeX } from "lucide-react-native";
 import { PostType } from "@/api/@types/enums";
+import VideoPlayer from "@/components/player/Video";
 
 interface MediaSliderProps {
   post: GrowPostDetail | PostDetail;
   postType: PostType;
   items: SocialPostFile[];
   postId: number;
-  audioMute: boolean;
-  handlerAudioMute: (muted: boolean) => void;
+  playerRef: any;
 }
 
 const MediaSlider = ({
   post,
   items,
-  audioMute,
   postType,
-  handlerAudioMute,
+  playerRef,
 }: MediaSliderProps) => {
-  const { pauseVideo, toggleAudioMute, playVideo, setPlayer } =
-    useVideoPlayerContext();
-
-  const [activeIndex, setActiveIndex] = useState(0);
-
-  const handleIndexChange = useCallback(
-    ({ index }: { index: number }) => {
-      if (index !== activeIndex) {
-        pauseVideo();
-      }
-
-      if (index >= 0 && index < items.length) {
-        const item = items[index];
-        if (item.type === "video") {
-          pauseVideo();
-          const player = item.player;
-          player.replace({ uri: item.file });
-          setPlayer(player);
-
-          toggleAudioMute(audioMute);
-
-          playVideo();
-
-          setActiveIndex(index);
-        } else {
-          pauseVideo();
-          setPlayer(undefined);
-        }
-      }
-    },
-    [items, audioMute, activeIndex]
-  );
+  const { isMuted, toggleMute } = usePlayerContext();
 
   const RenderItem = memo(
     ({ item, index }: { item: SocialPostFile; index: number }) => {
@@ -94,18 +53,13 @@ const MediaSlider = ({
 
       return (
         <View className="relative">
-          <VideoPlayer
-            styleContainer={styles.item}
-            resizeMode="cover"
-            player={item.player}
-            autoplay={index === activeIndex}
-            loop
-            controls={{
-              showProgressBar: false,
-              showButtonPlay: false,
-            }}
-            muted={audioMute}
-          />
+          <View style={styles.item}>
+            <VideoPlayer
+              playerRef={playerRef}
+              uri={item.file}
+              videoId={item.id}
+            />
+          </View>
 
           <View className="absolute bottom-4 w-full flex flex-row justify-between items-center px-4">
             {postType === PostType.GROW_POST && (
@@ -117,8 +71,8 @@ const MediaSlider = ({
             )}
 
             <View className="border border-black-80 bg-white px-4 py-2 rounded-full">
-              <TouchableOpacity onPress={() => handlerAudioMute(!audioMute)}>
-                {audioMute ? (
+              <TouchableOpacity onPress={toggleMute}>
+                {isMuted ? (
                   <VolumeX size={20} color={colors.brand.black} />
                 ) : (
                   <Volume2 size={20} color={colors.brand.black} />
@@ -141,7 +95,6 @@ const MediaSlider = ({
       showsControls={false}
       dotStyle={styles.dotStyle}
       activeDotStyle={[styles.dotStyle, { backgroundColor: colors.primary }]}
-      onIndexChanged={handleIndexChange}
     >
       {items.map((item, index) => (
         <RenderItem key={item.id} index={index} item={item} />
