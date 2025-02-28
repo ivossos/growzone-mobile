@@ -26,9 +26,10 @@ import { PostType } from "@/api/@types/enums";
 interface Props {
   post: GrowPostDetail;
   playerRef: any;
+  isVisible: boolean;
 }
 
-const GrowPostCard = ({ post, playerRef }: Props) => {
+const GrowPostCard = ({ post, isVisible, playerRef }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -134,6 +135,7 @@ const GrowPostCard = ({ post, playerRef }: Props) => {
         items={post.files}
         postId={post.post_id}
         playerRef={playerRef}
+        isVisible={isVisible}
       />
 
       <View className="flex flex-col gap-2">

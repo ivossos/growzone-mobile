@@ -26,12 +26,17 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [page, setPage] = useState(1);
-  const [isLastPage, setIsLastPage] = useState<boolean>(false)
+  const [isLastPage, setIsLastPage] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const playerRef = useRef(new Map<number, any>());
+
   const lastActivePostId = useRef<number | any>(null);
+  const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
   const viewabilityConfig = { itemVisiblePercentThreshold: 80 };
   const { topContributors } = useHome();
+
+  const [activePost, setActivePost] = useState();
+
   const { setFlatListRef } = useScrollToTop();
 
   const onViewableItemsChanged = ({ viewableItems }: any) => {
@@ -47,6 +52,7 @@ export default function HomeScreen() {
       }
 
       if (newPlayer) {
+        setActivePost(newActivePostId);
         newPlayer.play();
         lastActivePostId.current = newActivePostId;
       }
@@ -117,11 +123,11 @@ export default function HomeScreen() {
       setLoading(true);
 
       try {
-        if(isLastPage) return;
+        if (isLastPage) return;
 
         const result = await fetchData(page);
 
-        if(result && result.length < 10) {
+        if (result && result.length < 10) {
           setIsLastPage(true);
         }
 
@@ -165,11 +171,12 @@ export default function HomeScreen() {
       const commonProps = {
         post: item.post,
         playerRef,
+        isVisible: activePost === item.post.id,
       };
 
       return <Component {...commonProps} />;
     },
-    []
+    [viewableItems]
   );
 
   useEffect(() => {

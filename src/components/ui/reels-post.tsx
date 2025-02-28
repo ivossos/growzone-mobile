@@ -41,7 +41,13 @@ const ScreenHeight =
   Dimensions.get("window").height -
   (Platform.OS === "ios" ? 72 : statusBarHeight);
 
-const ReelsPost = ({ post, videoId, playerRef, uri }: ReelsPostProps) => {
+const ReelsPost = ({
+  post,
+  videoId,
+  playerRef,
+  isVisible,
+  uri,
+}: ReelsPostProps) => {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
@@ -142,8 +148,8 @@ const ReelsPost = ({ post, videoId, playerRef, uri }: ReelsPostProps) => {
       default:
         if (Platform.OS === "ios") {
           return {
-            footer: 100,
-            slider: 60,
+            footer: 50,
+            slider: 10,
           };
         }
         return {
@@ -162,6 +168,7 @@ const ReelsPost = ({ post, videoId, playerRef, uri }: ReelsPostProps) => {
           videoId={videoId}
           playerRef={playerRef}
           progressBarBottom={bottom?.slider}
+          isVisible={isVisible}
         />
       </View>
       <View style={[styles.footer, { bottom: bottom?.footer }]}>

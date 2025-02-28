@@ -18,6 +18,7 @@ interface MediaSliderProps {
   items: SocialPostFile[];
   postId: number;
   playerRef: any;
+  isVisible: boolean;
 }
 
 const MediaSlider = ({
@@ -26,6 +27,7 @@ const MediaSlider = ({
   postType,
   playerRef,
   postId,
+  isVisible,
 }: MediaSliderProps) => {
   const { isMuted, toggleMute } = usePlayerContext();
 
@@ -59,6 +61,7 @@ const MediaSlider = ({
               playerRef={playerRef}
               uri={item.file}
               videoId={postId}
+              isVisible={isVisible}
             />
           </View>
 

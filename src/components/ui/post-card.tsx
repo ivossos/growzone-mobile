@@ -22,9 +22,10 @@ interface Props {
   handlerAudioMute: (muted: boolean) => void;
   audioMute: boolean;
   playerRef: any;
+  isVisible: boolean;
 }
 
-const PostCard = ({ post, playerRef }: Props) => {
+const PostCard = ({ post, playerRef, isVisible }: Props) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
@@ -134,6 +135,7 @@ const PostCard = ({ post, playerRef }: Props) => {
         items={post.files}
         postId={post.post_id}
         playerRef={playerRef}
+        isVisible={isVisible}
       />
 
       <View className="flex flex-col gap-2">

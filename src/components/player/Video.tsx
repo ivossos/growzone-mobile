@@ -12,6 +12,7 @@ interface VideoPlayerProps {
   progressBar?: boolean;
   progressBarBottom?: number;
   playVideo?: () => void;
+  isVisible: boolean;
 }
 
 const VideoPlayer = ({
@@ -21,33 +22,32 @@ const VideoPlayer = ({
   progressBar,
   progressBarBottom,
   playVideo,
+  isVisible,
 }: VideoPlayerProps) => {
-  const ref = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const { isMuted } = usePlayerContext();
 
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
     player.muted = false;
+    player.timeUpdateEventInterval = 2;
     player.volume = 1.0;
+    if (isVisible) player.play();
   });
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      player.pause();
+    } else {
+      player.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
 
   const handlerTime = (value: number) => {
     if (playerRef.current) {
       player.currentTime = value;
-    }
-  };
-
-  const handlerClickPlayer = () => {
-    if (playerRef.current) {
-      if (isPlaying) {
-        player.pause();
-      } else {
-        player.play();
-      }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -59,20 +59,9 @@ const VideoPlayer = ({
     }
   });
 
-  useEventListener(
-    player,
-    "timeUpdate",
-    ({ currentTime, bufferedPosition }) => {
-      if (currentTime && bufferedPosition) {
-        setCurrentTime(currentTime);
-        setDuration(bufferedPosition);
-      }
-    }
-  );
-
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === "active") {
+      if (nextAppState === "active" && isVisible) {
         player.muted = false;
         player.currentTime = 0;
         player.play();
@@ -91,22 +80,37 @@ const VideoPlayer = ({
     return () => {
       subscription.remove();
     };
-  }, [player]);
+  }, [isVisible, player]);
+
+  useEventListener(
+    player,
+    "timeUpdate",
+    ({ currentTime, bufferedPosition }) => {
+      if (currentTime && bufferedPosition) {
+        setCurrentTime(currentTime);
+        setDuration(bufferedPosition);
+      }
+    }
+  );
 
   useEffect(() => {
-    if (player) {
-      player.muted = isMuted;
-      playerRef.current.set(videoId, player);
+    if (isVisible) {
+      player.play();
+    } else {
+      player.pause();
     }
+  }, [isVisible]);
+
+  useEffect(() => {
+    playerRef.current.set(videoId, player);
     return () => {
       playerRef.current.delete(videoId);
     };
-  }, [player, videoId, isMuted]);
+  }, [videoId, player, playerRef]);
 
   return (
-    <Pressable onPress={handlerClickPlayer}>
+    <Pressable onPress={togglePlayPause}>
       <VideoView
-        ref={ref}
         contentFit="cover"
         player={player}
         allowsFullscreen={false}

@@ -23,4 +23,5 @@ export type ReelsPostProps = {
   videoId: number;
   playerRef: any;
   uri: string;
+  isVisible: boolean;
 };

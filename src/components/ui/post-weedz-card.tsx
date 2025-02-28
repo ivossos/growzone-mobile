@@ -35,9 +35,10 @@ interface Props {
   activePostId: number | null;
   audioMute: boolean;
   playerRef: any;
+  isVisible: boolean;
 }
 
-const WeedzPostCard = ({ post, playerRef }: Props) => {
+const WeedzPostCard = ({ post, playerRef, isVisible }: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -158,6 +159,7 @@ const WeedzPostCard = ({ post, playerRef }: Props) => {
           uri={post.file?.file}
           videoId={post.id}
           playVideo={() => viewVideo(post)}
+          isVisible={isVisible}
         />
       </View>
 

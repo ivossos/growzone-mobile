@@ -1,10 +1,17 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { RefreshControl, StatusBar, Dimensions, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-import { FlashList } from "@shopify/flash-list";
+import {
+  ActivityIndicator,
+  RefreshControl,
+  View,
+  StatusBar,
+  Dimensions,
+  Platform,
+  StyleSheet,
+} from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
+import { colors } from "@/styles/colors";
 import { getReels } from "@/api/social/post/get-reels";
 import ReelsPost from "@/components/ui/reels-post";
 import Loader from "@/components/ui/loader";
@@ -18,21 +25,13 @@ const ScreenHeight =
 export default function Reels() {
   const playerRefs = useRef(new Map());
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
-  const firstVideoId = useRef<number | null>(null);
-
-  const viewabilityConfig = {
-    itemVisiblePercentThreshold: 50,
-    waitForInteraction: false,
-  };
+  const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
 
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: any }) => {
-      if (!viewableItems.length) return;
-
       const newVisibleItems = new Set(
-        viewableItems.map((item: { item: { id: number } }) => item.item.id)
+        viewableItems.map((item: { item: { id: any } }) => item.item.id)
       );
-
       setVisibleItems(newVisibleItems);
     }
   ).current;
@@ -52,11 +51,6 @@ export default function Reels() {
     }, [viewableItems])
   );
 
-  const fetchReelsData = async ({ pageParam = 0 }: any) => {
-    const weedz = await getReels({ skip: pageParam, limit: 10 });
-    return weedz;
-  };
-
   const renderItem = useCallback(
     ({ item }: any) => (
       <ReelsPost
@@ -64,10 +58,16 @@ export default function Reels() {
         playerRef={playerRefs}
         uri={item.file.file}
         post={item}
+        isVisible={viewableItems.has(item.id)}
       />
     ),
     [viewableItems]
   );
+
+  const fetchReelsData = async ({ pageParam = 0 }: any) => {
+    const weedz = await getReels({ skip: pageParam, limit: 10 });
+    return weedz;
+  };
 
   const {
     data: reelsData,
@@ -86,52 +86,64 @@ export default function Reels() {
     initialPageParam: 0,
   });
 
-  useEffect(() => {
-    if (!firstVideoId.current && reelsData?.pages?.length) {
-      const firstItem = reelsData?.pages
-        .flat()
-        .map((item) => item.id)
-        .shift();
-
-      if (firstItem) {
-        const firstPlayer = playerRefs.current.get(firstItem);
-        if (firstPlayer) {
-          firstPlayer.play();
-        }
-      }
-    }
-  }, [reelsData]);
-
   if (isLoading) {
-    return <Loader isLoading />;
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={colors.brand.green} />
+      </View>
+    );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black-100" edges={["top"]}>
+    <View>
       <StatusBar translucent backgroundColor={"transparent"} />
-      <FlashList
+      <FlatList
         data={reelsData?.pages.flat() || []}
-        estimatedItemSize={ScreenHeight}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         snapToInterval={ScreenHeight}
         snapToAlignment="start"
-        pagingEnabled
         decelerationRate="fast"
-        removeClippedSubviews
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        onEndReached={() => hasNextPage && fetchNextPage()}
-        onEndReachedThreshold={0.3}
-        showsVerticalScrollIndicator={false}
+        pagingEnabled
         viewabilityConfig={viewabilityConfig}
         onViewableItemsChanged={onViewableItemsChanged}
-        ListFooterComponent={isFetchingNextPage ? <Loader isLoading /> : null}
+        showsVerticalScrollIndicator={false}
+        onEndReached={() => hasNextPage && fetchNextPage()}
+        onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl
             refreshing={isFetchingNextPage}
             onRefresh={() => refetch()}
           />
         }
+        initialNumToRender={5}
+        windowSize={5}
+        ListFooterComponent={isFetchingNextPage ? <Loader isLoading /> : null}
       />
-    </SafeAreaView>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  fullscreenItem: {
+    height: ScreenHeight,
+    justifyContent: "center",
+  },
+  loading: {
+    height: ScreenHeight,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
+  },
+  sliderContainer: {
+    position: "absolute",
+    flexDirection: "row",
+    alignContent: "center",
+    alignItems: "center",
+    marginHorizontal: 10,
+  },
+  slider: {
+    width: "100%",
+    height: 60,
+  },
+});
