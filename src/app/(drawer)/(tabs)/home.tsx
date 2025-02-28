@@ -19,17 +19,20 @@ import Loader from "@/components/ui/loader";
 import useHome from "@/hooks/useHome";
 
 import { colors } from "@/styles/colors";
+import { useScrollToTop } from "@/context/scroll-top-context";
 
 export default function HomeScreen() {
   const [data, setData] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [page, setPage] = useState(1);
+  const [isLastPage, setIsLastPage] = useState<boolean>(false)
   const [isRefreshing, setIsRefreshing] = useState(false);
   const playerRef = useRef(new Map<number, any>());
   const lastActivePostId = useRef<number | any>(null);
   const viewabilityConfig = { itemVisiblePercentThreshold: 80 };
   const { topContributors } = useHome();
+  const { setFlatListRef } = useScrollToTop();
 
   const onViewableItemsChanged = ({ viewableItems }: any) => {
     if (viewableItems.length === 0) return;
@@ -108,16 +111,23 @@ export default function HomeScreen() {
     async (isRefresh = false) => {
       if (isRefresh) {
         setIsRefreshing(true);
-        setPage(1);
+        setPage(10);
       }
 
       setLoading(true);
 
       try {
-        const result = await fetchData(isRefresh ? 1 : page);
+        if(isLastPage) return;
+
+        const result = await fetchData(page);
+
+        if(result && result.length < 10) {
+          setIsLastPage(true);
+        }
 
         if (isRefresh) {
           setData(result);
+          setIsLastPage(false);
         } else {
           setData((prevData: any) => [...prevData, ...(result as any)]);
         }
@@ -137,8 +147,8 @@ export default function HomeScreen() {
   };
 
   const handleEndReached = () => {
-    if (!loading) {
-      setPage((prevPage) => prevPage + 1);
+    if (!loading && !isLastPage) {
+      setPage((prevPage) => prevPage + 10);
     }
   };
 
@@ -193,6 +203,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-black-100" edges={["top"]}>
       <FlashList
+        ref={setFlatListRef}
         data={data}
         renderItem={renderItem}
         estimatedItemSize={600}

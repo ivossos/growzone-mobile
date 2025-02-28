@@ -22,7 +22,7 @@ export default function Reels() {
 
   const viewabilityConfig = {
     itemVisiblePercentThreshold: 50,
-    waitForInteraction: true,
+    waitForInteraction: false,
   };
 
   const onViewableItemsChanged = useRef(
