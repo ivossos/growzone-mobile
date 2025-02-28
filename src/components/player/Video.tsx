@@ -1,9 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { View, StyleSheet, Pressable, AppState } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  AppState,
+  Dimensions,
+} from "react-native";
 import Slider from "@react-native-community/slider";
 import { useEventListener } from "expo";
 import { usePlayerContext } from "@/context/player-context";
+import { colors } from "@/styles/colors";
 
 interface VideoPlayerProps {
   uri: string;
@@ -24,13 +31,14 @@ const VideoPlayer = ({
   playVideo,
   isVisible,
 }: VideoPlayerProps) => {
+  const { isMuted } = usePlayerContext();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
-    player.muted = false;
+    player.muted = isMuted;
     player.timeUpdateEventInterval = 2;
     player.volume = 1.0;
     if (isVisible) player.play();
@@ -62,7 +70,7 @@ const VideoPlayer = ({
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
       if (nextAppState === "active" && isVisible) {
-        player.muted = false;
+        player.muted = isMuted;
         player.currentTime = 0;
         player.play();
         setDuration(0);
@@ -100,6 +108,14 @@ const VideoPlayer = ({
       player.pause();
     }
   }, [isVisible]);
+
+  useEffect(() => {
+    if (isMuted) {
+      player.muted = true;
+    } else {
+      player.muted = false;
+    }
+  }, [isMuted]);
 
   useEffect(() => {
     playerRef.current.set(videoId, player);
@@ -141,6 +157,13 @@ const VideoPlayer = ({
 export default VideoPlayer;
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    height: Dimensions.get("window").height,
+    backgroundColor: colors.black[100],
+    justifyContent: "center",
+    alignItems: "center",
+  },
   video: {
     width: "100%",
     height: "100%",
