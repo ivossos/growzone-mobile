@@ -101,6 +101,7 @@ export default function Reels() {
           playerRef={playerRefs}
           uri={item.file.file}
           post={item}
+          isVisible={viewableItems.has(item.id)}
         />
       );
     },
@@ -126,7 +127,8 @@ export default function Reels() {
   useFocusEffect(
     useCallback(() => {
       viewableItems.forEach((id) => {
-        const player = playerRefs.current.get(id);
+        const playerKey = `${id}-${0}`; 
+        const player = playerRefs.current.get(playerKey);
         if (player) {
           player.play();
         }

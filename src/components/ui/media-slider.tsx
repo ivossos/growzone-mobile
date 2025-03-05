@@ -19,6 +19,7 @@ interface MediaSliderProps {
   postId: number;
   playerRef: any;
   isVisible: boolean;
+  onVideoChange: (postId: number, videoIndex: number) => void;
 }
 
 const MediaSlider = ({
@@ -28,8 +29,13 @@ const MediaSlider = ({
   playerRef,
   postId,
   isVisible,
+  onVideoChange
 }: MediaSliderProps) => {
   const { isMuted, toggleMute } = usePlayerContext();
+
+  const handleIndexChange = ({ index }: {index: number; total: number;}) => {
+    onVideoChange(postId, index);
+  };
 
   const RenderItem = memo(
     ({ item, index }: { item: SocialPostFile; index: number }) => {
@@ -62,6 +68,7 @@ const MediaSlider = ({
               uri={item.file}
               videoId={postId}
               isVisible={isVisible}
+              index={index} 
             />
           </View>
 
@@ -99,6 +106,7 @@ const MediaSlider = ({
       showsControls={false}
       dotStyle={styles.dotStyle}
       activeDotStyle={[styles.dotStyle, { backgroundColor: colors.primary }]}
+      onIndexChanged={handleIndexChange}
     >
       {items.map((item, index) => (
         <RenderItem key={item.id} index={index} item={item} />

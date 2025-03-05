@@ -23,6 +23,7 @@ const ScreenHeight =
   (Platform.OS === "ios" ? 72 : statusBarHeight);
 
 export default function Reels() {
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const playerRefs = useRef(new Map());
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
   const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
@@ -39,7 +40,8 @@ export default function Reels() {
   useFocusEffect(
     useCallback(() => {
       viewableItems.forEach((id) => {
-        const player = playerRefs.current.get(id);
+        const playerKey = `${id}-${0}`; 
+        const player = playerRefs.current.get(playerKey);
         if (player) {
           player.play();
         }
@@ -86,6 +88,12 @@ export default function Reels() {
     initialPageParam: 0,
   });
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch()
+    setIsRefreshing(false);
+  };
+
   if (isLoading) {
     return (
       <View style={styles.loading}>
@@ -112,8 +120,10 @@ export default function Reels() {
         onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl
-            refreshing={isFetchingNextPage}
-            onRefresh={() => refetch()}
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          colors={[colors.brand.green]}
+          tintColor={colors.brand.green}
           />
         }
         initialNumToRender={5}

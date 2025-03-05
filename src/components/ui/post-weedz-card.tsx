@@ -157,7 +157,7 @@ const WeedzPostCard = ({ post, playerRef, isVisible }: Props) => {
         <VideoPlayer
           playerRef={playerRef}
           uri={post.file?.file}
-          videoId={post.id}
+          videoId={post.post_id}
           playVideo={() => viewVideo(post)}
           isVisible={isVisible}
         />

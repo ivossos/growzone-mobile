@@ -27,9 +27,10 @@ interface Props {
   post: GrowPostDetail;
   playerRef: any;
   isVisible: boolean;
+  onVideoChange: (postId: number, videoIndex: number) => void;
 }
 
-const GrowPostCard = ({ post, isVisible, playerRef }: Props) => {
+const GrowPostCard = ({ post, isVisible, playerRef, onVideoChange}: Props) => {
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -136,6 +137,7 @@ const GrowPostCard = ({ post, isVisible, playerRef }: Props) => {
         postId={post.post_id}
         playerRef={playerRef}
         isVisible={isVisible}
+        onVideoChange={onVideoChange}
       />
 
       <View className="flex flex-col gap-2">

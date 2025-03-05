@@ -5,16 +5,13 @@ import { useQuery } from "@tanstack/react-query";
 import { colors } from "@/styles/colors";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { getPost } from "@/api/social/post/get-post";
 import Loader from "@/components/ui/loader";
-import { queryClient } from "@/lib/react-query";
-import { useVideoPlayerContext } from "@/context/video-player-context";
-import { createVideoPlayer } from "expo-video";
 
 const showErrorToast = (message: string) => {
   Toast.show({
@@ -36,81 +33,63 @@ const PostHeader = ({ onBack }: { onBack: () => void }) => (
 export default function Post() {
   const params = useLocalSearchParams();
   const { id } = (params as { id: string }) || {};
-  const { handlePostChange } = useActivePostHome();
-  const { toggleAudioMute, setPlayer, pauseVideo, clearPlayer } =
-    useVideoPlayerContext();
-
-  const [audioMute, setAudioMute] = useState(false);
+  const playerRef = useRef(new Map<string, any>());
+  const activePost = useRef<{ postId: number; index: number } | null>(null);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["post-data", id],
     queryFn: async () => {
       const postId = Number(id);
       const [post] = await Promise.all([getPost(postId)]);
-
-      const filesMap = mapPost(post);
-
-      setPlayerValue(filesMap);
-
-      return { post: filesMap };
+      return { post };
     },
     enabled: !!id,
   });
 
-  const mapPost = (data: PostDetail): PostDetail => {
-    const files = data.files.map((file, index) => {
-      const player = createVideoPlayer({
-        uri: file.file,
-        metadata: {
-          title: `title-post-social-${index}`,
-          artist: `artist-post-social-${index}`,
-        },
-      });
+  const handleVideoChange = useCallback((postId: number, videoIndex: number) => {
+    const newPlayerKey = `${postId}-${videoIndex}`;
+    const lastPlayerKey = `${activePost.current?.postId}-${activePost.current?.index}`;
 
-      player.loop = true;
-      player.muted = false;
-      player.timeUpdateEventInterval = 2;
-      player.volume = 1.0;
+    if (newPlayerKey !== lastPlayerKey) {
+      const lastPlayer = playerRef.current.get(lastPlayerKey);
+      if (lastPlayer) {
+        lastPlayer.pause();
+      }
 
-      return {
-        ...file,
-        player,
-      };
-    });
+      const newPlayer = playerRef.current.get(newPlayerKey);
+      if (newPlayer) {
+        newPlayer.play();
+      } 
 
-    return {
-      ...data,
-      files,
-    };
-  };
+      activePost.current = { postId, index: videoIndex };
 
-  const setPlayerValue = (postData: PostDetail) => {
-    const [file] = postData.files;
-
-    if (file.type === "video") {
-      setPlayer(file.player);
     }
-  };
-
-  const handlerMutedVideo = useCallback(() => {
-    const value = !audioMute;
-    toggleAudioMute(value);
-    setAudioMute(value);
-  }, [audioMute]);
+  }, []);
 
   useEffect(() => {
     if (data?.post) {
-      handlePostChange(data.post.post_id);
+      handleVideoChange(data.post.post_id, 0);
     }
-  }, [data, handlePostChange]);
+  }, [data]);
 
   useFocusEffect(
     useCallback(() => {
+      const currentPost = activePost.current;
+
+      if (currentPost) {
+        const playerKey = `${currentPost.postId}-${currentPost.index}`; 
+        const currentPlayer = playerRef.current.get(playerKey);
+        if (currentPlayer) {
+          currentPlayer.play();
+        }
+      }
+
       return () => {
-        pauseVideo();
-        clearPlayer();
+        playerRef.current.forEach((player, key) => {
+          player.pause();
+        });
       };
-    }, [])
+    }, [data])
   );
 
   if (error) {
@@ -119,8 +98,6 @@ export default function Post() {
     );
     router.back();
   }
-
-  // TODO: remover depois
 
   if (isLoading) {
     return (
@@ -132,8 +109,6 @@ export default function Post() {
 
   const { post } = data || {};
 
-  // TODO: ajustar props depois
-
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
       <View className="flex-1 bg-black-100 overflow-hidden">
@@ -141,9 +116,10 @@ export default function Post() {
         <ScrollView showsVerticalScrollIndicator={false}>
           {post && (
             <PostCard
-              handlerAudioMute={handlerMutedVideo}
-              audioMute={audioMute}
-              post={post}
+              playerRef={playerRef} 
+              post={post} 
+              isVisible={activePost.current?.postId === post.post_id}
+              onVideoChange={handleVideoChange}  
             />
           )}
         </ScrollView>

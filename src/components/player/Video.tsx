@@ -6,11 +6,13 @@ import {
   Pressable,
   AppState,
   Dimensions,
+  Platform,
 } from "react-native";
 import Slider from "@react-native-community/slider";
 import { useEventListener } from "expo";
 import { usePlayerContext } from "@/context/player-context";
 import { colors } from "@/styles/colors";
+const isAndroid = Platform.OS === 'android';
 
 interface VideoPlayerProps {
   uri: string;
@@ -20,6 +22,7 @@ interface VideoPlayerProps {
   progressBarBottom?: number;
   playVideo?: () => void;
   isVisible: boolean;
+  index?: number;
 }
 
 const VideoPlayer = ({
@@ -30,6 +33,7 @@ const VideoPlayer = ({
   progressBarBottom,
   playVideo,
   isVisible,
+  index = 0
 }: VideoPlayerProps) => {
   const { isMuted } = usePlayerContext();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -94,6 +98,8 @@ const VideoPlayer = ({
     player,
     "timeUpdate",
     ({ currentTime, bufferedPosition }) => {
+      if(isAndroid) return; 
+
       if (currentTime && bufferedPosition) {
         setCurrentTime(currentTime);
         setDuration(bufferedPosition);
@@ -118,11 +124,12 @@ const VideoPlayer = ({
   }, [isMuted]);
 
   useEffect(() => {
-    playerRef.current.set(videoId, player);
+    const playerKey = `${videoId}-${index}`;
+    playerRef.current.set(playerKey, player);
     return () => {
-      playerRef.current.delete(videoId);
+      playerRef.current.delete(playerKey);
     };
-  }, [videoId, player, playerRef]);
+  }, [videoId, index, player, playerRef]);
 
   return (
     <Pressable onPress={togglePlayPause}>

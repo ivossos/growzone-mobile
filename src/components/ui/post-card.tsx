@@ -19,13 +19,14 @@ import { PostType } from "@/api/@types/enums";
 
 interface Props {
   post: PostDetail;
-  handlerAudioMute: (muted: boolean) => void;
-  audioMute: boolean;
+  handlerAudioMute?: (muted: boolean) => void;
+  audioMute?: boolean;
   playerRef: any;
   isVisible: boolean;
+  onVideoChange: (postId: number, videoIndex: number) => void;
 }
 
-const PostCard = ({ post, playerRef, isVisible }: Props) => {
+const PostCard = ({ post, playerRef, isVisible, onVideoChange }: Props) => {
   const { user } = useAuth();
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
@@ -136,6 +137,7 @@ const PostCard = ({ post, playerRef, isVisible }: Props) => {
         postId={post.post_id}
         playerRef={playerRef}
         isVisible={isVisible}
+        onVideoChange={onVideoChange}
       />
 
       <View className="flex flex-col gap-2">

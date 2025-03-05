@@ -19,9 +19,12 @@ const showErrorToast = (message: string) => {
   });
 };
 
+
 export default function Post() {
   const params = useLocalSearchParams();
-  const playerRefs = useRef(new Map());
+  const playerRef = useRef(new Map());
+  const activePost = useRef<{ postId: number; index: number } | null>(null);
+
   const { id } = (params as { id: string }) || {};
 
   const { data, isLoading, error } = useQuery({
@@ -39,11 +42,57 @@ export default function Post() {
     router.back();
   }, []);
 
+  const handleVideoChange = useCallback((postId: number, videoIndex: number) => {
+    const newPlayerKey = `${postId}-${videoIndex}`;
+    const lastPlayerKey = `${activePost.current?.postId}-${activePost.current?.index}`;
+
+    if (newPlayerKey !== lastPlayerKey) {
+      const lastPlayer = playerRef.current.get(lastPlayerKey);
+      if (lastPlayer) {
+        lastPlayer.pause();
+      }
+
+      const newPlayer = playerRef.current.get(newPlayerKey);
+      if (newPlayer) {
+        newPlayer.play();
+      }
+
+      activePost.current = { postId, index: videoIndex };
+
+    }
+  }, []);
+
+  useEffect(() => {
+    if (data?.post) {
+      handleVideoChange(data.post.post_id, 0);
+    }
+  }, [data]);
+
   useEffect(() => {
     return () => {
       queryClient.removeQueries({ queryKey: ["grow-post-data", id] });
     };
   }, [id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const currentPost = activePost.current;
+
+      if (currentPost) {
+        const playerKey = `${currentPost.postId}-${currentPost.index}`; 
+        const currentPlayer = playerRef.current.get(playerKey);
+        if (currentPlayer) {
+          currentPlayer.play();
+        }
+      }
+
+      return () => {
+        playerRef.current.forEach((player, key) => {
+          player.pause();
+        });
+      };
+    }, [data])
+  );
 
   if (error) {
     showErrorToast(
@@ -51,19 +100,7 @@ export default function Post() {
     );
     router.back();
   }
-  useFocusEffect(
-    useCallback(() => {
-      const player = playerRefs.current.get(data?.post.post_id);
 
-      if (player) {
-        player.play();
-      }
-
-      return () => {
-        playerRefs.current.forEach((player) => player.pause());
-      };
-    }, [data])
-  );
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-black-100">
@@ -93,7 +130,13 @@ export default function Post() {
           </View>
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
-          {post && <GrowPostCard playerRef={playerRefs} post={post} />}
+          {post && 
+            <GrowPostCard 
+              playerRef={playerRef} 
+              post={post} 
+              isVisible={activePost.current?.postId === post.post_id}
+              onVideoChange={handleVideoChange}  
+            />}
         </ScrollView>
       </View>
     </SafeAreaView>

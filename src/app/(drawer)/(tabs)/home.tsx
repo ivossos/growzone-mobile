@@ -28,36 +28,70 @@ export default function HomeScreen() {
   const [page, setPage] = useState(1);
   const [isLastPage, setIsLastPage] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const playerRef = useRef(new Map<number, any>());
-
+  const playerRef = useRef(new Map<string, any>());
   const lastActivePostId = useRef<number | any>(null);
+  const lastsPostsCarrocelIndex = useRef<{ [postId: number]: number }>({});
+
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
   const viewabilityConfig = { itemVisiblePercentThreshold: 80 };
   const { topContributors } = useHome();
 
-  const [activePost, setActivePost] = useState();
+  const [activePost, setActivePost] = useState<number | undefined>();
 
   const { setFlatListRef } = useScrollToTop();
 
-  const onViewableItemsChanged = ({ viewableItems }: any) => {
-    if (viewableItems.length === 0) return;
-
-    viewableItems.forEach((item: any) => {
-      const newActivePostId = item.item.post.id;
-      const newPlayer = playerRef.current.get(newActivePostId);
-      const lastPlayer = playerRef.current.get(lastActivePostId.current);
-
-      if (lastPlayer && lastActivePostId.current !== newActivePostId) {
+  const handleVideoChange = useCallback((postId: number, videoIndex: number) => {
+    const newPlayerKey = `${postId}-${videoIndex}`;
+    const lastPlayerKey = `${lastActivePostId.current?.postId}-${lastActivePostId.current?.index}`;
+  
+    lastsPostsCarrocelIndex.current[postId] = videoIndex;
+    if (newPlayerKey !== lastPlayerKey) {
+      const lastPlayer = playerRef.current.get(lastPlayerKey);
+      if (lastPlayer) {
         lastPlayer.pause();
       }
-
+  
+      const newPlayer = playerRef.current.get(newPlayerKey);
       if (newPlayer) {
-        setActivePost(newActivePostId);
         newPlayer.play();
-        lastActivePostId.current = newActivePostId;
       }
-    });
-  };
+  
+      setActivePost(postId);
+      lastActivePostId.current = { postId, index: videoIndex };
+    }
+  }, []);
+
+  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+    if (viewableItems.length === 0) {
+      return;
+    }
+  
+    const firstVisibleItem = viewableItems.find((item: any) => item.isViewable);
+  
+    if (firstVisibleItem) {
+      const newActivePostId = firstVisibleItem.item.post.post_id;
+      const videoIndex = lastsPostsCarrocelIndex.current[newActivePostId] ?? 0;
+  
+      const newPlayerKey = `${newActivePostId}-${videoIndex}`;
+      const lastPlayerKey = `${lastActivePostId.current?.postId}-${lastActivePostId.current?.index}`;
+  
+      if (newPlayerKey !== lastPlayerKey) {
+        const lastPlayer = playerRef.current.get(lastPlayerKey);
+        if (lastPlayer) {
+          lastPlayer.pause();
+        }
+  
+        const newPlayer = playerRef.current.get(newPlayerKey);
+        if (newPlayer) {
+          newPlayer.play();
+        } 
+  
+        setActivePost(newActivePostId);
+  
+        lastActivePostId.current = { postId: newActivePostId, index: videoIndex };
+      }
+    }
+  }, []);
 
   const renderEmptyComponent = useCallback(() => {
     if (loading) {
@@ -148,7 +182,6 @@ export default function HomeScreen() {
   );
 
   const onRefresh = () => {
-    console.log("Carregar dados novamente com refresh");
     loadData(true);
   };
 
@@ -171,7 +204,8 @@ export default function HomeScreen() {
       const commonProps = {
         post: item.post,
         playerRef,
-        isVisible: activePost === item.post.id,
+        isVisible: activePost === item.post.post_id,
+        onVideoChange: handleVideoChange,
       };
 
       return <Component {...commonProps} />;
@@ -185,15 +219,23 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      const currentPlayer = playerRef.current.get(lastActivePostId.current);
-      if (currentPlayer) {
-        currentPlayer.play();
+      const currentPost = lastActivePostId.current;
+      if (currentPost) {
+        const playerKey = `${currentPost.postId}-${currentPost.index}`; 
+        const currentPlayer = playerRef.current.get(playerKey);
+        if (currentPlayer) {
+          currentPlayer.play();
+        }
       }
 
       return () => {
-        const currentPlayer = playerRef.current.get(lastActivePostId.current);
-        if (currentPlayer) {
-          currentPlayer.pause();
+        const currentPost = lastActivePostId.current;
+        if(currentPost) {
+          const playerKey = `${currentPost.postId}-${currentPost.index}`;
+          const currentPlayer = playerRef.current.get(playerKey);
+          if (currentPlayer) {
+            currentPlayer.pause();
+          }
         }
       };
     }, [])
@@ -213,7 +255,7 @@ export default function HomeScreen() {
         ref={setFlatListRef}
         data={data}
         renderItem={renderItem}
-        estimatedItemSize={600}
+        estimatedItemSize={400}
         onEndReached={handleEndReached}
         onEndReachedThreshold={0.8}
         numColumns={1}
@@ -221,6 +263,7 @@ export default function HomeScreen() {
         onViewableItemsChanged={onViewableItemsChanged}
         refreshing={isRefreshing}
         viewabilityConfig={viewabilityConfig}
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={<Header />}
         ListEmptyComponent={renderEmptyComponent}
         refreshControl={

@@ -15,7 +15,7 @@ import {
 } from "expo-router";
 import { createVideoPlayer } from "expo-video";
 import { ArrowLeft } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -28,52 +28,16 @@ export default function Post() {
   const [isLoadingPost, setIsLoadingPost] = useState(false);
   const [isLoadingPostComments, setIsLoadingPostComments] = useState(false);
   const [isLoadingPostLikes, setIsLoadingPostLikes] = useState(false);
-  const [audioMute, setAudioMute] = useState(false);
   const [post, setPost] = useState<PostDetail>();
-  const { toggleAudioMute, setPlayer } = useVideoPlayerContext();
-
-  const mapPost = (data: PostDetail): PostDetail => {
-    const files = data.files.map((file, index) => {
-      const player = createVideoPlayer({
-        uri: file.file,
-        metadata: {
-          title: `title-post-social-${index}`,
-          artist: `artist-post-social-${index}`,
-        },
-      });
-
-      player.loop = true;
-      player.muted = false;
-      player.timeUpdateEventInterval = 2;
-      player.volume = 1.0;
-
-      return {
-        ...file,
-        player,
-      };
-    });
-
-    return {
-      ...data,
-      files,
-    };
-  };
-
-  const setPlayerValue = (postData: PostDetail) => {
-    const [file] = postData.files;
-
-    if (file.type === "video") {
-      setPlayer(file.player);
-    }
-  };
+  const playerRef = useRef(new Map<string, any>());
+  const lastsPostsCarrocelIndex = useRef<{ [postId: number]: number }>({});
+  const activePost = useRef<number | null>(null);
 
   const fetchPost = async () => {
     try {
       setIsLoadingPost(true);
       const data = await getPost(postId);
-      const postData = mapPost(data);
-      setPlayerValue(postData);
-      setPost(postData);
+      setPost(data);
     } catch (error) {
       Toast.show({
         type: "error",
@@ -88,14 +52,49 @@ export default function Post() {
     }
   };
 
-  const handlerAudioMute = useCallback(async (value: boolean) => {
-    toggleAudioMute(value);
-    setAudioMute(value);
+  const handleVideoChange = useCallback((postId: number, videoIndex: number) => {
+    const newPlayerKey = `${postId}-${videoIndex}`;
+    const lastPlayerKey = `${activePost.current}-${videoIndex}`;
+
+    if (newPlayerKey !== lastPlayerKey) {
+      const lastPlayer = playerRef.current.get(lastPlayerKey);
+      if (lastPlayer) {
+        lastPlayer.pause();
+      }
+
+      const newPlayer = playerRef.current.get(newPlayerKey);
+      if (newPlayer) {
+        newPlayer.play();
+      }
+
+      activePost.current = postId;
+    }
   }, []);
+
+  useEffect(() => {
+    if (post) {
+      lastsPostsCarrocelIndex.current[post.post_id] = 0;
+    }
+  }, [post]);
 
   useEffect(() => {
     fetchPost();
   }, [postId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (post) {
+        const videoIndex = lastsPostsCarrocelIndex.current[post.post_id] ?? 0;
+        handleVideoChange(post.post_id, videoIndex);
+      }
+
+      return () => {
+        playerRef.current.forEach((player, key) => {
+          player.pause();
+        });
+      };
+    }, [post, handleVideoChange])
+  );
 
   return (
     <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
@@ -112,9 +111,10 @@ export default function Post() {
             !isLoadingPostLikes &&
             post && (
               <PostCard
-                handlerAudioMute={handlerAudioMute}
-                audioMute={audioMute}
+                playerRef={playerRef} 
                 post={post}
+                isVisible={activePost.current === post.post_id}
+                onVideoChange={handleVideoChange}  
               />
             )}
         </ScrollView>

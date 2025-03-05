@@ -36,7 +36,7 @@ import { usePlayerContext } from "@/context/player-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const statusBarHeight =
-  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
+  Platform.OS === "android" ? (StatusBar.currentHeight || 0) : 0;
 const ScreenHeight =
   Dimensions.get("window").height -
   (Platform.OS === "ios" ? 72 : statusBarHeight);
@@ -163,7 +163,7 @@ const ReelsPost = ({
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
       <View style={styles.videoPlayer}>
         <VideoPlayer
-          progressBar
+          progressBar={Platform.OS === "ios"}
           uri={uri}
           videoId={videoId}
           playerRef={playerRef}
@@ -171,7 +171,7 @@ const ReelsPost = ({
           isVisible={isVisible}
         />
       </View>
-      <View style={[styles.footer, { bottom: bottom?.footer }]}>
+      <View style={[styles.footer, { bottom: Platform.OS === "ios" ? bottom?.footer : 20 }]}>
         <View style={{ flex: 1 }} className="flex gap-2">
           <View
             key={post.user.id}
