@@ -47,6 +47,8 @@ const ReelsPost = ({
   playerRef,
   isVisible,
   uri,
+  type, 
+  videoContainer, 
 }: ReelsPostProps) => {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -118,7 +120,7 @@ const ReelsPost = ({
   };
 
   const bottom = useMemo(() => {
-    switch (params.type) {
+    switch (type || params.type) {
       case "weedz":
         if (Platform.OS === "ios") {
           return {
@@ -161,7 +163,7 @@ const ReelsPost = ({
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
-      <View style={styles.videoPlayer}>
+      <View style={[styles.videoPlayer, videoContainer]}>
         <VideoPlayer
           progressBar={Platform.OS === "ios"}
           uri={uri}

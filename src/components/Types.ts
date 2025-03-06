@@ -24,4 +24,6 @@ export type ReelsPostProps = {
   playerRef: any;
   uri: string;
   isVisible: boolean;
+  type?: string
+  videoContainer?: StyleProp<ViewStyle>;
 };

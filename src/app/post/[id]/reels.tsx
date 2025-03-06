@@ -3,9 +3,9 @@ import LogoIcon from "@/assets/icons/logo-small-white.svg";
 import ReelsPost from "@/components/ui/reels-post";
 import { colors } from "@/styles/colors";
 import { ChevronLeft } from "lucide-react-native";
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { View, StyleSheet, Platform, TouchableOpacity } from "react-native";
+import { router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { StatusBar as ExpoStatusBar } from "expo-status-bar";
+import { View, StyleSheet, Platform, TouchableOpacity, StatusBar, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { getReel } from "@/api/social/post/get-reel";
@@ -49,7 +49,8 @@ export default function Reels() {
 
   useFocusEffect(
     useCallback(() => {
-      const player = playerRefs.current.get(post?.id);
+      const playerKey = `${post?.id}-0`; 
+      const player = playerRefs.current.get(playerKey);
 
       if (player) {
         player.play();
@@ -70,20 +71,31 @@ export default function Reels() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black-100" edges={["top"]}>
+    <View style={{ backgroundColor: colors.black[100], flex: 1 }}>
       <StatusBar translucent backgroundColor={"transparent"} />
-      <View style={styles.header}>
-        <View className="flex flex-row items-center gap-2">
-          <TouchableOpacity
-            className="p-2 rounded-lg border border-brand-white"
-            style={styles.button}
-            onPress={handlerGoBack}
-          >
-            <ChevronLeft className="w-8 h-8" color={colors.brand.white} />
-          </TouchableOpacity>
-          <LogoIcon width={107} heigth={11} />
+
+      <SafeAreaView
+        style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}
+      >
+        <View className="flex flex-row items-center justify-between h-[72px] px-6">
+          <View className="flex flex-row items-center gap-2">
+            <TouchableOpacity
+              className="p-2 rounded-lg border border-brand-white"
+              style={{
+                borderWidth: 1,
+                borderColor: "rgba(255, 255, 255, 0.16)",
+                borderRadius: 8,
+                padding: 8,
+              }}
+              onPress={handlerGoBack}
+            >
+              <ChevronLeft className="w-8 h-8" color={colors.brand.white} />
+            </TouchableOpacity>
+            <LogoIcon width={107} heigth={11} />
+          </View>
         </View>
-      </View>
+      </SafeAreaView>
+      <View style={{ flex: 1}}>
 
       {post && (
         <ReelsPost
@@ -91,26 +103,12 @@ export default function Reels() {
           playerRef={playerRefs}
           uri={post.file.file}
           post={post}
+          isVisible
+          type="reelsCard"
+          videoContainer={{ flex: 1 }}
         />
       )}
-    </SafeAreaView>
+    </View>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    position: "absolute",
-    padding: 16,
-    top: Platform.OS === "android" ? 30 : 50,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-    backgroundColor: "transparent",
-  },
-  button: {
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.16)",
-    borderRadius: 8,
-    padding: 8,
-  },
-});

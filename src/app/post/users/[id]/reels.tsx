@@ -17,12 +17,13 @@ import ReelsPost from "@/components/ui/reels-post";
 import Loader from "@/components/ui/loader";
 import { getAllWeedzPost } from "@/api/social/post/timeline/get-all-weedz-post";
 import { TimelineType } from "@/api/@types/enums";
+import { colors } from "@/styles/colors";
 
 const statusBarHeight =
-  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
+  Platform.OS === "android" ? (StatusBar.currentHeight || 0) - 66 : 0;
 const screenHeight =
   Dimensions.get("window").height -
-  (Platform.OS === "ios" ? 72 : statusBarHeight);
+  (Platform.OS === "ios" ? 0 : statusBarHeight);
 
 export default function Reels() {
   const params = useLocalSearchParams<{
@@ -102,6 +103,7 @@ export default function Reels() {
           uri={item.file.file}
           post={item}
           isVisible={viewableItems.has(item.id)}
+          videoContainer={{ height: screenHeight }} 
         />
       );
     },
@@ -145,26 +147,33 @@ export default function Reels() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-black-100" edges={["top"]}>
+    <View style={{ backgroundColor: colors.black[100], flex: 1 }}>
       <StatusBar translucent backgroundColor={"transparent"} />
-      <HeaderGoBack
-        onBack={handlerGoBack}
-        title="Publicações"
-        containerStyle={{
-          position: "absolute",
-          padding: 16,
-          top: Platform.OS === "android" ? 30 : 50,
-          left: 0,
-          right: 0,
-          zIndex: 1,
-          backgroundColor: "transparent",
-        }}
-      />
+
+      <SafeAreaView
+        style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}
+      >
+        <HeaderGoBack
+          onBack={handlerGoBack}
+          title="Publicações"
+          containerStyle={{
+            position: "absolute",
+            padding: 16,
+            top: Platform.OS === "android" ? 30 : 50,
+            left: 0,
+            right: 0,
+            zIndex: 1,
+            backgroundColor: "transparent",
+          }}
+        />
+      </SafeAreaView>
+      
       <FlashList
         ref={flatListRef}
         data={data?.pages.flat() || []}
         estimatedItemSize={screenHeight}
         snapToInterval={screenHeight}
+        style={{ flex: 1 }}
         initialScrollIndex={initialScrollIndex}
         snapToAlignment="start"
         pagingEnabled
@@ -185,7 +194,7 @@ export default function Reels() {
           />
         }
       />
-      <View />
-    </SafeAreaView>
+
+    </View>
   );
 }
