@@ -36,7 +36,7 @@ import { usePlayerContext } from "@/context/player-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const statusBarHeight =
-  Platform.OS === "android" ? (StatusBar.currentHeight || 0) : 0;
+  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
 const ScreenHeight =
   Dimensions.get("window").height -
   (Platform.OS === "ios" ? 72 : statusBarHeight);
@@ -47,8 +47,8 @@ const ReelsPost = ({
   playerRef,
   isVisible,
   uri,
-  type, 
-  videoContainer, 
+  type,
+  videoContainer,
 }: ReelsPostProps) => {
   const { user } = useAuth();
   const insets = useSafeAreaInsets();
@@ -124,8 +124,8 @@ const ReelsPost = ({
       case "weedz":
         if (Platform.OS === "ios") {
           return {
-            footer: 80,
-            slider: 30,
+            footer: 130,
+            slider: 80,
           };
         }
 
@@ -173,7 +173,12 @@ const ReelsPost = ({
           isVisible={isVisible}
         />
       </View>
-      <View style={[styles.footer, { bottom: Platform.OS === "ios" ? bottom?.footer : 20 }]}>
+      <View
+        style={[
+          styles.footer,
+          { bottom: Platform.OS === "ios" ? bottom?.footer : 20 },
+        ]}
+      >
         <View style={{ flex: 1 }} className="flex gap-2">
           <View
             key={post.user.id}
