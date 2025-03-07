@@ -1,114 +1,41 @@
-import { useState, useRef, useCallback, useMemo, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
+  ActivityIndicator,
   RefreshControl,
+  View,
   StatusBar,
   Dimensions,
   Platform,
-  View,
+  StyleSheet,
 } from "react-native";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
-
-import { FlashList } from "@shopify/flash-list";
+import { FlatList } from "react-native-gesture-handler";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useFocusEffect } from "expo-router";
+import { colors } from "@/styles/colors";
+import { getReels } from "@/api/social/post/get-reels";
 import ReelsPost from "@/components/ui/reels-post";
 import Loader from "@/components/ui/loader";
-import { getReels } from "@/api/social/post/get-reels";
-import { colors } from "@/styles/colors";
 
 const statusBarHeight =
-  Platform.OS === "android" ? (StatusBar.currentHeight || 0) - 66 : 0;
-const screenHeight =
+  Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
+const ScreenHeight =
   Dimensions.get("window").height -
-  (Platform.OS === "ios" ? 0 : statusBarHeight);
+  (Platform.OS === "ios" ? 72 : statusBarHeight);
 
 export default function Reels() {
-  const params = useLocalSearchParams<{
-    userId: string;
-    id: string;
-    uri: string;
-  }>();
-  const flatListRef = useRef(null);
-  const postId = Number(params.id);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const playerRefs = useRef(new Map());
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
-  const viewabilityConfig = {
-    itemVisiblePercentThreshold: 50,
-    waitForInteraction: true,
-  };
+  const viewabilityConfig = { itemVisiblePercentThreshold: 50 };
 
-  const onViewableItemsChanged = useCallback(
+  const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
         viewableItems.map((item: { item: { id: any } }) => item.item.id)
       );
-
-      setVisibleItems((prevVisibleItems) => {
-        if (
-          prevVisibleItems.size === newVisibleItems.size &&
-          [...prevVisibleItems].every((id) => newVisibleItems.has(id))
-        ) {
-          return prevVisibleItems;
-        }
-        return newVisibleItems;
-      });
-    },
-    []
-  );
-
-  const fetchReelsData = async ({ pageParam = 0 }: any) => {
-    const weedz = await getReels({ skip: pageParam, limit: 10 });
-    return weedz;
-  };
-
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    refetch,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["reels"],
-    queryFn: fetchReelsData,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < 10) return undefined;
-      return allPages.length * 10;
-    },
-    initialPageParam: 0,
-  });
-
-  const renderItem = useCallback(
-    ({ item }: any) => {
-      return (
-        <ReelsPost
-          type="weedz"
-          videoId={item.id}
-          playerRef={playerRefs}
-          uri={item.file.file}
-          post={item}
-          isVisible={viewableItems.has(item.id)}
-          videoContainer={{ height: screenHeight }}
-        />
-      );
-    },
-    [viewableItems]
-  );
-
-  const initialScrollIndex = useMemo(() => {
-    if (data?.pages && data?.pages.flat().length > 0) {
-      return data?.pages
-        .flat()
-        .findIndex((item) => item.file.file === params.uri);
+      setVisibleItems(newVisibleItems);
     }
-    return 0;
-  }, [data, postId]);
-
-  useEffect(() => {
-    if (initialScrollIndex === 0 && data?.pages?.length) {
-      const firstItem = data.pages.flat()[0];
-      setVisibleItems(new Set([firstItem.id]));
-    }
-  }, [initialScrollIndex, data]);
+  ).current;
 
   useFocusEffect(
     useCallback(() => {
@@ -126,38 +53,107 @@ export default function Reels() {
     }, [viewableItems])
   );
 
+  const renderItem = useCallback(
+    ({ item }: any) => (
+      <ReelsPost
+        videoId={item.id}
+        playerRef={playerRefs}
+        uri={item.file.file}
+        post={item}
+        isVisible={viewableItems.has(item.id)}
+      />
+    ),
+    [viewableItems]
+  );
+
+  const fetchReelsData = async ({ pageParam = 0 }: any) => {
+    const weedz = await getReels({ skip: pageParam, limit: 10 });
+    return weedz;
+  };
+
+  const {
+    data: reelsData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["reels"],
+    queryFn: fetchReelsData,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < 10) return undefined;
+      return allPages.length * 10;
+    },
+    initialPageParam: 0,
+  });
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+  };
+
   if (isLoading) {
-    return <Loader isLoading />;
+    return (
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={colors.brand.green} />
+      </View>
+    );
   }
 
   return (
-    <View style={{ backgroundColor: colors.black[100], flex: 1 }}>
+    <View>
       <StatusBar translucent backgroundColor={"transparent"} />
-      <FlashList
-        ref={flatListRef}
-        data={data?.pages.flat() || []}
-        estimatedItemSize={screenHeight}
-        snapToInterval={screenHeight}
-        initialScrollIndex={initialScrollIndex}
-        snapToAlignment="start"
-        pagingEnabled
-        decelerationRate="fast"
-        removeClippedSubviews
-        keyExtractor={(item) => item.id.toString()}
+      <FlatList
+        data={reelsData?.pages.flat() || []}
         renderItem={renderItem}
-        onEndReached={() => hasNextPage && fetchNextPage()}
-        onEndReachedThreshold={0.3}
-        showsVerticalScrollIndicator={false}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
+        snapToInterval={ScreenHeight}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        pagingEnabled
         viewabilityConfig={viewabilityConfig}
         onViewableItemsChanged={onViewableItemsChanged}
-        ListFooterComponent={isFetchingNextPage ? <Loader isLoading /> : null}
+        showsVerticalScrollIndicator={false}
+        onEndReached={() => hasNextPage && fetchNextPage()}
+        onEndReachedThreshold={0.3}
         refreshControl={
           <RefreshControl
-            refreshing={isFetchingNextPage}
-            onRefresh={() => refetch()}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.brand.green]}
+            tintColor={colors.brand.green}
           />
         }
+        initialNumToRender={5}
+        windowSize={5}
+        ListFooterComponent={isFetchingNextPage ? <Loader isLoading /> : null}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  fullscreenItem: {
+    height: ScreenHeight,
+    justifyContent: "center",
+  },
+  loading: {
+    height: ScreenHeight,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "black",
+  },
+  sliderContainer: {
+    position: "absolute",
+    flexDirection: "row",
+    alignContent: "center",
+    alignItems: "center",
+    marginHorizontal: 10,
+  },
+  slider: {
+    width: "100%",
+    height: 60,
+  },
+});

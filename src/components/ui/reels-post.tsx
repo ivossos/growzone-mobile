@@ -124,8 +124,8 @@ const ReelsPost = ({
       case "weedz":
         if (Platform.OS === "ios") {
           return {
-            footer: 130,
-            slider: 80,
+            footer: 80,
+            slider: 30,
           };
         }
 
