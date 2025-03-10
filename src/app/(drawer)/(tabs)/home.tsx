@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const [data, setData] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const playerRef = useRef(new Map<string, any>());
@@ -151,7 +151,7 @@ export default function HomeScreen() {
     async (isRefresh = false) => {
       if (isRefresh) {
         setIsRefreshing(true);
-        setPage(10);
+        setPage(0);
       }
 
       setLoading(true);
