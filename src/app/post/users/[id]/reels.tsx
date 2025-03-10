@@ -44,7 +44,9 @@ export default function Reels() {
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
-        viewableItems.map((item: { item: { id: any } }) => item.item.id)
+        viewableItems.map(
+          (item: { item: { id: any } }) => `post-reels-${item.item.id}`
+        )
       );
 
       setVisibleItems((prevVisibleItems) => {
@@ -98,12 +100,12 @@ export default function Reels() {
     ({ item }: any) => {
       return (
         <ReelsPost
-          videoId={item.id}
+          videoId={`post-reels-${item.id}`}
           playerRef={playerRefs}
           uri={item.file.file}
           post={item}
-          isVisible={viewableItems.has(item.id)}
-          videoContainer={{ height: screenHeight }} 
+          isVisible={viewableItems.has(`post-reels-${item.id}`)}
+          videoContainer={{ height: screenHeight }}
         />
       );
     },
@@ -122,14 +124,14 @@ export default function Reels() {
   useEffect(() => {
     if (initialScrollIndex === 0 && data?.pages?.length) {
       const firstItem = data.pages.flat()[0];
-      setVisibleItems(new Set([firstItem.id]));
+      setVisibleItems(new Set([`post-reels-${firstItem.id}`]));
     }
   }, [initialScrollIndex, data]);
 
   useFocusEffect(
     useCallback(() => {
       viewableItems.forEach((id) => {
-        const playerKey = `${id}-${0}`; 
+        const playerKey = `${id}-${0}`;
         const player = playerRefs.current.get(playerKey);
         if (player) {
           player.play();
@@ -167,13 +169,12 @@ export default function Reels() {
           }}
         />
       </SafeAreaView>
-      
+
       <FlashList
         ref={flatListRef}
         data={data?.pages.flat() || []}
         estimatedItemSize={screenHeight}
         snapToInterval={screenHeight}
-        style={{ flex: 1 }}
         initialScrollIndex={initialScrollIndex}
         snapToAlignment="start"
         pagingEnabled
@@ -194,7 +195,6 @@ export default function Reels() {
           />
         }
       />
-
     </View>
   );
 }

@@ -20,10 +20,10 @@ export interface VideoPlayerProps {
 
 export type ReelsPostProps = {
   post: ReelsDetail;
-  videoId: number;
+  videoId: number | string;
   playerRef: any;
   uri: string;
   isVisible: boolean;
-  type?: string
+  type?: string;
   videoContainer?: StyleProp<ViewStyle>;
 };

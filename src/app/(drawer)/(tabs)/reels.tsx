@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -31,7 +31,9 @@ export default function Reels() {
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
-        viewableItems.map((item: { item: { id: any } }) => item.item.id)
+        viewableItems.map(
+          (item: { item: { id: any } }) => `reels-${item.item.id}`
+        )
       );
       setVisibleItems(newVisibleItems);
     }
@@ -56,11 +58,11 @@ export default function Reels() {
   const renderItem = useCallback(
     ({ item }: any) => (
       <ReelsPost
-        videoId={item.id}
+        videoId={`reels-${item.id}`}
         playerRef={playerRefs}
         uri={item.file.file}
         post={item}
-        isVisible={viewableItems.has(item.id)}
+        isVisible={viewableItems.has(`reels-${item.id}`)}
       />
     ),
     [viewableItems]

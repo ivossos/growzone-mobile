@@ -12,11 +12,11 @@ import Slider from "@react-native-community/slider";
 import { useEventListener } from "expo";
 import { usePlayerContext } from "@/context/player-context";
 import { colors } from "@/styles/colors";
-const isAndroid = Platform.OS === 'android';
+const isAndroid = Platform.OS === "android";
 
 interface VideoPlayerProps {
   uri: string;
-  videoId: number;
+  videoId: number | string;
   playerRef: any;
   progressBar?: boolean;
   progressBarBottom?: number;
@@ -33,7 +33,7 @@ const VideoPlayer = ({
   progressBarBottom,
   playVideo,
   isVisible,
-  index = 0
+  index = 0,
 }: VideoPlayerProps) => {
   const { isMuted } = usePlayerContext();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -98,7 +98,7 @@ const VideoPlayer = ({
     player,
     "timeUpdate",
     ({ currentTime, bufferedPosition }) => {
-      if(isAndroid) return; 
+      if (isAndroid) return;
 
       if (currentTime && bufferedPosition) {
         setCurrentTime(currentTime);
