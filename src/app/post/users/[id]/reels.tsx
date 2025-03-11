@@ -45,7 +45,7 @@ export default function Reels() {
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
         viewableItems.map(
-          (item: { item: { id: any } }) => `post-reels-${item.item.id}`
+          (item: { item: { id: any } }) => item.item.id
         )
       );
 
@@ -100,11 +100,11 @@ export default function Reels() {
     ({ item }: any) => {
       return (
         <ReelsPost
-          videoId={`post-reels-${item.id}`}
+          videoId={item.id}
           playerRef={playerRefs}
           uri={item.file.file}
           post={item}
-          isVisible={viewableItems.has(`post-reels-${item.id}`)}
+          isVisible={viewableItems.has(item.id)}
           videoContainer={{ height: screenHeight }}
         />
       );
@@ -124,7 +124,7 @@ export default function Reels() {
   useEffect(() => {
     if (initialScrollIndex === 0 && data?.pages?.length) {
       const firstItem = data.pages.flat()[0];
-      setVisibleItems(new Set([`post-reels-${firstItem.id}`]));
+      setVisibleItems(new Set([firstItem.id]));
     }
   }, [initialScrollIndex, data]);
 

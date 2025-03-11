@@ -32,7 +32,7 @@ export default function Reels() {
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
         viewableItems.map(
-          (item: { item: { id: any } }) => `reels-${item.item.id}`
+          (item: { item: { id: any } }) => item.item.id
         )
       );
       setVisibleItems(newVisibleItems);
@@ -58,11 +58,11 @@ export default function Reels() {
   const renderItem = useCallback(
     ({ item }: any) => (
       <ReelsPost
-        videoId={`reels-${item.id}`}
+        videoId={item.id}
         playerRef={playerRefs}
         uri={item.file.file}
         post={item}
-        isVisible={viewableItems.has(`reels-${item.id}`)}
+        isVisible={viewableItems.has(item.id)}
       />
     ),
     [viewableItems]

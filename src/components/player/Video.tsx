@@ -16,7 +16,7 @@ const isAndroid = Platform.OS === "android";
 
 interface VideoPlayerProps {
   uri: string;
-  videoId: number | string;
+  videoId: number;
   playerRef: any;
   progressBar?: boolean;
   progressBarBottom?: number;
