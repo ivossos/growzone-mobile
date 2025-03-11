@@ -43,7 +43,7 @@ const VideoPlayer = ({
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
     player.muted = isMuted;
-    player.timeUpdateEventInterval = 2;
+    player.timeUpdateEventInterval = 500;
     player.volume = 1.0;
     if (isVisible) player.play();
   });
@@ -73,10 +73,11 @@ const VideoPlayer = ({
 
   useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === "active" && isVisible) {
+      if (nextAppState === "active") {
         player.muted = isMuted;
         player.currentTime = 0;
-        player.play();
+        player.pause();
+        player.replay();
         setDuration(0);
         setCurrentTime(0);
       } else {
@@ -92,7 +93,7 @@ const VideoPlayer = ({
     return () => {
       subscription.remove();
     };
-  }, [isVisible, player]);
+  }, [player]);
 
   useEventListener(
     player,

@@ -171,6 +171,7 @@ const ReelsPost = ({
           playerRef={playerRef}
           progressBarBottom={bottom?.slider}
           isVisible={isVisible}
+          index={0}
         />
       </View>
       <View

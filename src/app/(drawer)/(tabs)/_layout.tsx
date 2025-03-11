@@ -196,7 +196,7 @@ export default function TabLayout() {
                   toggleVibration();
                   return;
                 }
-                pauseVideo();
+                //pauseVideo();
                 openBottomSheet();
               },
             }}
