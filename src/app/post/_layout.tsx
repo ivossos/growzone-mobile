@@ -16,6 +16,7 @@ import ReportCommentBottomSheet from "@/components/ui/report-comment-bottom-shee
 import PostBottomSheet from "@/components/ui/post/post-bottom-sheet";
 import DeletePostBottomSheet from "@/components/ui/post/delete-post-bottom-sheet";
 import { VideoPlayerProvider } from "@/context/video-player-context";
+import { PlayerProvider } from "@/context/player-context";
 
 export default function Layout() {
   const reportSheetRef = useRef<BottomSheet>(null);
@@ -69,42 +70,47 @@ export default function Layout() {
     <BottomSheetProvider>
       <ActivePostHomeProvider>
         <VideoPlayerProvider>
-          <Slot />
-          <CommentBottomSheet ref={commentSheetRef} />
-          <ReportBottomSheet
-            ref={reportSheetRef}
-            onClose={closeReportBottomSheet}
-          />
-          <ReportCommentBottomSheet
-            ref={reportCommentSheetRef}
-            onClose={closeReportCommentBottomSheet}
-          />
-          <RateProfileBottomSheet
-            ref={rateProfileSheetRef}
-            onClose={rateProfileBottomSheet}
-          />
-          <ProfileBottomSheet
-            ref={profileSheetRef}
-            onClose={profileBottomSheet}
-          />
-          <ReportUserBottomSheet
-            ref={reportUserSheetRef}
-            onClose={reportUserBottomSheet}
-          />
-          <BlockUserBottomSheet
-            ref={blockUserSheetRef}
-            onClose={blockUserBottomSheet}
-          />
-          <UnlockUserBottomSheet
-            ref={unlockUserSheetRef}
-            onClose={unlockUserBottomSheet}
-          />
-          <PostBottomSheet ref={postSheetRef} onClose={closePostBottomSheet} />
-          <DeletePostBottomSheet
-            ref={deletePostSheetRef}
-            onClose={closeDeletePostBottomSheet}
-          />
-          <StatusBar backgroundColor={colors.black[100]} style="light" />
+          <PlayerProvider>
+            <Slot />
+            <CommentBottomSheet ref={commentSheetRef} />
+            <ReportBottomSheet
+              ref={reportSheetRef}
+              onClose={closeReportBottomSheet}
+            />
+            <ReportCommentBottomSheet
+              ref={reportCommentSheetRef}
+              onClose={closeReportCommentBottomSheet}
+            />
+            <RateProfileBottomSheet
+              ref={rateProfileSheetRef}
+              onClose={rateProfileBottomSheet}
+            />
+            <ProfileBottomSheet
+              ref={profileSheetRef}
+              onClose={profileBottomSheet}
+            />
+            <ReportUserBottomSheet
+              ref={reportUserSheetRef}
+              onClose={reportUserBottomSheet}
+            />
+            <BlockUserBottomSheet
+              ref={blockUserSheetRef}
+              onClose={blockUserBottomSheet}
+            />
+            <UnlockUserBottomSheet
+              ref={unlockUserSheetRef}
+              onClose={unlockUserBottomSheet}
+            />
+            <PostBottomSheet
+              ref={postSheetRef}
+              onClose={closePostBottomSheet}
+            />
+            <DeletePostBottomSheet
+              ref={deletePostSheetRef}
+              onClose={closeDeletePostBottomSheet}
+            />
+            <StatusBar backgroundColor={colors.black[100]} style="light" />
+          </PlayerProvider>
         </VideoPlayerProvider>
       </ActivePostHomeProvider>
     </BottomSheetProvider>

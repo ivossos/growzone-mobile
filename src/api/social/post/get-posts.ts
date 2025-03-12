@@ -22,11 +22,13 @@ export async function getPosts({
     paramsSerializer: (params) => {
       const searchParams = new URLSearchParams();
       if (params.types) {
-        params.types.forEach((type: PostType) => searchParams.append('types', type));
+        params.types.forEach((type: PostType) =>
+          searchParams.append("types", type)
+        );
       }
-      searchParams.append('skip', params.skip);
-      searchParams.append('limit', params.limit);
-      
+      searchParams.append("skip", params.skip);
+      searchParams.append("limit", params.limit);
+
       return searchParams.toString();
     },
   });

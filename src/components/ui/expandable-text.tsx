@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 type ExpandableTextProps = {
   text: string;
@@ -14,14 +14,20 @@ const ExpandableText = ({ text, numberOfLines = 1 }: ExpandableTextProps) => {
   };
 
   return (
-    <TouchableOpacity onPress={toggleExpanded}>
-      <Text
-        className="text-base text-brand-grey font-normal w-full"
-        numberOfLines={isExpanded ? undefined : numberOfLines}
-        ellipsizeMode="tail"
+    <TouchableOpacity onPress={toggleExpanded} activeOpacity={0.8}>
+      <View
+        className={`p-2 rounded-lg ${
+          isExpanded ? "bg-black-100/70" : "bg-transparent"
+        }`}
       >
-        {text}
-      </Text>
+        <Text
+          className="text-base text-white font-normal w-full"
+          numberOfLines={isExpanded ? undefined : numberOfLines}
+          ellipsizeMode="tail"
+        >
+          {text}
+        </Text>
+      </View>
     </TouchableOpacity>
   );
 };

@@ -1,11 +1,6 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import React, { memo, useCallback, useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
-import {
-  ChevronRight,
-  EllipsisIcon,
-  Volume2,
-  VolumeX,
-} from "lucide-react-native";
+import { ChevronRight, EllipsisIcon } from "lucide-react-native";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
 import { colors } from "@/styles/colors";
 import MediaSlider from "./media-slider";
@@ -14,25 +9,25 @@ import LikedIcon from "@/assets/icons/liked.svg";
 import CommentIcon from "@/assets/icons/comment.svg";
 import { Link, router } from "expo-router";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
-import { Comment, PostDetail, PostLike } from "@/api/@types/models";
+import { PostDetail } from "@/api/@types/models";
 import { formatDistance, getInitials } from "@/lib/utils";
 import Toast from "react-native-toast-message";
-import CommentCard from "./comment-card";
 import { deleteLike } from "@/api/social/post/like/delete-like";
 import { createLike } from "@/api/social/post/like/create-like";
 import { useAuth } from "@/hooks/use-auth";
 import { PostType } from "@/api/@types/enums";
-import { useVideoPlayerContext } from "@/context/video-player-context";
 
 interface Props {
   post: PostDetail;
-  handlerAudioMute: (muted: boolean) => void;
-  audioMute: boolean;
+  handlerAudioMute?: (muted: boolean) => void;
+  audioMute?: boolean;
+  playerRef: any;
+  isVisible: boolean;
+  onVideoChange: (postId: number, videoIndex: number) => void;
 }
 
-const PostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
+const PostCard = ({ post, playerRef, isVisible, onVideoChange }: Props) => {
   const { user } = useAuth();
-  const { playVideo, pauseVideo } = useVideoPlayerContext();
   const [liked, setLiked] = useState(post.is_liked);
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [isLoadingLiked, setIsLoadingLiked] = useState(false);
@@ -70,13 +65,13 @@ const PostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
   };
 
   const handlerOpenCommentSheet = useCallback(() => {
-    pauseVideo();
+    // pauseVideo();
 
     openBottomSheet({
       type: "comment",
       id: post.post_id,
       callbackFn: async () => {
-        playVideo();
+        // playVideo();
       },
     });
   }, [post]);
@@ -139,9 +134,10 @@ const PostCard = ({ post, audioMute, handlerAudioMute }: Props) => {
         post={post}
         postType={PostType.SOCIAL_POST}
         items={post.files}
-        audioMute={audioMute}
-        handlerAudioMute={handlerAudioMute}
         postId={post.post_id}
+        playerRef={playerRef}
+        isVisible={isVisible}
+        onVideoChange={onVideoChange}
       />
 
       <View className="flex flex-col gap-2">

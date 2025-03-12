@@ -24,6 +24,7 @@ import { queryClient } from "@/lib/react-query";
 import * as Notifications from "expo-notifications";
 import * as TaskManager from "expo-task-manager";
 import { NotificationPushProvider } from "@/context/notification-push-context";
+import { colors } from "@/styles/colors";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -84,9 +85,9 @@ export default function RootLayout() {
                 <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen
                   name="notifications"
-                  options={{ headerShown: false }}
+                  options={{ headerShown: false, contentStyle: { backgroundColor: colors.black[100] } }}
                 />
-                <Stack.Screen name="profile" options={{ headerShown: false }} />
+                <Stack.Screen name="profile" options={{ headerShown: false, contentStyle: { backgroundColor: colors.black[100] } }} />
                 <Stack.Screen
                   name="followers"
                   options={{ headerShown: false }}

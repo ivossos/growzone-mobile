@@ -29,6 +29,9 @@ import PostBottomSheet from "@/components/ui/post/post-bottom-sheet";
 import DeletePostBottomSheet from "@/components/ui/post/delete-post-bottom-sheet";
 import GlobalSearchBottomSheet from "@/components/ui/global-search-bottom-sheet";
 import { VideoPlayerProvider } from "@/context/video-player-context";
+
+import { PlayerProvider } from "@/context/player-context";
+
 import { CreatePostProvider } from "@/context/create-post-context";
 import FloatingPostProgressBar from "@/components/ui/floating-post-progress-bar";
 
@@ -111,35 +114,36 @@ export default function DrawerLayout() {
       <NotificationProvider>
         <ActivePostHomeProvider>
           <VideoPlayerProvider>
-            <BottomSheetProvider>
-              <ScrollToTopProvider>
-                <Drawer
-                  screenOptions={{
-                    headerShown: false,
-                    drawerType: "front",
-                    drawerPosition: "right",
-                    drawerStyle: {
-                      width: "100%",
-                    },
-                    swipeEnabled: false,
-                  }}
-                  drawerContent={(props) => <DrawerContent {...props} />}
-                >
-                  <Drawer.Screen name="(tabs)" />
+            <PlayerProvider>
+              <BottomSheetProvider>
+                <ScrollToTopProvider>
+                  <Drawer
+                    screenOptions={{
+                      headerShown: false,
+                      drawerType: "front",
+                      drawerPosition: "right",
+                      drawerStyle: {
+                        width: "100%",
+                      },
+                      swipeEnabled: false,
+                    }}
+                    drawerContent={(props) => <DrawerContent {...props} />}
+                  >
+                    <Drawer.Screen name="(tabs)" />
 
-                  <Drawer.Screen
-                    name="edit-profile"
-                    options={
-                      {
-                        title: "Dados gerais",
-                        iconName: ProfileIcon,
-                        isDivider: true,
-                        animationEnabled: true,
-                      } as CustomOptions
-                    }
-                  />
+                    <Drawer.Screen
+                      name="edit-profile"
+                      options={
+                        {
+                          title: "Dados gerais",
+                          iconName: ProfileIcon,
+                          isDivider: true,
+                          animationEnabled: true,
+                        } as CustomOptions
+                      }
+                    />
 
-                  {/* <Drawer.Screen
+                    {/* <Drawer.Screen
                   name="event"
                   options={
                     {
@@ -150,18 +154,18 @@ export default function DrawerLayout() {
                   }
                 /> */}
 
-                  <Drawer.Screen
-                    name="security"
-                    options={
-                      {
-                        title: "Segurança",
-                        iconName: PadlockIcon,
-                        isDivider: true,
-                      } as CustomOptions
-                    }
-                  />
+                    <Drawer.Screen
+                      name="security"
+                      options={
+                        {
+                          title: "Segurança",
+                          iconName: PadlockIcon,
+                          isDivider: true,
+                        } as CustomOptions
+                      }
+                    />
 
-                  {/* <Drawer.Screen
+                    {/* <Drawer.Screen
                   name="preference-center"
                   options={
                     {
@@ -172,51 +176,51 @@ export default function DrawerLayout() {
                   }
                 /> */}
 
-                  <Drawer.Screen
-                    name="terms-conditions"
-                    options={
-                      {
-                        title: "Termos e condições",
-                        iconName: FileIcon,
-                        isDivider: true,
-                      } as CustomOptions
-                    }
-                  />
+                    <Drawer.Screen
+                      name="terms-conditions"
+                      options={
+                        {
+                          title: "Termos e condições",
+                          iconName: FileIcon,
+                          isDivider: true,
+                        } as CustomOptions
+                      }
+                    />
 
-                  <Drawer.Screen
-                    name="help"
-                    options={
-                      {
-                        title: "Ajuda",
-                        iconName: QuestionIcon,
-                        isDivider: true,
-                      } as CustomOptions
-                    }
-                  />
+                    <Drawer.Screen
+                      name="help"
+                      options={
+                        {
+                          title: "Ajuda",
+                          iconName: QuestionIcon,
+                          isDivider: true,
+                        } as CustomOptions
+                      }
+                    />
 
-                  <Drawer.Screen
-                    name="blocked-users"
-                    options={
-                      {
-                        title: "Usuários bloqueados",
-                        iconName: BanIcon,
-                        isDivider: true,
-                      } as CustomOptions
-                    }
-                  />
+                    <Drawer.Screen
+                      name="blocked-users"
+                      options={
+                        {
+                          title: "Usuários bloqueados",
+                          iconName: BanIcon,
+                          isDivider: true,
+                        } as CustomOptions
+                      }
+                    />
 
-                  <Drawer.Screen
-                    name="delete-account"
-                    options={
-                      {
-                        title: "Excluir conta",
-                        iconName: UserRoundXIcon,
-                        isDivider: true,
-                      } as CustomOptions
-                    }
-                  />
+                    <Drawer.Screen
+                      name="delete-account"
+                      options={
+                        {
+                          title: "Excluir conta",
+                          iconName: UserRoundXIcon,
+                          isDivider: true,
+                        } as CustomOptions
+                      }
+                    />
 
-                  {/* <Drawer.Screen
+                    {/* <Drawer.Screen
                   name="user-category"
                   options={
                     {
@@ -227,7 +231,7 @@ export default function DrawerLayout() {
                   }
                 /> */}
 
-                  {/* <Drawer.Screen
+                    {/* <Drawer.Screen
                   name="privacy-policy"
                   options={
                     {
@@ -238,67 +242,71 @@ export default function DrawerLayout() {
                   }
                 /> */}
 
-                  <Drawer.Screen
-                    listeners={{
-                      drawerItemPress: (e) => {
-                        e.preventDefault();
-                        logout();
-                      },
-                    }}
-                    name="logout"
-                    options={
-                      {
-                        title: "Encerrar sessão",
-                        iconName: CloseIcon,
-                      } as CustomOptions
-                    }
+                    <Drawer.Screen
+                      listeners={{
+                        drawerItemPress: (e) => {
+                          e.preventDefault();
+                          logout();
+                        },
+                      }}
+                      name="logout"
+                      options={
+                        {
+                          title: "Encerrar sessão",
+                          iconName: CloseIcon,
+                        } as CustomOptions
+                      }
+                    />
+                  </Drawer>
+                  <FloatingPostProgressBar />
+                  <CommentBottomSheet ref={commentSheetRef} />
+                  <ReportBottomSheet
+                    ref={reportSheetRef}
+                    onClose={closeReportBottomSheet}
                   />
-                </Drawer>
-                <FloatingPostProgressBar />
-                <CommentBottomSheet ref={commentSheetRef} />
-                <ReportBottomSheet
-                  ref={reportSheetRef}
-                  onClose={closeReportBottomSheet}
-                />
-                <GlobalSearchBottomSheet
-                  ref={searchSheetRef}
-                  onClose={closeSeachBottomSheet}
-                />
-                <ReportCommentBottomSheet
-                  ref={reportCommentSheetRef}
-                  onClose={closeReportCommentBottomSheet}
-                />
-                <RateProfileBottomSheet
-                  ref={rateProfileSheetRef}
-                  onClose={rateProfileBottomSheet}
-                />
-                <ProfileBottomSheet
-                  ref={profileSheetRef}
-                  onClose={profileBottomSheet}
-                />
-                <ReportUserBottomSheet
-                  ref={reportUserSheetRef}
-                  onClose={reportUserBottomSheet}
-                />
-                <BlockUserBottomSheet
-                  ref={blockUserSheetRef}
-                  onClose={blockUserBottomSheet}
-                />
-                <UnlockUserBottomSheet
-                  ref={unlockUserSheetRef}
-                  onClose={unlockUserBottomSheet}
-                />
-                <PostBottomSheet
-                  ref={postSheetRef}
-                  onClose={closePostBottomSheet}
-                />
-                <DeletePostBottomSheet
-                  ref={deletePostSheetRef}
-                  onClose={closeDeletePostBottomSheet}
-                />
-                <StatusBar backgroundColor={colors.black[100]} style="light" />
-              </ScrollToTopProvider>
-            </BottomSheetProvider>
+                  <GlobalSearchBottomSheet
+                    ref={searchSheetRef}
+                    onClose={closeSeachBottomSheet}
+                  />
+                  <ReportCommentBottomSheet
+                    ref={reportCommentSheetRef}
+                    onClose={closeReportCommentBottomSheet}
+                  />
+                  <RateProfileBottomSheet
+                    ref={rateProfileSheetRef}
+                    onClose={rateProfileBottomSheet}
+                  />
+                  <ProfileBottomSheet
+                    ref={profileSheetRef}
+                    onClose={profileBottomSheet}
+                  />
+                  <ReportUserBottomSheet
+                    ref={reportUserSheetRef}
+                    onClose={reportUserBottomSheet}
+                  />
+                  <BlockUserBottomSheet
+                    ref={blockUserSheetRef}
+                    onClose={blockUserBottomSheet}
+                  />
+                  <UnlockUserBottomSheet
+                    ref={unlockUserSheetRef}
+                    onClose={unlockUserBottomSheet}
+                  />
+                  <PostBottomSheet
+                    ref={postSheetRef}
+                    onClose={closePostBottomSheet}
+                  />
+                  <DeletePostBottomSheet
+                    ref={deletePostSheetRef}
+                    onClose={closeDeletePostBottomSheet}
+                  />
+                  <StatusBar
+                    backgroundColor={colors.black[100]}
+                    style="light"
+                  />
+                </ScrollToTopProvider>
+              </BottomSheetProvider>
+            </PlayerProvider>
           </VideoPlayerProvider>
         </ActivePostHomeProvider>
       </NotificationProvider>

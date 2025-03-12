@@ -4,15 +4,11 @@ import { colors } from "@/styles/colors";
 import { useQuery } from "@tanstack/react-query";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { useCallback, useEffect, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { useCallback, useEffect, useState, useRef } from "react";
+import { ScrollView, Text, View, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import Loader from "@/components/ui/loader";
-import { useVideoPlayerContext } from "@/context/video-player-context";
-import { createVideoPlayer, VideoPlayer } from "expo-video";
-import { GrowPostDetail } from "@/api/@types/models";
 import { queryClient } from "@/lib/react-query";
 
 const showErrorToast = (message: string) => {
@@ -23,95 +19,79 @@ const showErrorToast = (message: string) => {
   });
 };
 
+
 export default function Post() {
   const params = useLocalSearchParams();
+  const playerRef = useRef(new Map());
+  const activePost = useRef<{ postId: number; index: number } | null>(null);
+
   const { id } = (params as { id: string }) || {};
-  const { toggleAudioMute, setPlayer, pauseVideo, clearPlayer } = useVideoPlayerContext();
-
-  const [mutedVideo, setMutedVideo] = useState(false);
-
-  const setPlayerValue = (post: GrowPostDetail) => {
-    const [file] = post.files;
-
-    if (file.type === "video") {
-      setPlayer(file.player);
-    }
-  };
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["grow-post-data", id],
     queryFn: async () => {
       const numberId = Number(id);
       const [post] = await Promise.all([getGrowPost(numberId)]);
-
-      const filesMap = post.files.map((file, index) => {
-        let player: undefined | VideoPlayer = undefined
-
-        if (file.type === "video") {
-          player = createVideoPlayer({
-            uri: file.file,
-            metadata: {
-              title: `title-grow-${index}`,
-              artist: `artist-grow-${index}`,
-            },
-          });
-
-          player.loop = true;
-          player.muted = false;
-          player.timeUpdateEventInterval = 2;
-          player.volume = 1.0;
-        }
-
-        return {
-          ...file,
-          player,
-        };
-      });
-
-      post.files = filesMap as any;
-
-      setPlayerValue(post);
-
       return { post };
     },
     enabled: !!id,
   });
 
   const handlerGoBack = useCallback(() => {
-    pauseVideo();
-    setPlayer(undefined);
-    queryClient.removeQueries({ queryKey: ['grow-post-data', id] })
+    queryClient.removeQueries({ queryKey: ["grow-post-data", id] });
     router.back();
   }, []);
 
-  const handlerMutedVideo = useCallback(() => {
-    const value = !mutedVideo;
-    toggleAudioMute(value);
-    setMutedVideo(value);
-  }, [mutedVideo, setMutedVideo]);
+  const handleVideoChange = useCallback((postId: number, videoIndex: number) => {
+    const newPlayerKey = `${postId}-${videoIndex}`;
+    const lastPlayerKey = `${activePost.current?.postId}-${activePost.current?.index}`;
+
+    if (newPlayerKey !== lastPlayerKey) {
+      const lastPlayer = playerRef.current.get(lastPlayerKey);
+      if (lastPlayer) {
+        lastPlayer.pause();
+      }
+
+      const newPlayer = playerRef.current.get(newPlayerKey);
+      if (newPlayer) {
+        newPlayer.play();
+      }
+
+      activePost.current = { postId, index: videoIndex };
+
+    }
+  }, []);
 
   useEffect(() => {
     if (data?.post) {
-      const [player] = data.post.files
-      if (player && player.type === 'video') {
-        setPlayer(player.player);
-      }
+      handleVideoChange(data.post.post_id, 0);
     }
   }, [data]);
 
   useEffect(() => {
     return () => {
-      queryClient.removeQueries({ queryKey: ['grow-post-data', id] });
+      queryClient.removeQueries({ queryKey: ["grow-post-data", id] });
     };
   }, [id]);
 
   useFocusEffect(
     useCallback(() => {
+      const currentPost = activePost.current;
+
+      if (currentPost) {
+        const playerKey = `${currentPost.postId}-${currentPost.index}`; 
+        const currentPlayer = playerRef.current.get(playerKey);
+        if (currentPlayer) {
+          currentPlayer.play();
+        }
+      }
+
       return () => {
-        pauseVideo();
-        clearPlayer();
+        playerRef.current.forEach((player, key) => {
+          player.pause();
+        });
       };
-    }, [])
+    }, [data])
   );
 
   if (error) {
@@ -150,13 +130,13 @@ export default function Post() {
           </View>
         </View>
         <ScrollView showsVerticalScrollIndicator={false}>
-          {post && (
-            <GrowPostCard
-              handlerAudioMute={handlerMutedVideo}
-              audioMute={mutedVideo}
-              post={post}
-            />
-          )}
+          {post && 
+            <GrowPostCard 
+              playerRef={playerRef} 
+              post={post} 
+              isVisible={activePost.current?.postId === post.post_id}
+              onVideoChange={handleVideoChange}  
+            />}
         </ScrollView>
       </View>
     </SafeAreaView>

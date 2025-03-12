@@ -1,4 +1,4 @@
-import React, { useState, useMemo, memo } from "react";
+import React, { useState, memo, useMemo } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,12 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
-import { EllipsisIcon, MessageCircleMore } from "lucide-react-native";
+import {
+  EllipsisIcon,
+  MessageCircleMore,
+  VolumeX,
+  Volume2,
+} from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import ExpandableText from "./expandable-text";
@@ -27,6 +32,8 @@ import LikeIcon from "@/assets/icons/like-white.svg";
 import LikedIcon from "@/assets/icons/liked.svg";
 import { ReelsPostProps } from "../Types";
 import VideoPlayer from "@/components/player/Video";
+import { usePlayerContext } from "@/context/player-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const statusBarHeight =
   Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -40,8 +47,11 @@ const ReelsPost = ({
   playerRef,
   isVisible,
   uri,
+  type,
+  videoContainer,
 }: ReelsPostProps) => {
   const { user } = useAuth();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams();
   const [follow, setFollow] = useState<boolean>(post.user.is_following);
   const [liked, setLiked] = useState(post.is_liked);
@@ -49,6 +59,7 @@ const ReelsPost = ({
   const [commentCount, setCommentCount] = useState(post.comment_count);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
   const { openBottomSheet } = useBottomSheetContext();
+  const { isMuted, toggleMute } = usePlayerContext();
 
   const handleBottomSheet = (postId: any) => {
     openBottomSheet({
@@ -109,26 +120,66 @@ const ReelsPost = ({
   };
 
   const bottom = useMemo(() => {
-    switch (params.type) {
+    switch (type || params.type) {
       case "weedz":
-        return Platform.OS === "android" ? 60 : 76;
+        if (Platform.OS === "ios") {
+          return {
+            footer: 80,
+            slider: 30,
+          };
+        }
+
+        return {
+          footer: 70,
+          slider: 10,
+        };
+
+      case "reelsCard":
+        if (Platform.OS === "ios") {
+          return {
+            footer: 80,
+            slider: 30,
+          };
+        }
+
+        return {
+          footer: 40,
+          slider: -40,
+        };
+
       default:
-        return Platform.OS === "android" ? 80 : 50;
+        if (Platform.OS === "ios") {
+          return {
+            footer: 50,
+            slider: 10,
+          };
+        }
+        return {
+          footer: 50,
+          slider: 0,
+        };
     }
   }, [params]);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
-      <View style={styles.videoPlayer}>
+      <View style={[styles.videoPlayer, videoContainer]}>
         <VideoPlayer
+          progressBar={Platform.OS === "ios"}
           uri={uri}
           videoId={videoId}
           playerRef={playerRef}
+          progressBarBottom={bottom?.slider}
           isVisible={isVisible}
-          showProgressBar
+          index={0}
         />
       </View>
-      <View style={[styles.footer, { bottom: bottom }]}>
+      <View
+        style={[
+          styles.footer,
+          { bottom: Platform.OS === "ios" ? bottom?.footer : 20 },
+        ]}
+      >
         <View style={{ flex: 1 }} className="flex gap-2">
           <View
             key={post.user.id}
@@ -249,6 +300,24 @@ const ReelsPost = ({
             {commentCount > 0 && (
               <Text className="text-white font-medium">{commentCount}</Text>
             )}
+          </View>
+
+          <View className="flex flex-col items-center justify-center gap-2">
+            <TouchableOpacity onPress={toggleMute}>
+              <LinearGradient
+                colors={[
+                  "rgba(255, 255, 255, 0.16)",
+                  "rgba(255, 255, 255, 0.32)",
+                ]}
+                style={styles.blurContainer}
+              >
+                {isMuted ? (
+                  <VolumeX size={20} color={colors.brand.white} />
+                ) : (
+                  <Volume2 size={20} color={colors.brand.white} />
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
           {user.id !== post.user.id && (

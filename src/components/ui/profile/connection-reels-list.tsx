@@ -48,12 +48,13 @@ const ConnectionReelstList = forwardRef<Animated.FlatList<ReelsDetail>, Props>(
       <TouchableOpacity
         onPress={() =>
           router.push({
-            pathname: "/post/[id]/timeline/[userId]",
+            pathname: "/post/users/[id]/reels",
             params: {
               id: data.post_id,
               userId: userId,
-              type: TimelineType.WEEDZ,
+              type: "postUsers",
               index: index,
+              uri: data?.file?.file,
             },
           })
         }

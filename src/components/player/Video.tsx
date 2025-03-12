@@ -1,42 +1,54 @@
-import { useState, useEffect, useMemo } from "react";
-import { View, StyleSheet, Pressable, AppState, Platform } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
 import { useVideoPlayer, VideoView } from "expo-video";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  AppState,
+  Dimensions,
+  Platform,
+} from "react-native";
 import Slider from "@react-native-community/slider";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useLocalSearchParams } from "expo-router";
 import { useEventListener } from "expo";
+import { usePlayerContext } from "@/context/player-context";
+import { colors } from "@/styles/colors";
+const isAndroid = Platform.OS === "android";
+
+interface VideoPlayerProps {
+  uri: string;
+  videoId: number;
+  playerRef: any;
+  progressBar?: boolean;
+  progressBarBottom?: number;
+  playVideo?: () => void;
+  isVisible: boolean;
+  index?: number;
+}
 
 const VideoPlayer = ({
-  videoId,
   uri,
-  isVisible,
+  videoId,
   playerRef,
-  showProgressBar,
-  isMuted,
+  progressBar,
+  progressBarBottom,
   playVideo,
-}: {
-  videoId: number;
-  uri: string;
-  isVisible: boolean;
-  playerRef: any;
-  showProgressBar?: boolean;
-  isMuted?: boolean;
-  playVideo?: () => void;
-}) => {
-  const params = useLocalSearchParams();
+  isVisible,
+  index = 0,
+}: VideoPlayerProps) => {
+  const { isMuted } = usePlayerContext();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const insets = useSafeAreaInsets();
+
   const player = useVideoPlayer(uri, (player) => {
     player.loop = true;
-    player.muted = isMuted || false;
-    player.timeUpdateEventInterval = 2;
+    player.muted = isMuted;
+    player.timeUpdateEventInterval = 500;
     player.volume = 1.0;
     if (isVisible) player.play();
   });
 
-  const handleClickPlayPause = () => {
+  const togglePlayPause = () => {
     if (isPlaying) {
       player.pause();
     } else {
@@ -51,17 +63,6 @@ const VideoPlayer = ({
     }
   };
 
-  useEventListener(
-    player,
-    "timeUpdate",
-    ({ currentTime, bufferedPosition }) => {
-      if (currentTime && bufferedPosition) {
-        setCurrentTime(currentTime);
-        setDuration(bufferedPosition);
-      }
-    }
-  );
-
   useEventListener(player, "statusChange", ({ status: statusChangeValue }) => {
     const readyToStartVideo = statusChangeValue === "readyToPlay";
 
@@ -71,26 +72,12 @@ const VideoPlayer = ({
   });
 
   useEffect(() => {
-    if (isVisible) {
-      player.play();
-    } else {
-      player.pause();
-    }
-  }, [isVisible]);
-
-  useEffect(() => {
-    playerRef.current.set(videoId, player);
-    return () => {
-      playerRef.current.delete(videoId);
-    };
-  }, [videoId, player, playerRef]);
-
-  useEffect(() => {
     const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === "active" && isVisible) {
-        player.muted = isMuted || false;
+      if (nextAppState === "active") {
+        player.muted = isMuted;
         player.currentTime = 0;
-        player.play();
+        player.pause();
+        player.replay();
         setDuration(0);
         setCurrentTime(0);
       } else {
@@ -106,26 +93,47 @@ const VideoPlayer = ({
     return () => {
       subscription.remove();
     };
-  }, [isVisible, player, isMuted]);
+  }, [player]);
+
+  useEventListener(
+    player,
+    "timeUpdate",
+    ({ currentTime, bufferedPosition }) => {
+      if (isAndroid) return;
+
+      if (currentTime && bufferedPosition) {
+        setCurrentTime(currentTime);
+        setDuration(bufferedPosition);
+      }
+    }
+  );
 
   useEffect(() => {
-    player.muted = isMuted || false;
-  }, [isMuted, player]);
-
-  const bottom = useMemo(() => {
-    switch (params.type) {
-      case "weedz":
-        return insets.bottom;
-
-      default:
-        return Platform.OS === "android"
-          ? insets.bottom + 30
-          : insets.bottom - 30;
+    if (isVisible) {
+      player.play();
+    } else {
+      player.pause();
     }
-  }, [params]);
+  }, [isVisible]);
+
+  useEffect(() => {
+    if (isMuted) {
+      player.muted = true;
+    } else {
+      player.muted = false;
+    }
+  }, [isMuted]);
+
+  useEffect(() => {
+    const playerKey = `${videoId}-${index}`;
+    playerRef.current.set(playerKey, player);
+    return () => {
+      playerRef.current.delete(playerKey);
+    };
+  }, [videoId, index, player, playerRef]);
 
   return (
-    <Pressable onPress={handleClickPlayPause}>
+    <Pressable onPress={togglePlayPause}>
       <VideoView
         contentFit="cover"
         player={player}
@@ -134,8 +142,8 @@ const VideoPlayer = ({
         nativeControls={false}
         style={styles.video}
       />
-      {showProgressBar && (
-        <View style={[styles.sliderContainer, { bottom: bottom }]}>
+      {progressBar && (
+        <View style={[styles.sliderContainer, { bottom: progressBarBottom }]}>
           <View style={{ flex: 1 }}>
             <Slider
               style={styles.slider}
@@ -157,6 +165,13 @@ const VideoPlayer = ({
 export default VideoPlayer;
 
 const styles = StyleSheet.create({
+  container: {
+    width: "100%",
+    height: Dimensions.get("window").height,
+    backgroundColor: colors.black[100],
+    justifyContent: "center",
+    alignItems: "center",
+  },
   video: {
     width: "100%",
     height: "100%",

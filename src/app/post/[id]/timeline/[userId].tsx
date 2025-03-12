@@ -53,9 +53,12 @@ type TimelineParams = {
 export default function Timeline() {
   const params = useLocalSearchParams<TimelineParams>();
   const userId = Number(params.userId);
+  
+  const playerRef = useRef(new Map<string, any>());
+  const lastActivePostId = useRef<number | any>(null);
+  const lastsPostsCarrocelIndex = useRef<{ [postId: number]: number }>({});
+  
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
-
-  const playerRefs = useRef(new Map());
 
   const { pauseVideo, toggleAudioMute, setPlayer } = useVideoPlayerContext();
 
@@ -70,11 +73,34 @@ export default function Timeline() {
 
   const [hasScrolledToItem, setHasScrolledToItem] = useState(false);
 
-  const { data, isLoading, hasNextPage, isRefetching, fetchNextPage, refetch } =
-    useTimeline({
-      userId,
-      type: params.type,
-    });
+  const { 
+    data, 
+    isLoading, 
+    hasNextPage, 
+    isRefetching, 
+    fetchNextPage, 
+    refetch 
+  } = useTimeline({ userId, type: params.type });
+
+  const handleVideoChange = useCallback((postId: number, videoIndex: number) => {
+      const newPlayerKey = `${postId}-${videoIndex}`;
+      const lastPlayerKey = `${lastActivePostId.current?.postId}-${lastActivePostId.current?.index}`;
+    
+      lastsPostsCarrocelIndex.current[postId] = videoIndex;
+      if (newPlayerKey !== lastPlayerKey) {
+        const lastPlayer = playerRef.current.get(lastPlayerKey);
+        if (lastPlayer) {
+          lastPlayer.pause();
+        }
+    
+        const newPlayer = playerRef.current.get(newPlayerKey);
+        if (newPlayer) {
+          newPlayer.play();
+        }
+    
+        lastActivePostId.current = { postId, index: videoIndex };
+      }
+    }, []);
 
   const isWeedzScreen = useMemo(() => {
     return params.type === TimelineType.WEEDZ;
@@ -90,7 +116,7 @@ export default function Timeline() {
   const viewabilityConfig: ViewabilityConfig = useMemo(() => {
     const config = {
       itemVisiblePercentThreshold: isWeedzScreen ? 50 : 80,
-      waitForInteraction: true,
+      waitForInteraction: false,
     };
 
     return config;
@@ -144,36 +170,36 @@ export default function Timeline() {
     }
   }, []);
 
-  const onViewableItemsChanged = useCallback(
-    (info: {
-      viewableItems: ViewToken<ReelsDetail | PostDetail | GrowPostDetail>[];
-      changed: ViewToken<ReelsDetail | PostDetail | GrowPostDetail>[];
-    }) => {
-      const { viewableItems } = info;
+  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+      if (viewableItems.length === 0) {
+        return;
+      }
 
-      if (viewableItems.length > 0) {
-        const [visibleItem] = viewableItems;
+      const firstVisibleItem = viewableItems.find((item: any) => item.isViewable);
+    
+      if (firstVisibleItem) {
+        const newActivePostId = firstVisibleItem.item.post_id;
+  
+        const videoIndex = lastsPostsCarrocelIndex.current[newActivePostId] ?? 0;
+  
+        const newPlayerKey = `${newActivePostId}-${videoIndex}`;
+        const lastPlayerKey = `${lastActivePostId.current?.postId}-${lastActivePostId.current?.index}`;
+    
+        if (newPlayerKey !== lastPlayerKey) {
+          const lastPlayer = playerRef.current.get(lastPlayerKey);
+          if (lastPlayer) {
+            lastPlayer.pause();
+          }
 
-        const currentItem = visibleItem?.item ?? null;
-        const currentId = currentItem?.id || 0;
-
-        if (isWeedzScreen) {
-          setCurrentVideoId(currentId);
-        }
-
-        pauseVideo();
-        toggleAudioMute(mutedVideo);
-
-        const playerValue = getPlayerValue(currentItem);
-
-        if (playerValue && currentItem && currentItem.id) {
-          setPlayer(playerValue);
-          toggleAudioMute(mutedVideo);
+          const newPlayer = playerRef.current.get(newPlayerKey);
+          if (newPlayer) {
+            newPlayer.play();
+          }
+    
+          lastActivePostId.current = { postId: newActivePostId, index: videoIndex };
         }
       }
-    },
-    [isWeedzScreen, mutedVideo, getPlayerValue]
-  );
+    }, []);
 
   const onViewableItemsChangedWeedz = useCallback(
     ({ viewableItems }: { viewableItems: any }) => {
@@ -277,10 +303,13 @@ export default function Timeline() {
       const screen = {
         [TimelineType.SOCIAL]: (
           <PostCard
+            playerRef={playerRef}
             key={`post_card_${index}`}
             handlerAudioMute={handlerMutedVideo}
             audioMute={mutedVideo}
             post={item as PostDetail}
+            onVideoChange={handleVideoChange}
+            isVisible={viewableItems.has(item.id)}
           />
         ),
         [TimelineType.WEEDZ]: (
@@ -292,21 +321,22 @@ export default function Timeline() {
             />
             <View style={styles.fullscreenItem}>
               <ReelsPost
-                videoId={item.id}
-                playerRef={playerRefs}
-                isVisible={viewableItems.has(item.id)}
+                videoId={item.post_id}
+                playerRef={playerRef}
                 uri={item.file?.file}
                 post={item as ReelsDetail}
+                isVisible={viewableItems.has(item.id)}
               />
             </View>
           </Fragment>
         ),
         [TimelineType.GROW]: (
           <GrowPostCard
+            playerRef={playerRef}
             key={`grow_card_${index}`}
-            handlerAudioMute={handlerMutedVideo}
-            audioMute={mutedVideo}
             post={item as GrowPostDetail}
+            isVisible={viewableItems.has(item.id)}
+            onVideoChange={handleVideoChange}
           />
         ),
       };
@@ -347,39 +377,28 @@ export default function Timeline() {
 
   useFocusEffect(
     useCallback(() => {
-      viewableItems.forEach((id) => {
-        const player = playerRefs.current.get(id);
+      playerRef.current.forEach((player, key) => {
+        player.pause();
+      });
+  
+      viewableItems.forEach((item: any) => {
+        const postId = item.item.post.post_id;
+        const videoIndex = lastsPostsCarrocelIndex.current[postId] ?? 0;
+        const playerKey = `${postId}-${videoIndex}`;
+        const player = playerRef.current.get(playerKey);
+
         if (player) {
           player.play();
         }
       });
-
+  
       return () => {
-        playerRefs.current.forEach((player) => player.pause());
+        playerRef.current.forEach((player, key) => {
+          player.pause();
+        });
       };
     }, [viewableItems])
   );
-
-  useEffect(() => {
-    if (isWeedzScreen && initialScrollIndex >= 0) {
-      flatListRef.current?.scrollToIndex({
-        index: initialScrollIndex,
-        animated: true,
-      });
-
-      const currentVideo = data.find(
-        (item) => item.post_id === Number(params.id)
-      )?.id;
-
-      setTimeout(() => {
-        const player = playerRefs.current.get(Number(currentVideo));
-        if (player) {
-          player.play();
-        }
-      }, 500);
-      return;
-    }
-  }, [isWeedzScreen]);
 
   if (isLoading) {
     return (
