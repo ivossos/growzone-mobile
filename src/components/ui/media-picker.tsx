@@ -16,6 +16,7 @@ import Toast from "react-native-toast-message";
 import { MediaUpload } from "@/api/@types/models";
 import { createVideoPlayer, VideoPlayer as VideoPlayerType } from "expo-video";
 import VideoPlayer from "../VideoPlayer";
+const isAndroid = Platform.OS === 'android'
 
 interface MediaPickerProps {
   onMediaSelected: (media: MediaUpload) => void;
@@ -85,7 +86,7 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
       const newMedia: MediaUpload = {
         uri: asset.uri,
         fileName: asset.fileName || `media-${Date.now()}.${extension}`,
-        type: asset.type as string,
+        type:  (isAndroid ? asset.mimeType : asset.type) || 'image/jpeg',
       };
 
       let player: VideoPlayerType | undefined = undefined;

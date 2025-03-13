@@ -124,7 +124,7 @@ const ReelsPost = ({
       case "weedz":
         if (Platform.OS === "ios") {
           return {
-            footer: 80,
+            footer: 50,
             slider: 30,
           };
         }
@@ -137,7 +137,7 @@ const ReelsPost = ({
       case "reelsCard":
         if (Platform.OS === "ios") {
           return {
-            footer: 80,
+            footer: 50,
             slider: 30,
           };
         }
@@ -150,7 +150,7 @@ const ReelsPost = ({
       default:
         if (Platform.OS === "ios") {
           return {
-            footer: 50,
+            footer: 30,
             slider: 10,
           };
         }
@@ -165,7 +165,7 @@ const ReelsPost = ({
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
       <View style={[styles.videoPlayer, videoContainer]}>
         <VideoPlayer
-          progressBar={Platform.OS === "ios"}
+          progressBar={false}
           uri={uri}
           videoId={videoId}
           playerRef={playerRef}

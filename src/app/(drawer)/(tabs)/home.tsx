@@ -20,6 +20,7 @@ import useHome from "@/hooks/useHome";
 
 import { colors } from "@/styles/colors";
 import { useScrollToTop } from "@/context/scroll-top-context";
+import UpdateAppModal from "@/components/ui/update-app";
 
 export default function HomeScreen() {
   const [data, setData] = useState<any>([]);
@@ -250,34 +251,37 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-black-100" edges={["top"]}>
-      <FlashList
-        ref={setFlatListRef}
-        data={data}
-        renderItem={renderItem}
-        estimatedItemSize={400}
-        onEndReached={handleEndReached}
-        onEndReachedThreshold={0.8}
-        numColumns={1}
-        disableAutoLayout
-        onViewableItemsChanged={onViewableItemsChanged}
-        refreshing={isRefreshing}
-        viewabilityConfig={viewabilityConfig}
-        showsVerticalScrollIndicator={false}
-        ListHeaderComponent={<Header />}
-        ListEmptyComponent={renderEmptyComponent}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
-        }
-        ListFooterComponent={
-          loading && !isRefreshing ? (
-            <Loader isLoading />
-          ) : (
-            <View style={{ height: 100 }} />
-          )
-        }
-      />
-      <StatusBar backgroundColor={colors.black[100]} style="light" />
-    </SafeAreaView>
+    <>
+      <UpdateAppModal />
+      <SafeAreaView style={{ flex: 1 }} className="bg-black-100" edges={["top"]}>
+        <FlashList
+          ref={setFlatListRef}
+          data={data}
+          renderItem={renderItem}
+          estimatedItemSize={400}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.8}
+          numColumns={1}
+          disableAutoLayout
+          onViewableItemsChanged={onViewableItemsChanged}
+          refreshing={isRefreshing}
+          viewabilityConfig={viewabilityConfig}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={<Header />}
+          ListEmptyComponent={renderEmptyComponent}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          }
+          ListFooterComponent={
+            loading && !isRefreshing ? (
+              <Loader isLoading />
+            ) : (
+              <View style={{ height: 100 }} />
+            )
+          }
+        />
+        <StatusBar backgroundColor={colors.black[100]} style="light" />
+      </SafeAreaView>
+    </>
   );
 }
