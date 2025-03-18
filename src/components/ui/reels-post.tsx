@@ -1,4 +1,4 @@
-import React, { useState, memo, useMemo } from "react";
+import React, { useState, memo, useMemo, useEffect } from "react";
 import {
   View,
   Text,
@@ -34,6 +34,8 @@ import { ReelsPostProps } from "../Types";
 import VideoPlayer from "@/components/player/Video";
 import { usePlayerContext } from "@/context/player-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { createView } from "@/api/social/post/view/create-view";
+import { ReelsDetail } from "@/api/@types/models";
 
 const statusBarHeight =
   Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -58,6 +60,7 @@ const ReelsPost = ({
   const [likedCount, setLikedCount] = useState(post.like_count);
   const [commentCount, setCommentCount] = useState(post.comment_count);
   const [isLoadingHandleFollower, setIsLoadingHandleFollower] = useState(false);
+  const [isViewed, setIsViewed] = useState(post.is_viewed);
   const { openBottomSheet } = useBottomSheetContext();
   const { isMuted, toggleMute } = usePlayerContext();
 
@@ -119,6 +122,18 @@ const ReelsPost = ({
     }
   };
 
+  const viewVideo = async (post: ReelsDetail) => {
+    try {
+      if (!isViewed) {
+        await createView(post.post_id);
+        setIsViewed(true)
+      }
+    } catch (err) {
+      console.error("Erro marcar video como visto:", err);
+      setIsViewed(true)
+    }
+  };
+
   const bottom = useMemo(() => {
     switch (type || params.type) {
       case "weedz":
@@ -161,6 +176,12 @@ const ReelsPost = ({
     }
   }, [params]);
 
+  useEffect(() => {
+    if (post) {
+      viewVideo(post);
+    }
+  }, [post]);
+  
   return (
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
       <View style={[styles.videoPlayer, videoContainer]}>

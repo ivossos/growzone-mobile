@@ -18,6 +18,7 @@ import Loader from "@/components/ui/loader";
 import { getAllWeedzPost } from "@/api/social/post/timeline/get-all-weedz-post";
 import { TimelineType } from "@/api/@types/enums";
 import { colors } from "@/styles/colors";
+import useTimeline from "@/hooks/useTimeline";
 
 const statusBarHeight =
   Platform.OS === "android" ? (StatusBar.currentHeight || 0) - 66 : 0;
@@ -30,6 +31,7 @@ export default function Reels() {
     userId: string;
     id: string;
     uri: string;
+    index: string;
   }>();
   const flatListRef = useRef(null);
   const postId = Number(params.id);
@@ -41,26 +43,16 @@ export default function Reels() {
     waitForInteraction: true,
   };
 
-  const onViewableItemsChanged = useCallback(
+  const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
         viewableItems.map(
           (item: { item: { id: any } }) => item.item.id
         )
       );
-
-      setVisibleItems((prevVisibleItems) => {
-        if (
-          prevVisibleItems.size === newVisibleItems.size &&
-          [...prevVisibleItems].every((id) => newVisibleItems.has(id))
-        ) {
-          return prevVisibleItems;
-        }
-        return newVisibleItems;
-      });
-    },
-    []
-  );
+      setVisibleItems(newVisibleItems);
+    }
+  ).current;
 
   const handlerGoBack = useCallback(() => {
     router.back();
@@ -77,24 +69,14 @@ export default function Reels() {
     return weedzPosts;
   };
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
+  const { 
+    data, 
+    isLoading, 
+    hasNextPage, 
     isFetchingNextPage,
-    isLoading,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: ["all-weedz-post", userId, TimelineType.WEEDZ],
-    queryFn: findAllWeedzPost,
-    enabled: userId != null,
-    refetchOnMount: false,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < 10) return undefined;
-      return allPages.length * 10;
-    },
-    initialPageParam: 0,
-  });
+    fetchNextPage, 
+    refetch 
+  } = useTimeline({ userId, type: TimelineType.WEEDZ });
 
   const renderItem = useCallback(
     ({ item }: any) => {
@@ -113,20 +95,21 @@ export default function Reels() {
   );
 
   const initialScrollIndex = useMemo(() => {
-    if (data?.pages && data?.pages.flat().length > 0) {
-      return data?.pages
-        .flat()
-        .findIndex((item) => item.file.file === params.uri);
+    if (data.length > 0) {
+      return data.findIndex((item) => item.post_id === Number(params.id));
     }
     return 0;
-  }, [data, postId]);
+  }, []);
 
   useEffect(() => {
-    if (initialScrollIndex === 0 && data?.pages?.length) {
-      const firstItem = data.pages.flat()[0];
-      setVisibleItems(new Set([firstItem.id]));
+    if (initialScrollIndex === 0 && data?.length) {
+      const firstItem = data[0];
+      setVisibleItems((prev) => {
+        if (prev.has(firstItem.id)) return prev;
+        return new Set([firstItem.id]);
+      });
     }
-  }, [initialScrollIndex, data]);
+  }, [initialScrollIndex]);
 
   useFocusEffect(
     useCallback(() => {
@@ -172,7 +155,7 @@ export default function Reels() {
 
       <FlashList
         ref={flatListRef}
-        data={data?.pages.flat() || []}
+        data={data || []}
         estimatedItemSize={screenHeight}
         snapToInterval={screenHeight}
         initialScrollIndex={initialScrollIndex}

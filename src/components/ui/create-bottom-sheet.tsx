@@ -440,7 +440,7 @@ const CreateBottomSheet = React.forwardRef<
       {
         Icon: ReelsIcon,
         title: "Weedz",
-        description: "Crie vídeos curtos e envolventes com Weedz",
+        description: "Crie vídeos curtos e envolventes",
         onAction: handleCreateReels,
       },
     ],
@@ -514,6 +514,7 @@ const CreateBottomSheet = React.forwardRef<
               value={postDescription}
               onChangeText={setPostDescription}
               className="text-white text-lg w-full h-full bg-black-90 border-2 border-black-90 rounded-lg p-2"
+              style={{ textAlignVertical: "top" }}
             />
           </View>
 
@@ -551,6 +552,7 @@ const CreateBottomSheet = React.forwardRef<
               value={postDescription}
               onChangeText={setPostDescription}
               className="text-white text-lg w-full h-full bg-black-90 border-2 border-black-90 rounded-lg p-2"
+              style={{ textAlignVertical: "top" }}
             />
           </BottomSheetView>
 
@@ -644,6 +646,7 @@ const CreateBottomSheet = React.forwardRef<
               value={postDescription}
               onChangeText={setPostDescription}
               className="text-white text-lg w-full h-full bg-black-90 border-2 border-black-90 rounded-lg p-2"
+              style={{ textAlignVertical: "top" }}
             />
           </View>
 

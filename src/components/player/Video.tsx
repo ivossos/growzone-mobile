@@ -76,8 +76,8 @@ const VideoPlayer = ({
       if (nextAppState === "active") {
         player.muted = isMuted;
         player.currentTime = 0;
-        player.pause();
         player.replay();
+        player.pause();
         setDuration(0);
         setCurrentTime(0);
       } else {
@@ -114,7 +114,7 @@ const VideoPlayer = ({
     } else {
       player.pause();
     }
-  }, [isVisible]);
+  }, [isVisible, player]);
 
   useEffect(() => {
     if (isMuted) {

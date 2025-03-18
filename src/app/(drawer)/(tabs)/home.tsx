@@ -21,6 +21,7 @@ import useHome from "@/hooks/useHome";
 import { colors } from "@/styles/colors";
 import { useScrollToTop } from "@/context/scroll-top-context";
 import UpdateAppModal from "@/components/ui/update-app";
+import { useIsFocused } from "@react-navigation/native";
 
 export default function HomeScreen() {
   const [data, setData] = useState<any>([]);
@@ -32,6 +33,7 @@ export default function HomeScreen() {
   const playerRef = useRef(new Map<string, any>());
   const lastActivePostId = useRef<number | any>(null);
   const lastsPostsCarrocelIndex = useRef<{ [postId: number]: number }>({});
+  const isFocused = useIsFocused();
 
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
   const viewabilityConfig = { itemVisiblePercentThreshold: 80 };
@@ -220,6 +222,8 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      if (!isFocused) return;
+
       const currentPost = lastActivePostId.current;
       if (currentPost) {
         const playerKey = `${currentPost.postId}-${currentPost.index}`; 
