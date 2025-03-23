@@ -224,7 +224,7 @@ const WeedzPostCard = ({ post, playerRef, isVisible }: Props) => {
               >
                 {post.description}
               </Text>
-              {post.description.split(/\s+/).length > 50 && (
+              {post.description.split(/\s+/).length > 40 && (
                 <TouchableOpacity onPress={handleToggleDescription}>
                   <Text className="text-base text-primary font-semibold">
                     {isExpanded ? "ver menos" : "continuar lendo"}

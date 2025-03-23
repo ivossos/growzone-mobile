@@ -74,7 +74,8 @@
       [
         "expo-video",
         {
-          "supportsPictureInPicture": true
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": false
         }
       ],
       [

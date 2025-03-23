@@ -198,7 +198,7 @@ export default function NotificationsScreen() {
           </Text>
         </View>
         <FlatList
-          data={notifications}
+          data={notifications || []}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderNotificationItem}
           onEndReached={loadMoreNotifications}
