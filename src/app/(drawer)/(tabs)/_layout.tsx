@@ -91,7 +91,7 @@ export default function TabLayout() {
   };
 
   const handlerCreateBottomSheet = () => {
-    bottomSheetRef.current?.snapToIndex(3);
+    bottomSheetRef.current?.snapToIndex(2);
     bottomSheetRef.current?.expand();
   };
 

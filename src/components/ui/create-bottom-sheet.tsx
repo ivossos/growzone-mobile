@@ -450,7 +450,7 @@ const CreateBottomSheet = React.forwardRef<
   return (
     <BottomSheet
       ref={ref}
-      index={!enablePanDownToClose ? 3 : -1}
+      index={!enablePanDownToClose ? 2 : -1}
       snapPoints={snapPoints}
       enablePanDownToClose={enablePanDownToClose}
       handleIndicatorStyle={{
