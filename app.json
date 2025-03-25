@@ -62,7 +62,7 @@
         }
       },
       "softwareKeyboardLayoutMode": "pan",
-      "package": "com.growzone.social"
+      "package": "com.growzone.app"
     },
     "web": {
       "bundler": "metro",
