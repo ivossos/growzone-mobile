@@ -201,7 +201,9 @@ const CreateBottomSheet = React.forwardRef<
 
   const handleCreatePost = useCallback(() => {
     setCurrentAction(PostType.SOCIAL_POST);
-    handlerCreateBottomSheet();
+    setTimeout(() => {
+      handlerCreateBottomSheet();
+    }, 50);
   }, []);
 
   const handleCreateReels = useCallback(() => {

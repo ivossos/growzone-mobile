@@ -53,7 +53,6 @@ Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK);
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [fontLoaded, error] = useFonts({
     "Inter-Regular": require("@/assets/fonts/Inter-Regular.ttf"),
     "Inter-Medium": require("@/assets/fonts/Inter-Medium.ttf"),
@@ -75,10 +74,10 @@ export default function RootLayout() {
 
   return (
     <NotificationPushProvider>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={DarkTheme}>
         <QueryClientProvider client={queryClient}>
           <AuthContextProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
+            <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.black[100]}}>
               <Stack>
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
@@ -111,7 +110,7 @@ export default function RootLayout() {
                 />
                 <Stack.Screen
                   name="(drawer)"
-                  options={{ headerShown: false }}
+                  options={{ headerShown: false, contentStyle: { backgroundColor: colors.black[100] } }}
                 />
                 <Stack.Screen name="+not-found" />
               </Stack>
