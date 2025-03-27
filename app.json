@@ -22,6 +22,7 @@
         "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
         "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
         "NSUserNotificationUsageDescription": "Precisamos de permissão para enviar notificações.",
+        "NSMicrophoneUsageDescription": "Precisamos de permissão para acessar o microfone para gravar áudio.",
         "UIBackgroundModes": ["fetch", "remote-notification"]
       },
       "locales": {
