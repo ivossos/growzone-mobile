@@ -77,11 +77,9 @@ const ReelsPost = ({
   }) => {
     try {
       const url = `${GROWZONE_FRONTEND_URL}/weedz/${userId}/${postId}`;
-      const message = `Confira esse Weedz agora: ${url}`;
-
       await Share.share({
-        title: message,
-        message: message,
+        title: url,
+        message: url,
       });
     } catch (error) {}
   };
