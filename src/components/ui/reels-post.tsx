@@ -8,6 +8,7 @@ import {
   Platform,
   StatusBar,
   Dimensions,
+  Share,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Avatar, AvatarFallback, AvatarImage } from "../Avatar";
@@ -16,6 +17,7 @@ import {
   MessageCircleMore,
   VolumeX,
   Volume2,
+  Send,
 } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Link, router, useLocalSearchParams } from "expo-router";
@@ -36,6 +38,8 @@ import { usePlayerContext } from "@/context/player-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createView } from "@/api/social/post/view/create-view";
 import { ReelsDetail } from "@/api/@types/models";
+
+import { GROWZONE_FRONTEND_URL } from "@/constants";
 
 const statusBarHeight =
   Platform.OS === "android" ? StatusBar.currentHeight || 0 : 0;
@@ -63,6 +67,22 @@ const ReelsPost = ({
   const [isViewed, setIsViewed] = useState(post.is_viewed);
   const { openBottomSheet } = useBottomSheetContext();
   const { isMuted, toggleMute } = usePlayerContext();
+
+  const handleShareWeedz = async ({
+    postId,
+    userId,
+  }: {
+    postId: number;
+    userId: number;
+  }) => {
+    try {
+      const url = `${GROWZONE_FRONTEND_URL}/weedz/${userId}/${postId}`;
+      await Share.share({
+        title: url,
+        message: url,
+      });
+    } catch (error) {}
+  };
 
   const handleBottomSheet = (postId: any) => {
     openBottomSheet({
@@ -126,11 +146,11 @@ const ReelsPost = ({
     try {
       if (!isViewed) {
         await createView(post.post_id);
-        setIsViewed(true)
+        setIsViewed(true);
       }
     } catch (err) {
       console.error("Erro marcar video como visto:", err);
-      setIsViewed(true)
+      setIsViewed(true);
     }
   };
 
@@ -181,7 +201,7 @@ const ReelsPost = ({
       viewVideo(post);
     }
   }, [post]);
-  
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.black[100] }}>
       <View style={[styles.videoPlayer, videoContainer]}>
@@ -321,6 +341,27 @@ const ReelsPost = ({
             {commentCount > 0 && (
               <Text className="text-white font-medium">{commentCount}</Text>
             )}
+          </View>
+
+          <View className="flex flex-col items-center justify-center gap-2">
+            <TouchableOpacity
+              onPress={() =>
+                handleShareWeedz({
+                  postId: post.post_id,
+                  userId: post.user.id,
+                })
+              }
+            >
+              <LinearGradient
+                colors={[
+                  "rgba(255, 255, 255, 0.16)",
+                  "rgba(255, 255, 255, 0.32)",
+                ]}
+                style={styles.blurContainer}
+              >
+                <Send size={20} color={colors.brand.white} />
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
 
           <View className="flex flex-col items-center justify-center gap-2">

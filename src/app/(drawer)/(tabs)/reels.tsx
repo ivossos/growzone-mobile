@@ -31,9 +31,7 @@ export default function Reels() {
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: any }) => {
       const newVisibleItems = new Set(
-        viewableItems.map(
-          (item: { item: { id: any } }) => item.item.id
-        )
+        viewableItems.map((item: { item: { id: any } }) => item.item.id)
       );
       setVisibleItems(newVisibleItems);
     }
