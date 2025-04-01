@@ -1,16 +1,16 @@
 import { StatusBar } from "expo-status-bar";
 import { colors } from "@/styles/colors";
 import { Slot } from "expo-router";
-import { BottomSheetProvider } from "@/context/bottom-sheet-context";
-import { VideoPlayerProvider } from "@/context/video-player-context";
+import { CameraModalProvider } from "@/context/camera-modal-context";
+
+import CameraModal from "@/components/weestory/Camera";
 
 export default function Layout() {
   return (
-    <BottomSheetProvider>
-      <VideoPlayerProvider>
-        <Slot />
-        <StatusBar backgroundColor={colors.black[100]} style="light" />
-      </VideoPlayerProvider>
-    </BottomSheetProvider>
+    <CameraModalProvider>
+      <Slot />
+      <StatusBar backgroundColor={colors.black[100]} style="light" />
+      <CameraModal />
+    </CameraModalProvider>
   );
 }

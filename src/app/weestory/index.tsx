@@ -19,6 +19,7 @@ import { Dropdown } from "react-native-element-dropdown";
 
 import CopyIcon from "@/assets/icons/copy-item-icon.svg";
 import CameraIcon from "@/assets/icons/camera-icon.svg";
+import { useCameraModal } from "@/context/camera-modal-context";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -29,6 +30,7 @@ const options = [
 ];
 
 export default function WeestoryScreen() {
+  const { openCamera } = useCameraModal();
   const [media, setMedia] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -140,7 +142,14 @@ export default function WeestoryScreen() {
 
           <View className="flex-1">
             {loading ? (
-              <ActivityIndicator size="large" color="green" />
+              <View
+                className="flex justify-center items-center bg-black-100"
+                style={{
+                  height: "100%",
+                }}
+              >
+                <ActivityIndicator size="large" color={colors.brand.green} />
+              </View>
             ) : (
               <MasonryFlashList
                 data={gallery}
@@ -157,7 +166,7 @@ export default function WeestoryScreen() {
                 renderItem={({ item }) =>
                   item.isAddButton ? (
                     <TouchableOpacity
-                      onPress={() => console.log("abrir a camera")}
+                      onPress={openCamera}
                       className="flex flex-column justify-center items-center bg-black-80 m-1"
                       style={{
                         width: screenWidth / 3 - 6,
