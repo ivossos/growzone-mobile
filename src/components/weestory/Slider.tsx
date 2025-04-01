@@ -3,6 +3,7 @@ import { View, Image, Text, FlatList, TouchableOpacity } from "react-native";
 import WeestoryIcon from "@/assets/icons/weestory-icon.svg";
 import AddWeestoryIcon from "@/assets/icons/add-weestory-icon.svg";
 import { getReels } from "@/api/social/post/get-reels";
+import { router } from "expo-router";
 
 import { getInitials } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ const StoryItem = ({ isAddButton, username, avatar, name }: StoryItemProps) => {
     return (
       <TouchableOpacity
         className="items-center mx-2 gap-2"
-        onPress={() => console.log("adiciona um novo weestory")}
+        onPress={() => router.push("/weestory")}
       >
         <View className="w-20 h-20 rounded-full border-2 bg-black-80 p-1 items-center justify-center">
           <AddWeestoryIcon />

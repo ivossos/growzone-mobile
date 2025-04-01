@@ -241,7 +241,7 @@ export default function ProfileDetails({
                   </Text>
                 </View>
                 <Text className="text-sm text-brand-grey font-regular">
-                  Avaliação
+                  Avaliação 123
                 </Text>
               </TouchableOpacity>
             </View>
