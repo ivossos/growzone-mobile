@@ -23,7 +23,7 @@ import { useScrollToTop } from "@/context/scroll-top-context";
 import UpdateAppModal from "@/components/ui/update-app";
 import { useIsFocused } from "@react-navigation/native";
 
-import SliderWeestory from "@/components/weestory/Slider";
+import WeestorySlider from "@/components/weestory/WeestorySlider";
 
 export default function HomeScreen() {
   const [data, setData] = useState<any>([]);
@@ -286,7 +286,7 @@ export default function HomeScreen() {
           ListHeaderComponent={
             <React.Fragment>
               <Header />
-              <SliderWeestory />
+              <WeestorySlider />
             </React.Fragment>
           }
           ListEmptyComponent={renderEmptyComponent}
