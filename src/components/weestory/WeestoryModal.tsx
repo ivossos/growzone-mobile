@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Dimensions,
   TouchableWithoutFeedback,
   Image,
   Modal,
@@ -13,13 +12,13 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
+  Keyboard,
+  KeyboardAvoidingView,
 } from "react-native";
 import { ResizeMode, Video } from "expo-av";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { getInitials } from "@/lib/utils";
-
-const { width, height } = Dimensions.get("window");
 
 interface WeestoriesModalProps {
   name: string;
@@ -38,6 +37,7 @@ export default function WeestoriesModal({
   content,
   setContent,
 }: WeestoriesModalProps) {
+  const videoRef = useRef<Video>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [end, setEnd] = useState(0);
   const [current, setCurrent] = useState(0);
@@ -110,181 +110,204 @@ export default function WeestoriesModal({
   return (
     <View>
       <Modal animationType="fade" transparent={false} visible={modalVisible}>
-        <SafeAreaView style={styles.safeArea}>
-          <View style={styles.containerModal}>
-            <View style={styles.backgroundContainer}>
-              {content[current].type == "video" ? (
-                <Video
-                  source={{
-                    uri: content[current].content,
-                  }}
-                  rate={1.0}
-                  volume={1.0}
-                  resizeMode={ResizeMode.COVER}
-                  shouldPlay={true}
-                  positionMillis={0}
-                  onReadyForDisplay={play}
-                  onPlaybackStatusUpdate={(AVPlaybackStatus) => {
-                    if (AVPlaybackStatus.isLoaded) {
-                      setLoad(true);
-                      setEnd(AVPlaybackStatus.durationMillis ?? 0);
-                    } else {
-                      setLoad(false);
-                    }
-                  }}
-                  style={{
-                    height: "90%",
-                    width: "100%",
-                    borderRadius: 16,
-                  }}
-                />
-              ) : (
-                <Image
-                  onLoadEnd={() => {
-                    progress.setValue(0);
-                    play();
-                  }}
-                  source={{
-                    uri: content[current].content,
-                  }}
-                  style={{
-                    height: "90%",
-                    width: "100%",
-                    borderRadius: 16,
-                    resizeMode: "cover",
-                  }}
-                />
-              )}
-            </View>
-            <View
-              style={{
-                flexDirection: "column",
-                flex: 1,
-              }}
-            >
-              <LinearGradient
-                colors={["rgba(0,0,0,1)", "transparent"]}
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  height: 0,
-                }}
-              />
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.containerModal}>
+              <View style={styles.backgroundContainer}>
+                {content[current].type == "video" ? (
+                  <Video
+                    ref={videoRef}
+                    source={{
+                      uri: content[current].content,
+                    }}
+                    rate={1.0}
+                    volume={1.0}
+                    resizeMode={ResizeMode.COVER}
+                    shouldPlay={true}
+                    positionMillis={0}
+                    onReadyForDisplay={play}
+                    onPlaybackStatusUpdate={(AVPlaybackStatus) => {
+                      if (AVPlaybackStatus.isLoaded) {
+                        setLoad(true);
+                        setEnd(AVPlaybackStatus.durationMillis ?? 0);
+                      } else {
+                        setLoad(false);
+                      }
+                    }}
+                    style={{
+                      height: "90%",
+                      width: "100%",
+                      borderRadius: 16,
+                    }}
+                  />
+                ) : (
+                  <Image
+                    onLoadEnd={() => {
+                      progress.setValue(0);
+                      play();
+                    }}
+                    source={{
+                      uri: content[current].content,
+                    }}
+                    style={{
+                      height: "90%",
+                      width: "100%",
+                      borderRadius: 16,
+                      resizeMode: "cover",
+                    }}
+                  />
+                )}
+              </View>
               <View
                 style={{
-                  flexDirection: "row",
-                  paddingTop: 25,
-                  paddingHorizontal: 30,
+                  flexDirection: "column",
+                  flex: 1,
                 }}
               >
-                {content.map((index: number, key: number) => {
-                  return (
-                    <View
-                      key={key}
-                      style={{
-                        height: 2,
-                        flex: 1,
-                        flexDirection: "row",
-                        backgroundColor: "#0B2F08",
-                        marginHorizontal: 2,
+                <LinearGradient
+                  colors={["rgba(0,0,0,1)", "transparent"]}
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    height: 0,
+                  }}
+                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    paddingTop: 25,
+                    paddingHorizontal: 30,
+                  }}
+                >
+                  {content.map((index: number, key: number) => {
+                    return (
+                      <View
+                        key={key}
+                        style={{
+                          height: 2,
+                          flex: 1,
+                          flexDirection: "row",
+                          backgroundColor: "#0B2F08",
+                          marginHorizontal: 2,
+                        }}
+                      >
+                        <Animated.View
+                          style={{
+                            flex:
+                              current == key ? progress : content[key].finish,
+                            height: 2,
+                            backgroundColor: "#2CC420",
+                          }}
+                        ></Animated.View>
+                      </View>
+                    );
+                  })}
+                </View>
+
+                <View
+                  style={{
+                    height: 50,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    paddingHorizontal: 15,
+                  }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <TouchableOpacity
+                      onPress={() => {
+                        close();
                       }}
                     >
-                      <Animated.View
+                      <View
                         style={{
-                          flex: current == key ? progress : content[key].finish,
-                          height: 2,
-                          backgroundColor: "#2CC420",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          height: 50,
+                          marginRight: 10,
                         }}
-                      ></Animated.View>
-                    </View>
-                  );
-                })}
-              </View>
+                      >
+                        <Ionicons
+                          name="chevron-back-outline"
+                          size={20}
+                          color="white"
+                        />
+                      </View>
+                    </TouchableOpacity>
 
-              <View
-                style={{
-                  height: 50,
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  paddingHorizontal: 15,
-                }}
-              >
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      close();
-                    }}
-                  >
-                    <View
+                    {avatar ? (
+                      <Image
+                        style={{ height: 32, width: 32, borderRadius: 25 }}
+                        source={{ uri: avatar.image }}
+                      />
+                    ) : (
+                      <View className="w-full bg-black-80 h-full rounded-full justify-center items-center">
+                        <Text
+                          className="text-brand-green text-primary"
+                          style={{ fontSize: 22 }}
+                        >
+                          {getInitials(name)}
+                        </Text>
+                      </View>
+                    )}
+                    <Text
                       style={{
-                        alignItems: "center",
-                        justifyContent: "center",
-                        height: 50,
-                        marginRight: 10,
+                        fontWeight: "bold",
+                        color: "white",
+                        paddingLeft: 10,
                       }}
+                    >
+                      {name ? name : username}
+                    </Text>
+                  </View>
+                  <View />
+                </View>
+                <View style={{ flex: 1, flexDirection: "row" }}>
+                  <TouchableWithoutFeedback onPress={() => previous()}>
+                    <View style={{ flex: 1 }}></View>
+                  </TouchableWithoutFeedback>
+                  <TouchableWithoutFeedback onPress={() => next()}>
+                    <View style={{ flex: 1 }}></View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </View>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1, justifyContent: "flex-end" }}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 70 : 20}
+              >
+                <View style={styles.overlay}>
+                  <View style={styles.commentInputContainer}>
+                    <TextInput
+                      style={styles.commentInput}
+                      value={comment}
+                      onChangeText={setComment}
+                      placeholder="Comentar..."
+                      placeholderTextColor="#ffffff"
+                      onFocus={() => videoRef.current?.pauseAsync()}
+                      onBlur={() => videoRef.current?.playAsync()}
+                    />
+                    <TouchableOpacity
+                      onPress={() => console.log("curtir o video/imagem")}
                     >
                       <Ionicons
-                        name="chevron-back-outline"
-                        size={20}
-                        color="white"
+                        name="heart-outline"
+                        size={25}
+                        color="#2CC420"
                       />
-                    </View>
-                  </TouchableOpacity>
-
-                  {avatar ? (
-                    <Image
-                      style={{ height: 32, width: 32, borderRadius: 25 }}
-                      source={{ uri: avatar.image }}
-                    />
-                  ) : (
-                    <View className="w-full bg-black-80 h-full rounded-full justify-center items-center">
-                      <Text
-                        className="text-brand-green text-primary"
-                        style={{ fontSize: 22 }}
-                      >
-                        {getInitials(name)}
-                      </Text>
-                    </View>
-                  )}
-                  <Text
-                    style={{
-                      fontWeight: "bold",
-                      color: "white",
-                      paddingLeft: 10,
-                    }}
-                  >
-                    {name ? name : username}
-                  </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => console.log("comentar o video/imagem")}
+                    >
+                      <Ionicons name="send" size={25} color="#2CC420" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <View />
-              </View>
-              <View style={{ flex: 1, flexDirection: "row" }}>
-                <TouchableWithoutFeedback onPress={() => previous()}>
-                  <View style={{ flex: 1 }}></View>
-                </TouchableWithoutFeedback>
-                <TouchableWithoutFeedback onPress={() => next()}>
-                  <View style={{ flex: 1 }}></View>
-                </TouchableWithoutFeedback>
-              </View>
+              </KeyboardAvoidingView>
             </View>
-            <View style={styles.overlay}>
-              <View style={styles.commentInputContainer}>
-                <TextInput
-                  style={styles.commentInput}
-                  value={comment}
-                  onChangeText={setComment}
-                  placeholder="Comentar..."
-                  placeholderTextColor="#999"
-                />
-                <TouchableOpacity onPress={() => console.log("comentar video")}>
-                  <Ionicons name="send" size={20} color="#2CC420" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </SafeAreaView>
+          </SafeAreaView>
+        </TouchableWithoutFeedback>
       </Modal>
 
       <TouchableOpacity
@@ -336,7 +359,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    margin: 10,
+    marginHorizontal: 20,
   },
   commentInputContainer: {
     flexDirection: "row",
@@ -345,6 +368,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: "#333",
+    gap: 10,
   },
   commentInput: {
     flex: 1,
