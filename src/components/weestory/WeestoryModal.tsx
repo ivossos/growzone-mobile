@@ -26,35 +26,44 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
   const [storyIndex, setStoryIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
-  const videoRef = useRef(null);
+  const progressAnimation = useRef<Animated.CompositeAnimation | null>(null);
+  const currentProgress = useRef(0);
+
+  const videoRef = useRef<Video>(null);
   const [videoDuration, setVideoDuration] = useState(5000);
   const [comment, setComment] = useState("");
 
   const currentUser = users[userIndex];
   const currentStory = currentUser.stories[storyIndex];
 
+  const startProgress = (fromValue: number, duration: number) => {
+    progress.setValue(fromValue);
+    progressAnimation.current = Animated.timing(progress, {
+      toValue: 1,
+      duration: (1 - fromValue) * duration,
+      useNativeDriver: false,
+    });
+
+    progressAnimation.current.start(({ finished }) => {
+      if (finished) {
+        handleNextStory();
+      }
+    });
+  };
+
   useEffect(() => {
     progress.setValue(0);
+    currentProgress.current = 0;
 
     if (isPaused) return;
 
-    if (currentStory.type === "image") {
-      Animated.timing(progress, {
-        toValue: 1,
-        duration: 5000,
-        useNativeDriver: false,
-      }).start();
+    const duration = currentStory.type === "image" ? 5000 : videoDuration;
+    startProgress(0, duration);
 
-      const timer = setTimeout(() => handleNextStory(), 5000);
-      return () => clearTimeout(timer);
-    }
-
-    Animated.timing(progress, {
-      toValue: 1,
-      duration: videoDuration,
-      useNativeDriver: false,
-    }).start();
-  }, [storyIndex, userIndex, videoDuration, isPaused]);
+    return () => {
+      progressAnimation.current?.stop();
+    };
+  }, [storyIndex, userIndex, videoDuration]);
 
   const handleTogglePause = () => {
     setIsPaused((prev) => !prev);
@@ -271,14 +280,22 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
                 placeholder="Comentar..."
                 placeholderTextColor="#ffffff"
                 onFocus={() => {
-                  // videoRef.current?.pauseAsync();
-                  // progressAnimation.current?.stop();
+                  setIsPaused(true);
+                  videoRef.current?.pauseAsync();
+                  progress.stopAnimation((value) => {
+                    currentProgress.current = value;
+                  });
+                  progressAnimation.current?.stop();
                 }}
                 onBlur={() => {
-                  // videoRef.current?.playAsync();
-                  // start(end);
+                  setIsPaused(false);
+                  videoRef.current?.playAsync();
+                  const duration =
+                    currentStory.type === "image" ? 5000 : videoDuration;
+                  startProgress(currentProgress.current, duration);
                 }}
               />
+
               <TouchableOpacity
                 onPress={() => console.log("curtir o video/imagem")}
               >
