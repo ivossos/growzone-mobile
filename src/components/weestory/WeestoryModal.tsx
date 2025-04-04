@@ -43,27 +43,55 @@ export default function WeestoriesModal({
   const [current, setCurrent] = useState(0);
   const [load, setLoad] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
+  const progressAnimation = useRef<Animated.CompositeAnimation | null>(null);
+
   const [comment, setComment] = useState("");
 
+  //   function start(n: number) {
+  //     if (content[current].type == "video") {
+  //       if (load) {
+  //         Animated.timing(progress, {
+  //           toValue: 1,
+  //           duration: n,
+  //           useNativeDriver: false,
+  //         }).start(({ finished }) => {
+  //           if (finished) {
+  //             next();
+  //           }
+  //         });
+  //       }
+  //     } else {
+  //       Animated.timing(progress, {
+  //         toValue: 1,
+  //         duration: 5000,
+  //         useNativeDriver: false,
+  //       }).start(({ finished }) => {
+  //         if (finished) {
+  //           next();
+  //         }
+  //       });
+  //     }
+  //   }
+
   function start(n: number) {
-    if (content[current].type == "video") {
-      if (load) {
-        Animated.timing(progress, {
-          toValue: 1,
-          duration: n,
-          useNativeDriver: false,
-        }).start(({ finished }) => {
-          if (finished) {
-            next();
-          }
-        });
-      }
+    if (content[current].type === "video" && load) {
+      progressAnimation.current = Animated.timing(progress, {
+        toValue: 1,
+        duration: n,
+        useNativeDriver: false,
+      });
+      progressAnimation.current.start(({ finished }) => {
+        if (finished) {
+          next();
+        }
+      });
     } else {
-      Animated.timing(progress, {
+      progressAnimation.current = Animated.timing(progress, {
         toValue: 1,
         duration: 5000,
         useNativeDriver: false,
-      }).start(({ finished }) => {
+      });
+      progressAnimation.current.start(({ finished }) => {
         if (finished) {
           next();
         }
@@ -251,15 +279,25 @@ export default function WeestoriesModal({
                         </Text>
                       </View>
                     )}
-                    <Text
-                      style={{
-                        fontWeight: "bold",
-                        color: "white",
-                        paddingLeft: 10,
-                      }}
-                    >
-                      {name ? name : username}
-                    </Text>
+                    <View>
+                      <Text
+                        style={{
+                          fontWeight: "bold",
+                          color: "#ffffff",
+                          paddingLeft: 10,
+                        }}
+                      >
+                        {name ? name : username}
+                      </Text>
+                      <Text
+                        style={{
+                          color: "#ffffff",
+                          paddingLeft: 10,
+                        }}
+                      >
+                        Ontem, 18:33
+                      </Text>
+                    </View>
                   </View>
                   <View />
                 </View>
@@ -285,8 +323,14 @@ export default function WeestoriesModal({
                       onChangeText={setComment}
                       placeholder="Comentar..."
                       placeholderTextColor="#ffffff"
-                      onFocus={() => videoRef.current?.pauseAsync()}
-                      onBlur={() => videoRef.current?.playAsync()}
+                      onFocus={() => {
+                        videoRef.current?.pauseAsync();
+                        progressAnimation.current?.stop();
+                      }}
+                      onBlur={() => {
+                        videoRef.current?.playAsync();
+                        start(end);
+                      }}
                     />
                     <TouchableOpacity
                       onPress={() => console.log("curtir o video/imagem")}
@@ -359,7 +403,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
-    marginHorizontal: 20,
+    marginHorizontal: 15,
   },
   commentInputContainer: {
     flexDirection: "row",
@@ -367,6 +411,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 20,
     borderWidth: 1,
+    // backgroundColor: "#333",
     borderColor: "#333",
     gap: 10,
   },
