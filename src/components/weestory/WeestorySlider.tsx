@@ -51,23 +51,31 @@ export default function WeeStorySlider() {
     setSelectedUserIndex(null);
   };
 
+  const weestory = [{ id: "0", isAddButton: true }, ...users];
+
   return (
     <View style={{ padding: 10, flexDirection: "row" }}>
-      <WeestoryAvatar addButton onPress={() => router.push("/weestory")} />
       <FlatList
         horizontal
-        data={users}
+        data={weestory}
         keyExtractor={(item) => item.id}
-        renderItem={({ item, index }: any) => (
-          <WeestoryAvatar
-            name={item.name}
-            username={item.username}
-            avatar={{
-              image: item.avatar,
-            }}
-            onPress={() => setSelectedUserIndex(index)}
-          />
-        )}
+        renderItem={({ item, index }: any) => {
+          return item.isAddButton ? (
+            <WeestoryAvatar
+              addButton
+              onPress={() => router.push("/weestory")}
+            />
+          ) : (
+            <WeestoryAvatar
+              name={item.name}
+              username={item.username}
+              avatar={{
+                image: item.avatar,
+              }}
+              onPress={() => setSelectedUserIndex(index)}
+            />
+          );
+        }}
       />
 
       {selectedUserIndex !== null && (
