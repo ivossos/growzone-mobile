@@ -9,16 +9,16 @@ import {
   Pressable,
   SafeAreaView,
   Text,
-  Keyboard,
   KeyboardAvoidingView,
   Platform,
   TextInput,
+  Easing,
 } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 export default function StoryModal({ users, initialUserIndex, onClose }: any) {
   const insets = useSafeAreaInsets();
@@ -27,6 +27,7 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
   const [isPaused, setIsPaused] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
   const progressAnimation = useRef<Animated.CompositeAnimation | null>(null);
+  const transitionAnim = useRef(new Animated.Value(0)).current;
   const currentProgress = useRef(0);
 
   const videoRef = useRef<Video>(null);
@@ -50,20 +51,6 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
       }
     });
   };
-
-  useEffect(() => {
-    progress.setValue(0);
-    currentProgress.current = 0;
-
-    if (isPaused) return;
-
-    const duration = currentStory.type === "image" ? 5000 : videoDuration;
-    startProgress(0, duration);
-
-    return () => {
-      progressAnimation.current?.stop();
-    };
-  }, [storyIndex, userIndex, videoDuration]);
 
   const handleTogglePause = () => {
     setIsPaused((prev) => !prev);
@@ -104,6 +91,30 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
       }
     }
   };
+
+  useEffect(() => {
+    progress.setValue(0);
+    currentProgress.current = 0;
+
+    if (isPaused) return;
+
+    const duration = currentStory.type === "image" ? 5000 : videoDuration;
+    startProgress(0, duration);
+
+    return () => {
+      progressAnimation.current?.stop();
+    };
+  }, [storyIndex, userIndex, videoDuration]);
+
+  useEffect(() => {
+    transitionAnim.setValue(0);
+    Animated.timing(transitionAnim, {
+      toValue: 1,
+      duration: 400,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  }, [userIndex]);
 
   return (
     <Modal visible animationType="fade">
@@ -193,28 +204,43 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
           </View>
         </View>
 
-        <Pressable onPress={handleTogglePause} style={{ flex: 1 }}>
-          {currentStory.type === "image" ? (
-            <Image
-              source={{ uri: currentStory.uri }}
-              style={{
-                width,
-                height: "90%",
-                resizeMode: "cover",
-                borderRadius: 20,
-              }}
-            />
-          ) : (
-            <Video
-              ref={videoRef}
-              source={{ uri: currentStory.uri }}
-              style={{ width, height: "90%", borderRadius: 20 }}
-              resizeMode={ResizeMode.COVER}
-              shouldPlay={!isPaused}
-              onPlaybackStatusUpdate={handleVideoStatusUpdate}
-            />
-          )}
-        </Pressable>
+        <Animated.View
+          style={{
+            flex: 1,
+            opacity: transitionAnim,
+            transform: [
+              {
+                scale: transitionAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.96, 1],
+                }),
+              },
+            ],
+          }}
+        >
+          <Pressable onPress={handleTogglePause} style={{ flex: 1 }}>
+            {currentStory.type === "image" ? (
+              <Image
+                source={{ uri: currentStory.uri }}
+                style={{
+                  width,
+                  height: "90%",
+                  resizeMode: "cover",
+                  borderRadius: 20,
+                }}
+              />
+            ) : (
+              <Video
+                ref={videoRef}
+                source={{ uri: currentStory.uri }}
+                style={{ width, height: "90%", borderRadius: 20 }}
+                resizeMode={ResizeMode.COVER}
+                shouldPlay={!isPaused}
+                onPlaybackStatusUpdate={handleVideoStatusUpdate}
+              />
+            )}
+          </Pressable>
+        </Animated.View>
 
         <View
           style={{
@@ -297,12 +323,16 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
               />
 
               <TouchableOpacity
-                onPress={() => console.log("curtir o video/imagem")}
+                onPress={() =>
+                  console.log("curtir o video/imagem", currentUser)
+                }
               >
                 <Ionicons name="heart-outline" size={25} color="#2CC420" />
               </TouchableOpacity>
               <TouchableOpacity
-                onPress={() => console.log("comentar o video/imagem")}
+                onPress={() =>
+                  console.log("comentar o video/imagem", currentUser)
+                }
               >
                 <Ionicons name="send" size={25} color="#2CC420" />
               </TouchableOpacity>
