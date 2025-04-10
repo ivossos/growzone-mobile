@@ -19,6 +19,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
+        "NSPhotoLibraryAddUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
         "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
         "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
         "NSUserNotificationUsageDescription": "Precisamos de permissão para enviar notificações.",
@@ -27,14 +28,17 @@
       },
       "locales": {
         "pt-BR": {
+          "NSPhotoLibraryAddUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
           "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
           "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
         },
         "es": {
+          "NSPhotoLibraryAddUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
           "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
           "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para capturar fotos y videos."
         },
         "en": {
+          "NSPhotoLibraryAddUsageDescription": "We need access to your photo library to select photos and videos.",
           "NSPhotoLibraryUsageDescription": "We need access to your photo library to select photos and videos.",
           "NSCameraUsageDescription": "We need access to your camera to capture photos and videos."
         }
@@ -105,6 +109,14 @@
           "color": "#ffffff",
           "defaultChannel": "default",
           "enableBackgroundRemoteNotifications": true
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ],

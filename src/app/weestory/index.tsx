@@ -16,6 +16,7 @@ import * as MediaLibrary from "expo-media-library";
 import { MasonryFlashList } from "@shopify/flash-list";
 import { ResizeMode, Video } from "expo-av";
 import { Dropdown } from "react-native-element-dropdown";
+import * as VideoThumbnails from "expo-video-thumbnails";
 
 import CopyIcon from "@/assets/icons/copy-item-icon.svg";
 import CameraIcon from "@/assets/icons/camera-icon.svg";
@@ -58,12 +59,41 @@ export default function WeestoryScreen() {
 
       const updatedMedia = await Promise.all(
         album.assets.map(async (asset) => {
-          const assetInfo = await MediaLibrary.getAssetInfoAsync(asset);
-          return { ...asset, uri: assetInfo.localUri || asset.uri };
+          try {
+            let assetInfo = await MediaLibrary.getAssetInfoAsync(asset.id);
+            let localUri = assetInfo.localUri;
+
+            let thumbnail = null;
+            if (asset.mediaType === "video" && localUri) {
+              const cleanUri = localUri.split("#")[0];
+
+              // const { uri: thumbnailUri } =
+              //   await VideoThumbnails.getThumbnailAsync(cleanUri, {
+              //     time: 15000,
+              //   });
+
+              // console.log("thumbnailUri", asset.mediaType, thumbnailUri);
+
+              // thumbnail = thumbnailUri;
+
+              localUri = localUri?.replace(/#.*$/, ""); // remove fragmento após #
+
+              console.log("logger", cleanUri);
+            }
+
+            return {
+              ...asset,
+              uri: localUri,
+              thumbnail,
+            };
+          } catch (e) {
+            console.warn("Erro ao processar mídia:", e);
+            return null;
+          }
         })
       );
 
-      setMedia(updatedMedia);
+      setMedia(updatedMedia.filter(Boolean));
     } catch (error) {
       console.error("Erro ao carregar mídia:", error);
     } finally {
@@ -158,6 +188,7 @@ export default function WeestoryScreen() {
                 keyExtractor={({
                   id,
                 }: {
+                  thumbnail: string | undefined;
                   id: string;
                   mediaType: string;
                   uri: string;
@@ -196,6 +227,13 @@ export default function WeestoryScreen() {
                         </TouchableOpacity>
                       ) : (
                         <TouchableOpacity onPress={() => toggleSelection(item)}>
+                          {/* <Image
+                            source={{ uri: item.thumbnail }}
+                            style={{
+                              width: screenWidth / 3 - 6,
+                              height: 200,
+                            }}
+                          /> */}
                           <Video
                             source={{ uri: item.uri }}
                             style={{
@@ -205,6 +243,9 @@ export default function WeestoryScreen() {
                             useNativeControls={false}
                             resizeMode={ResizeMode.COVER}
                             isMuted
+                            onError={(error) =>
+                              console.log("error video", error)
+                            }
                           />
                         </TouchableOpacity>
                       )}

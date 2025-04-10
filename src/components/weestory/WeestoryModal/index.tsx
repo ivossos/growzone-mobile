@@ -18,6 +18,11 @@ import { Video, ResizeMode } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
+import HeaderModal from "../HeaderModal";
+
+import { styles } from "./styles";
+import ControlModal from "../ControlModal";
+
 const { width } = Dimensions.get("window");
 
 export default function StoryModal({ users, initialUserIndex, onClose }: any) {
@@ -39,6 +44,7 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
 
   const startProgress = (fromValue: number, duration: number) => {
     progress.setValue(fromValue);
+
     progressAnimation.current = Animated.timing(progress, {
       toValue: 1,
       duration: (1 - fromValue) * duration,
@@ -47,6 +53,7 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
 
     progressAnimation.current.start(({ finished }) => {
       if (finished) {
+        progressAnimation.current = null;
         handleNextStory();
       }
     });
@@ -81,30 +88,35 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
   };
 
   const handleVideoStatusUpdate = (status: any) => {
-    if (status.isLoaded) {
-      if (status.durationMillis && status.durationMillis !== videoDuration) {
-        setVideoDuration(status.durationMillis);
-      }
+    if (!status?.isLoaded) return;
 
-      if (status.didJustFinish) {
-        handleNextStory();
-      }
+    if (status.durationMillis && status.durationMillis !== videoDuration) {
+      setVideoDuration(status.durationMillis);
+    }
+
+    if (status.didJustFinish) {
+      handleNextStory();
+      return;
+    }
+
+    if (!isPaused && status.isPlaying && progressAnimation.current === null) {
+      startProgress(0, status.durationMillis);
     }
   };
 
   useEffect(() => {
     progress.setValue(0);
     currentProgress.current = 0;
+    progressAnimation.current = null;
 
-    if (isPaused) return;
-
-    const duration = currentStory.type === "image" ? 5000 : videoDuration;
-    startProgress(0, duration);
+    if (currentStory.type === "image") {
+      startProgress(0, 5000);
+    }
 
     return () => {
       progressAnimation.current?.stop();
     };
-  }, [storyIndex, userIndex, videoDuration]);
+  }, [storyIndex, userIndex]);
 
   useEffect(() => {
     transitionAnim.setValue(0);
@@ -116,19 +128,18 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
     }).start();
   }, [userIndex]);
 
+  const headerTop = Platform.OS === "ios" ? insets.top + 10 : insets.top - 25;
+
   return (
     <Modal visible animationType="fade">
       <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
         <View
-          style={{
-            position: "absolute",
-            top: insets.top + 10,
-            left: 10,
-            right: 10,
-            flexDirection: "row",
-            justifyContent: "space-between",
-            zIndex: 10,
-          }}
+          style={[
+            styles.header,
+            {
+              top: headerTop,
+            },
+          ]}
         >
           {currentUser.stories.map((_: any, i: number) => (
             <View
@@ -166,43 +177,11 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
           ))}
         </View>
 
-        <View
-          style={{
-            position: "absolute",
-            top: insets.top + 20 + 10,
-            left: 20,
-            flexDirection: "row",
-            alignItems: "center",
-            zIndex: 10,
-          }}
-        >
-          <TouchableOpacity onPress={onClose}>
-            <View
-              style={{
-                alignItems: "center",
-                justifyContent: "center",
-                marginRight: 10,
-              }}
-            >
-              <Ionicons name="chevron-back-outline" size={20} color="white" />
-            </View>
-          </TouchableOpacity>
-          <Image
-            source={{ uri: currentUser.avatar }}
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 20,
-              marginRight: 10,
-            }}
-          />
-          <View>
-            <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 14 }}>
-              {currentUser.name}
-            </Text>
-            <Text style={{ color: "#fff", fontSize: 14 }}>ontem, 18:33</Text>
-          </View>
-        </View>
+        <HeaderModal
+          avatar={currentUser.avatar}
+          name={currentUser.name}
+          onPress={onClose}
+        />
 
         <Animated.View
           style={{
@@ -242,34 +221,14 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
           </Pressable>
         </Animated.View>
 
-        <View
-          style={{
-            position: "absolute",
-            top: insets.top,
-            right: 0,
-            bottom: insets.bottom + 80,
-            left: 0,
-            flexDirection: "row",
-            zIndex: 5,
-          }}
-        >
-          <Pressable
-            style={{
-              flex: 1,
-            }}
-            onPress={handlePreviousStory}
-            hitSlop={10}
-          />
-          <Pressable
-            style={{ flex: 1 }}
-            onPress={handleNextStory}
-            hitSlop={10}
-          />
-        </View>
+        <ControlModal
+          handleNext={handleNextStory}
+          handlePrevious={handlePreviousStory}
+        />
 
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 20}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 50}
           style={{
             position: "absolute",
             zIndex: 6,
@@ -280,7 +239,7 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
           <View
             style={{
               justifyContent: "flex-end",
-              marginHorizontal: 15,
+              marginHorizontal: 10,
             }}
           >
             <View
@@ -288,7 +247,8 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
                 flexDirection: "row",
                 alignItems: "center",
                 borderRadius: 8,
-                padding: 20,
+                paddingVertical: 15,
+                paddingHorizontal: 15,
                 borderWidth: 1,
                 borderColor: "#333",
                 gap: 10,
