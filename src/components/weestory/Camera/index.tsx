@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   Modal,
   View,
@@ -11,11 +11,19 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
 } from "react-native";
+import Button from "@/components/ui/button";
 import { useCameraModal } from "@/context/camera-modal-context";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+
+import GalleryIcon from "@/assets/icons/gallery-icon.svg";
+import RevertIcon from "@/assets/icons/revert-icon.svg";
+import CopyIcon from "@/assets/icons/copy-item-icon.svg";
+import WeestoryCircleIcon from "@/assets/icons/weestory-circle-icon.svg";
 
 import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
+import Entypo from "@expo/vector-icons/Entypo";
 
 import { ResizeMode, Video } from "expo-av";
 import { styles } from "./styles";
@@ -41,6 +49,17 @@ export default function CameraModal() {
   const [capturedVideo, setCapturedVideo] = useState<string | null | undefined>(
     null
   );
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  // Função para abrir o Bottom Sheet
+  const handlePresentModal = () => {
+    bottomSheetRef.current?.expand(); // Expande o Bottom Sheet
+  };
+
+  // Função para fechar o Bottom Sheet
+  const handleCloseModal = () => {
+    bottomSheetRef.current?.close(); // Fecha o Bottom Sheet
+  };
 
   useEffect(() => {
     if (!permission?.granted) {
@@ -136,6 +155,7 @@ export default function CameraModal() {
   };
 
   const handleClosePreview = () => {
+    handleCloseModal();
     setCapturedPhoto(null);
     setCapturedVideo(null);
   };
@@ -198,18 +218,19 @@ export default function CameraModal() {
 
                   <TouchableOpacity
                     onPress={handleClosePreview}
-                    className="absolute top-5 left-5"
+                    className="absolute top-5 left-5 w-12 h-12 rounded-full bg-black-80 items-center justify-center"
                   >
-                    <Ionicons name="close" size={32} color="white" />
+                    <Entypo name="chevron-left" size={27} color="white" />
                   </TouchableOpacity>
                 </View>
               ) : (
                 <>
-                  <View className="absolute top-5 left-5 z-10">
-                    <TouchableOpacity onPress={handleClose}>
-                      <Ionicons name="close" size={28} color="white" />
-                    </TouchableOpacity>
-                  </View>
+                  <TouchableOpacity
+                    onPress={handleClose}
+                    className="absolute top-5 left-5 z-10"
+                  >
+                    <Ionicons name="close" size={28} color="white" />
+                  </TouchableOpacity>
                   <CameraView
                     ref={cameraRef}
                     facing={facing}
@@ -222,16 +243,18 @@ export default function CameraModal() {
             {capturedPhoto || capturedVideo ? (
               <View style={styles.footer}>
                 <View className="bg-black justify-center items-center">
-                  <View className="flex-row items-center justify-end w-full px-10 pt-5">
+                  <View className="flex-row items-center justify-between w-full px-2 pt-5">
+                    <TouchableOpacity className="flex flex-row items-center gap-3 p-4 rounded-full border border-black-80">
+                      <CopyIcon />
+                      <Text className="text-base font-semibold text-neutral-400">
+                        Seu weestory
+                      </Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
-                      onPress={() => {}}
+                      onPress={handlePresentModal}
                       className="w-12 h-12 rounded-full bg-white items-center justify-center"
                     >
-                      <Ionicons
-                        name="chevron-forward"
-                        size={24}
-                        color="black"
-                      />
+                      <Entypo name="chevron-right" size={24} color="black" />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -242,38 +265,46 @@ export default function CameraModal() {
                   className="bg-black justify-center items-center"
                   style={{ paddingBottom: insets.bottom || 16 }}
                 >
-                  <View className="flex-row items-center justify-around w-full px-10">
+                  <View className="flex-row items-center justify-around w-full">
                     <TouchableOpacity onPress={handleClose} activeOpacity={0.8}>
-                      <Ionicons name="images-outline" size={30} color="white" />
+                      <GalleryIcon />
                     </TouchableOpacity>
-                    <TouchableWithoutFeedback
-                      onPressIn={handlePressIn}
-                      onPressOut={handlePressOut}
-                    >
-                      <Animated.View
-                        style={[
-                          styles.outerCircle,
-                          {
-                            borderColor: isRecording
-                              ? colors.primary
-                              : colors.brand.white,
-                            transform: [
-                              { scale: isRecording ? pulseAnim : scaleAnim },
-                            ],
-                          },
-                        ]}
+                    <View>
+                      <TouchableWithoutFeedback
+                        onPressIn={handlePressIn}
+                        onPressOut={handlePressOut}
                       >
-                        <View style={styles.innerCircle}>
-                          <View style={styles.centerCircle} />
-                        </View>
-                      </Animated.View>
-                    </TouchableWithoutFeedback>
+                        <Animated.View
+                          style={[
+                            styles.outerCircle,
+                            {
+                              borderColor: isRecording
+                                ? colors.primary
+                                : colors.brand.white,
+                              transform: [
+                                { scale: isRecording ? pulseAnim : scaleAnim },
+                              ],
+                            },
+                          ]}
+                        >
+                          <View style={styles.innerCircle}>
+                            <View style={styles.centerCircle} />
+                          </View>
+                        </Animated.View>
+                      </TouchableWithoutFeedback>
+                      <Text
+                        className="text-white text-base font-semibold text-neutral-400 absolute"
+                        style={{
+                          fontSize: 16,
+                          top: 35,
+                          width: 100,
+                        }}
+                      >
+                        WEESTORY
+                      </Text>
+                    </View>
                     <TouchableOpacity onPress={toggleCameraFacing}>
-                      <Ionicons
-                        name="camera-reverse-outline"
-                        size={35}
-                        color="white"
-                      />
+                      <RevertIcon />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -281,6 +312,42 @@ export default function CameraModal() {
             )}
           </>
         )}
+        <BottomSheet
+          ref={bottomSheetRef}
+          index={-1}
+          snapPoints={[height * 0.3]}
+          onClose={handleCloseModal}
+          enablePanDownToClose={true}
+          handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
+          backgroundStyle={{ backgroundColor: colors.black[100] }}
+        >
+          <BottomSheetView className="flex flex-col flex-1 gap-5 p-6 bg-black-100">
+            <View className="flex-column justify-start border-b-[2px] border-black-80 p-3">
+              <Text className="text-base font-semibold text-white">
+                Compartilhar
+              </Text>
+            </View>
+            <View className="flex-row items-center justify-between w-full gap-3">
+              <View className="flex-row items-center gap-3">
+                <WeestoryCircleIcon />
+                <Text className="text-base font-semibold text-white">
+                  Weestory
+                </Text>
+              </View>
+              <TouchableOpacity
+                onPress={handleClosePreview}
+                className="w-8 h-8 rounded-full bg-primary items-center justify-center"
+              >
+                <Entypo name="check" size={15} color="black" />
+              </TouchableOpacity>
+            </View>
+            <Button
+              handlePress={handleClosePreview}
+              containerStyles="mt-4 w-full"
+              title="Compartilhar"
+            />
+          </BottomSheetView>
+        </BottomSheet>
       </SafeAreaView>
     </Modal>
   );

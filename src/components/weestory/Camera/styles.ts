@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
     borderColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
-    bottom: 40,
+    bottom: 65,
   },
   innerCircle: {
     width: 70,
