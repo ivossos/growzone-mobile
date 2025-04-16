@@ -12,16 +12,9 @@ import {
   ActivityIndicator,
   Linking,
 } from "react-native";
-import Button from "@/components/ui/button";
-import { useCameraModal } from "@/context/camera-modal-context";
+import { ResizeMode, Video } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-
-import GalleryIcon from "@/assets/icons/gallery-icon.svg";
-import RevertIcon from "@/assets/icons/revert-icon.svg";
-import CopyIcon from "@/assets/icons/copy-item-icon.svg";
-import WeestoryCircleIcon from "@/assets/icons/weestory-circle-icon.svg";
-
 import {
   CameraView,
   CameraType,
@@ -31,13 +24,20 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 
-import { ResizeMode, Video } from "expo-av";
-import { styles } from "./styles";
+import Button from "@/components/ui/button";
+import { useCameraModal } from "@/context/camera-modal-context";
+
+import GalleryIcon from "@/assets/icons/gallery-icon.svg";
+import RevertIcon from "@/assets/icons/revert-icon.svg";
+import CopyIcon from "@/assets/icons/copy-item-icon.svg";
+import WeestoryCircleIcon from "@/assets/icons/weestory-circle-icon.svg";
+
 import { colors } from "@/styles/colors";
+import { styles } from "./styles";
 
 const { height, width } = Dimensions.get("window");
 
-export default function CameraModal() {
+export default function ModalCamera() {
   const insets = useSafeAreaInsets();
   const { infoCamera, isVisible, closeCamera } = useCameraModal();
   const [permission, requestPermission] = useCameraPermissions();

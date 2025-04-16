@@ -1,18 +1,18 @@
 import React from "react";
-import { View, Image, Pressable } from "react-native";
+import { View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { styles } from "./styles";
 
-interface ControlModalProps {
+interface ModalControlsProps {
   handlePrevious: VoidFunction;
   handleNext: VoidFunction;
 }
 
-export default function ControlModal({
+export default function ModalControls({
   handlePrevious,
   handleNext,
-}: ControlModalProps) {
+}: ModalControlsProps) {
   const insets = useSafeAreaInsets();
 
   return (

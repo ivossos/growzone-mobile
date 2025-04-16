@@ -3,30 +3,28 @@ import { View, Text, TouchableOpacity, Image } from "react-native";
 import AddWeestoryIcon from "@/assets/icons/add-weestory-icon.svg";
 import { getInitials } from "@/lib/utils";
 
-interface WeestoryAvatarProps {
+interface AvatarProps {
   addButton?: boolean;
   avatar?: {
     image: string;
   };
   name?: string;
-  username?: string;
   onPress: VoidFunction;
 }
 
-export default function WeestoryAvatar({
+export default function Avatar({
   addButton,
   avatar,
   name,
-  username,
   onPress,
-}: WeestoryAvatarProps) {
+}: AvatarProps) {
   if (addButton) {
     return (
       <TouchableOpacity className="items-center mx-2 gap-2" onPress={onPress}>
         <View className="w-20 h-20 rounded-full border-2 bg-black-80 p-1 items-center justify-center">
           <AddWeestoryIcon />
         </View>
-        <Text className="text-white text-xs mt-1">Adicionar</Text>
+        <Text className="text-white text-sm mt-1">Adicionar</Text>
       </TouchableOpacity>
     );
   }
@@ -50,7 +48,7 @@ export default function WeestoryAvatar({
           </View>
         )}
       </View>
-      <Text className="text-white text-xs mt-1">{username}</Text>
+      <Text className="text-white text-sm mt-1">{name}</Text>
     </TouchableOpacity>
   );
 }

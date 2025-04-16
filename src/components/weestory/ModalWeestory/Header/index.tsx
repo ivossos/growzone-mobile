@@ -5,17 +5,17 @@ import { Ionicons } from "@expo/vector-icons";
 
 import { styles } from "./styles";
 
-interface HeaderModalProps {
+interface ModalHeaderProps {
   avatar: string;
   name: string;
   onPress: VoidFunction;
 }
 
-export default function HeaderModal({
+export default function ModalHeader({
   avatar,
   name,
   onPress,
-}: HeaderModalProps) {
+}: ModalHeaderProps) {
   const insets = useSafeAreaInsets();
   const userTop = Platform.OS === "ios" ? insets.top + 30 : insets.top - 10;
 

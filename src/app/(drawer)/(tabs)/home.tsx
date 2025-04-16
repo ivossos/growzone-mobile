@@ -23,7 +23,7 @@ import { useScrollToTop } from "@/context/scroll-top-context";
 import UpdateAppModal from "@/components/ui/update-app";
 import { useIsFocused } from "@react-navigation/native";
 
-import WeestorySlider from "@/components/weestory/WeestorySlider";
+import WeestorySlider from "@/components/weestory/Slider";
 
 export default function HomeScreen() {
   const [data, setData] = useState<any>([]);

@@ -8,7 +8,6 @@ import {
   Animated,
   Pressable,
   SafeAreaView,
-  Text,
   KeyboardAvoidingView,
   Platform,
   TextInput,
@@ -18,14 +17,18 @@ import { Video, ResizeMode } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 
-import HeaderModal from "../HeaderModal";
+import Controls from "../ModalWeestory/Controls";
+import Header from "../ModalWeestory/Header";
 
 import { styles } from "./styles";
-import ControlModal from "../ControlModal";
 
 const { width } = Dimensions.get("window");
 
-export default function StoryModal({ users, initialUserIndex, onClose }: any) {
+export default function ModalWeestory({
+  users,
+  initialUserIndex,
+  onClose,
+}: any) {
   const insets = useSafeAreaInsets();
   const [userIndex, setUserIndex] = useState(initialUserIndex);
   const [storyIndex, setStoryIndex] = useState(0);
@@ -177,7 +180,7 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
           ))}
         </View>
 
-        <HeaderModal
+        <Header
           avatar={currentUser.avatar}
           name={currentUser.name}
           onPress={onClose}
@@ -221,7 +224,7 @@ export default function StoryModal({ users, initialUserIndex, onClose }: any) {
           </Pressable>
         </Animated.View>
 
-        <ControlModal
+        <Controls
           handleNext={handleNextStory}
           handlePrevious={handlePreviousStory}
         />
