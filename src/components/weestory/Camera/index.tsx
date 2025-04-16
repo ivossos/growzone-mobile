@@ -10,6 +10,7 @@ import {
   Image,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import Button from "@/components/ui/button";
 import { useCameraModal } from "@/context/camera-modal-context";
@@ -21,7 +22,12 @@ import RevertIcon from "@/assets/icons/revert-icon.svg";
 import CopyIcon from "@/assets/icons/copy-item-icon.svg";
 import WeestoryCircleIcon from "@/assets/icons/weestory-circle-icon.svg";
 
-import { CameraView, CameraType, useCameraPermissions } from "expo-camera";
+import {
+  CameraView,
+  CameraType,
+  useCameraPermissions,
+  useMicrophonePermissions,
+} from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 
@@ -33,11 +39,14 @@ const { height, width } = Dimensions.get("window");
 
 export default function CameraModal() {
   const insets = useSafeAreaInsets();
-  const { isVisible, closeCamera } = useCameraModal();
-  const cameraRef = useRef<CameraView | null>(null);
+  const { infoCamera, isVisible, closeCamera } = useCameraModal();
   const [permission, requestPermission] = useCameraPermissions();
+  const [microphonePermission, requestMicrophonePermission] =
+    useMicrophonePermissions();
+  const cameraRef = useRef<CameraView | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [facing, setFacing] = useState<CameraType>("front");
+  const [scale, setScale] = useState<number>(-1);
   const [pulseAnim] = useState(new Animated.Value(1));
   const [scaleAnim] = useState(new Animated.Value(1));
   const [pressTimer, setPressTimer] = useState<any>(null);
@@ -51,21 +60,13 @@ export default function CameraModal() {
   );
   const bottomSheetRef = useRef<BottomSheet>(null);
 
-  // Função para abrir o Bottom Sheet
   const handlePresentModal = () => {
-    bottomSheetRef.current?.expand(); // Expande o Bottom Sheet
+    bottomSheetRef.current?.expand();
   };
 
-  // Função para fechar o Bottom Sheet
   const handleCloseModal = () => {
-    bottomSheetRef.current?.close(); // Fecha o Bottom Sheet
+    bottomSheetRef.current?.close();
   };
-
-  useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
-    }
-  }, [permission]);
 
   const startPulsing = () => {
     Animated.loop(
@@ -141,39 +142,94 @@ export default function CameraModal() {
     setDidLongPress(false);
   };
 
-  const reset = () => {
+  const handleClose = () => {
+    stopRecording();
     setCapturedPhoto(null);
     setCapturedVideo(null);
     setIsRecording(false);
     stopPulsing();
-  };
-
-  const handleClose = () => {
-    stopRecording();
-    reset();
+    setScale(-1);
     closeCamera();
   };
 
   const handleClosePreview = () => {
+    if (infoCamera.mediaType) {
+      handleClose();
+      return;
+    }
+
     handleCloseModal();
     setCapturedPhoto(null);
     setCapturedVideo(null);
+    setScale(-1);
   };
 
   function toggleCameraFacing() {
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
+  const handlePermissionRequest = async () => {
+    if (permission?.canAskAgain) {
+      await requestPermission();
+    }
+
+    if (microphonePermission?.canAskAgain) {
+      await requestMicrophonePermission();
+    }
+
+    if (!permission?.canAskAgain || !microphonePermission?.canAskAgain) {
+      await Linking.openSettings();
+    }
+  };
+
+  useEffect(() => {
+    if (!permission?.granted) {
+      requestPermission();
+    }
+
+    if (!microphonePermission?.granted) {
+      requestMicrophonePermission();
+    }
+  }, [permission, microphonePermission]);
+
+  useEffect(() => {
+    if (infoCamera.mediaType) {
+      if (infoCamera.mediaType === "video") {
+        setScale(1);
+        setCapturedVideo(infoCamera.uri);
+        return;
+      }
+
+      if (infoCamera.mediaType === "photo") {
+        setScale(1);
+        setCapturedPhoto(infoCamera.uri);
+        return;
+      }
+    }
+  }, [infoCamera]);
+
   return (
     <Modal visible={isVisible} animationType="fade">
       <SafeAreaView style={styles.safearea}>
         {!permission ? (
           <View className="flex-1 items-center justify-center">
-            <Text className="text-white">Carregando...</Text>
+            <ActivityIndicator size="large" color={colors.brand.green} />
           </View>
-        ) : !permission?.granted ? (
+        ) : !permission?.granted || !microphonePermission?.granted ? (
           <View className="flex-1 items-center justify-center">
-            <Text className="text-white">Permissão para câmera negada</Text>
+            <Text className="text-base font-medium text-white text-center">
+              Precisamos de acesso à sua câmera e microfone para capturar fotos
+              e vídeos.
+            </Text>
+            <Button
+              handlePress={handlePermissionRequest}
+              containerStyles="mt-4 w-50"
+              title={
+                permission?.canAskAgain
+                  ? "Conceder permissão"
+                  : "Abrir configurações"
+              }
+            />
           </View>
         ) : (
           <>
@@ -187,7 +243,7 @@ export default function CameraModal() {
                       resizeMode="cover"
                       style={{
                         transform:
-                          facing === "front" ? [{ scaleX: -1 }] : undefined,
+                          facing === "front" ? [{ scaleX: scale }] : undefined,
                       }}
                     />
                   ) : capturedVideo ? (
@@ -196,7 +252,7 @@ export default function CameraModal() {
                         <ActivityIndicator
                           color="#fff"
                           size="large"
-                          style={{ position: "absolute" }}
+                          className="absolute"
                         />
                       )}
                       <Video
@@ -205,7 +261,9 @@ export default function CameraModal() {
                           width,
                           height,
                           transform:
-                            facing === "front" ? [{ scaleX: -1 }] : undefined,
+                            facing === "front"
+                              ? [{ scaleX: scale }]
+                              : undefined,
                         }}
                         resizeMode={ResizeMode.COVER}
                         useNativeControls={false}

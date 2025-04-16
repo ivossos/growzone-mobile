@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState } from "react";
 
 interface CameraModalContextType {
+  infoCamera?: any;
   isVisible: boolean;
-  openCamera: () => void;
+  openCamera: (data: any) => void;
   closeCamera: () => void;
 }
 
@@ -16,12 +17,22 @@ export const CameraModalProvider = ({
   children: React.ReactNode;
 }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [infoCamera, setInfoCamera] = useState({});
 
-  const openCamera = () => setIsVisible(true);
-  const closeCamera = () => setIsVisible(false);
+  const openCamera = (data: any) => {
+    setInfoCamera(data);
+    setIsVisible(true);
+  };
+
+  const closeCamera = () => {
+    setInfoCamera({});
+    setIsVisible(false);
+  };
 
   return (
-    <CameraModalContext.Provider value={{ isVisible, openCamera, closeCamera }}>
+    <CameraModalContext.Provider
+      value={{ isVisible, infoCamera, openCamera, closeCamera }}
+    >
       {children}
     </CameraModalContext.Provider>
   );

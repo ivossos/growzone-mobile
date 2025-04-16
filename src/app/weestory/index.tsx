@@ -1,6 +1,6 @@
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { ArrowLeft, Copy } from "lucide-react-native";
+import { ArrowLeft } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 
 import React, { useEffect, useState } from "react";
@@ -11,14 +11,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Dimensions,
+  StyleSheet,
+  Linking,
 } from "react-native";
+import Button from "@/components/ui/button";
 import * as MediaLibrary from "expo-media-library";
 import { MasonryFlashList } from "@shopify/flash-list";
-import { ResizeMode, Video } from "expo-av";
 import { Dropdown } from "react-native-element-dropdown";
 import * as VideoThumbnails from "expo-video-thumbnails";
+import * as FileSystem from "expo-file-system";
 
-import CopyIcon from "@/assets/icons/copy-item-icon.svg";
 import CameraIcon from "@/assets/icons/camera-icon.svg";
 import { useCameraModal } from "@/context/camera-modal-context";
 
@@ -32,20 +34,21 @@ const options = [
 
 export default function WeestoryScreen() {
   const { openCamera } = useCameraModal();
+  const [permission, requestPermission] = MediaLibrary.usePermissions();
   const [media, setMedia] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
-  const [selectedItems, setSelectedItems] = useState<any[]>([]);
 
-  const [permission, requestPermission] = MediaLibrary.usePermissions();
-
-  useEffect(() => {
-    if (permission?.status !== "granted") {
-      requestPermission();
+  const handlePermissionRequest = async () => {
+    if (permission?.canAskAgain) {
+      const result = await requestPermission();
+      if (result.granted) {
+        loadMedia();
+      }
     } else {
-      loadMedia();
+      await Linking.openSettings();
     }
-  }, [permission, filter]);
+  };
 
   const loadMedia = async () => {
     try {
@@ -65,20 +68,17 @@ export default function WeestoryScreen() {
 
             let thumbnail = null;
             if (asset.mediaType === "video" && localUri) {
-              const cleanUri = localUri.split("#")[0];
+              const url = `${FileSystem.cacheDirectory}${asset.filename}`;
 
-              // const { uri: thumbnailUri } =
-              //   await VideoThumbnails.getThumbnailAsync(cleanUri, {
-              //     time: 15000,
-              //   });
+              const { uri: thumb } = await VideoThumbnails.getThumbnailAsync(
+                url,
+                {
+                  time: 1000,
+                }
+              );
 
-              // console.log("thumbnailUri", asset.mediaType, thumbnailUri);
-
-              // thumbnail = thumbnailUri;
-
-              localUri = localUri?.replace(/#.*$/, ""); // remove fragmento após #
-
-              console.log("logger", cleanUri);
+              thumbnail = thumb;
+              localUri = url;
             }
 
             return {
@@ -101,83 +101,84 @@ export default function WeestoryScreen() {
     }
   };
 
-  const toggleSelection = (item: {
-    id: any;
-    mediaType?: string;
-    uri?: string;
-  }) => {
-    setSelectedItems((prevSelected) =>
-      prevSelected.includes(item.id)
-        ? prevSelected.filter((id) => id !== item.id)
-        : [...prevSelected, item.id]
-    );
+  const formatDuration = (durationInSeconds: number) => {
+    const minutes = Math.floor(durationInSeconds / 60);
+    const seconds = Math.floor(durationInSeconds % 60);
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
-  const handleShareSelected = () => {
-    console.log("Itens selecionados para compartilhar:", selectedItems);
-  };
-
-  if (!permission) return <ActivityIndicator size="large" color="#0000ff" />;
-
-  if (permission.status !== "granted")
-    return (
-      <View>
-        <Text>Permissão necessária para acessar a galeria</Text>
-      </View>
-    );
+  useEffect(() => {
+    if (permission?.status !== "granted") {
+      requestPermission();
+    } else {
+      loadMedia();
+    }
+  }, [permission, filter]);
 
   const gallery = [{ id: "add-weestory", isAddButton: true }, ...media];
 
+  if (!permission) {
+    return (
+      <SafeAreaView className="flex-1 bg-black-100">
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={colors.brand.green} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (permission.status !== "granted") {
+    return (
+      <SafeAreaView className="flex-1 bg-black-100">
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-base text-center font-medium text-white">
+            Precisamos de acesso à sua galeria para selecionar fotos e vídeos.
+          </Text>
+          <Button
+            handlePress={handlePermissionRequest}
+            containerStyles="mt-4 w-50"
+            title={
+              permission?.canAskAgain
+                ? "Conceder permissão"
+                : "Abrir configurações"
+            }
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.black[100] }}>
+    <SafeAreaView className="flex-1 bg-black-100">
       <View className="flex-1 bg-black-100 overflow-hidden">
         <View className="flex flex-row items-center gap-4 px-6 h-[72px] border-b-[1px] border-black-80">
           <TouchableOpacity onPress={() => router.back()}>
             <ArrowLeft className="w-6 h-6" color={colors.brand.white} />
           </TouchableOpacity>
-          <Text className="text-white text-base font-semibold">
+          <Text className="text-white text-lg font-semibold">
             Criar Weestory
           </Text>
         </View>
         <View className="flex-1 bg-black">
           <View className="flex flex-row justify-between items-center p-7">
             <Dropdown
-              style={{
-                width: 110,
-              }}
-              containerStyle={{
-                marginVertical: 15,
-                width: 150,
-              }}
-              selectedTextStyle={{
-                width: 150,
-                fontWeight: "bold",
-                color: colors.brand.white,
-              }}
+              style={styles.dropdown}
+              selectedTextStyle={styles.selectedTextStyle}
+              iconStyle={styles.iconStyle}
+              containerStyle={styles.dropdownContainer}
+              itemTextStyle={styles.itemTextStyle}
+              activeColor={colors.black[80]}
               data={options}
               labelField="label"
               valueField="value"
               value={filter}
               onChange={(item) => setFilter(item.value)}
             />
-
-            <TouchableOpacity
-              className="flex flex-row items-center gap-3 p-4 rounded-full border border-black-80"
-              onPress={handleShareSelected}
-            >
-              <CopyIcon />
-              <Text className="text-white">Selecionar</Text>
-            </TouchableOpacity>
           </View>
 
           <View className="flex-1">
             {loading ? (
-              <View
-                className="flex justify-center items-center bg-black-100"
-                style={{
-                  height: "100%",
-                }}
-              >
+              <View className="flex justify-center items-center bg-black-100 h-full">
                 <ActivityIndicator size="large" color={colors.brand.green} />
               </View>
             ) : (
@@ -188,11 +189,12 @@ export default function WeestoryScreen() {
                 keyExtractor={({
                   id,
                 }: {
-                  thumbnail: string | undefined;
+                  thumbnail: string;
                   id: string;
                   mediaType: string;
                   uri: string;
                   isAddButton: boolean;
+                  duration: any;
                 }) => String(id)}
                 renderItem={({ item }) =>
                   item.isAddButton ? (
@@ -201,54 +203,37 @@ export default function WeestoryScreen() {
                       className="flex flex-column justify-center items-center bg-black-80 m-1"
                       style={{
                         width: screenWidth / 3 - 6,
-                        height: 200,
+                        height: 220,
                       }}
                     >
                       <CameraIcon />
                     </TouchableOpacity>
                   ) : (
-                    <View
-                      className="m-1"
-                      style={{
-                        borderWidth: selectedItems.includes(item.id) ? 2 : 0,
-                        borderColor: "green",
-                      }}
-                    >
-                      {item.mediaType === "photo" ? (
-                        <TouchableOpacity onPress={() => toggleSelection(item)}>
+                    <View className="m-1">
+                      <TouchableOpacity onPress={() => openCamera(item)}>
+                        <View>
                           <Image
-                            source={{ uri: item.uri }}
-                            style={{
-                              width: screenWidth / 3 - 6,
-                              height: 200,
-                            }}
                             resizeMode="cover"
-                          />
-                        </TouchableOpacity>
-                      ) : (
-                        <TouchableOpacity onPress={() => toggleSelection(item)}>
-                          {/* <Image
-                            source={{ uri: item.thumbnail }}
+                            source={{
+                              uri:
+                                item.mediaType === "photo"
+                                  ? item.uri
+                                  : item.thumbnail,
+                            }}
                             style={{
                               width: screenWidth / 3 - 6,
-                              height: 200,
+                              height: 220,
                             }}
-                          /> */}
-                          <Video
-                            source={{ uri: item.uri }}
-                            style={{
-                              width: screenWidth / 3 - 6,
-                              height: 200,
-                            }}
-                            useNativeControls={false}
-                            resizeMode={ResizeMode.COVER}
-                            isMuted
-                            onError={(error) =>
-                              console.log("error video", error)
-                            }
                           />
-                        </TouchableOpacity>
-                      )}
+                          {item.mediaType === "video" && (
+                            <View className="absolute bottom-2 right-2 rounded-full border border-black-70 p-1 px-2 bg-black-70">
+                              <Text className="text-sm text-white">
+                                {formatDuration(item.duration)}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </TouchableOpacity>
                     </View>
                   )
                 }
@@ -260,3 +245,36 @@ export default function WeestoryScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  dropdown: {
+    width: 100,
+    height: 30,
+    borderBottomWidth: 0,
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: colors.brand.white,
+  },
+  iconStyle: {
+    width: 20,
+    height: 20,
+  },
+  dropdownContainer: {
+    borderRadius: 10,
+    paddingVertical: 6,
+    backgroundColor: colors.black[70],
+    shadowColor: colors.black[100],
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 5,
+    borderColor: colors.black[70],
+    width: 130,
+    marginTop: 10,
+  },
+  itemTextStyle: {
+    color: colors.brand.white,
+  },
+});
