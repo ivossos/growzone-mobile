@@ -152,7 +152,7 @@ export default function WeestoryScreen() {
     <SafeAreaView className="flex-1 bg-black-100">
       <View className="flex-1 bg-black-100 overflow-hidden">
         <View className="flex flex-row items-center gap-4 px-6 h-[72px] border-b-[1px] border-black-80">
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={() => router.push("/weestory")}>
             <ArrowLeft className="w-6 h-6" color={colors.brand.white} />
           </TouchableOpacity>
           <Text className="text-white text-lg font-semibold">
