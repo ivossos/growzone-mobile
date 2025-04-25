@@ -16,6 +16,10 @@ import {
 import { Video, ResizeMode } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import BottomSheet from "@gorhom/bottom-sheet";
+
+import ReportBottomSheet from "@/components/ui/report-bottom-sheet";
+import { useBottomSheetContext } from "@/context/bottom-sheet-context";
 
 import Controls from "../ModalWeestory/Controls";
 import Header from "../ModalWeestory/Header";
@@ -38,9 +42,12 @@ export default function ModalWeestory({
   const transitionAnim = useRef(new Animated.Value(0)).current;
   const currentProgress = useRef(0);
 
+  const reportSheetRef = useRef<BottomSheet>(null);
   const videoRef = useRef<Video>(null);
   const [videoDuration, setVideoDuration] = useState(5000);
   const [comment, setComment] = useState("");
+
+  const { openBottomSheet } = useBottomSheetContext();
 
   const currentUser = users[userIndex];
   const currentStory = currentUser.stories[storyIndex];
@@ -105,6 +112,24 @@ export default function ModalWeestory({
     if (!isPaused && status.isPlaying && progressAnimation.current === null) {
       startProgress(0, status.durationMillis);
     }
+  };
+
+  const handlePressReport = () => {
+    setIsPaused(true);
+    videoRef.current?.pauseAsync();
+    progress.stopAnimation((value) => {
+      currentProgress.current = value;
+    });
+    progressAnimation.current?.stop();
+    openBottomSheet({ type: "report", id: 1 });
+  };
+
+  const closeReportBottomSheet = () => {
+    setIsPaused(false);
+    videoRef.current?.playAsync();
+    const duration = currentStory.type === "image" ? 5000 : videoDuration;
+    startProgress(currentProgress.current, duration);
+    reportSheetRef.current?.close();
   };
 
   useEffect(() => {
@@ -184,6 +209,7 @@ export default function ModalWeestory({
           avatar={currentUser.avatar}
           name={currentUser.name}
           onPress={onClose}
+          handlePressReport={handlePressReport}
         />
 
         <Animated.View
@@ -215,7 +241,7 @@ export default function ModalWeestory({
               <Video
                 ref={videoRef}
                 source={{ uri: currentStory.uri }}
-                style={{ width, height: "90%", borderRadius: 20 }}
+                style={{ width, height: "92%", borderRadius: 20 }}
                 resizeMode={ResizeMode.COVER}
                 shouldPlay={!isPaused}
                 onPlaybackStatusUpdate={handleVideoStatusUpdate}
@@ -290,19 +316,24 @@ export default function ModalWeestory({
                   console.log("curtir o video/imagem", currentUser)
                 }
               >
-                <Ionicons name="heart-outline" size={25} color="#2CC420" />
+                <Ionicons name="heart-outline" size={22} color="#2CC420" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() =>
                   console.log("comentar o video/imagem", currentUser)
                 }
               >
-                <Ionicons name="send" size={25} color="#2CC420" />
+                <Ionicons name="send" size={18} color="#2CC420" />
               </TouchableOpacity>
             </View>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      <ReportBottomSheet
+        ref={reportSheetRef}
+        onClose={closeReportBottomSheet}
+      />
     </Modal>
   );
 }

@@ -65,20 +65,26 @@ export default function WeestoryScreen() {
           try {
             let assetInfo = await MediaLibrary.getAssetInfoAsync(asset.id);
             let localUri = assetInfo.localUri;
-
             let thumbnail = null;
+
             if (asset.mediaType === "video" && localUri) {
-              const url = `${FileSystem.cacheDirectory}${asset.filename}`;
+              const fileName = asset.filename || `video_${asset.id}.mov`;
+              const safePath = `${FileSystem.documentDirectory}${fileName}`;
+
+              await FileSystem.copyAsync({
+                from: localUri,
+                to: safePath,
+              });
 
               const { uri: thumb } = await VideoThumbnails.getThumbnailAsync(
-                url,
+                safePath,
                 {
                   time: 1000,
                 }
               );
 
               thumbnail = thumb;
-              localUri = url;
+              localUri = safePath;
             }
 
             return {
