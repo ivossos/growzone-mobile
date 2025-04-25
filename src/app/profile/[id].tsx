@@ -14,7 +14,7 @@ const Profile: React.FC = () => {
 
   const userId = id ? Number(id) : 0;
 
-  const renderReader = () => <Header onBack={() => router.back()} />;
+  const renderReader = () => <Header onBack={() => router.push(`/profile?id=${userId}`)} />;
 
   return (
     <>

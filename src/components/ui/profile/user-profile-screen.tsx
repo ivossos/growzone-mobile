@@ -13,7 +13,7 @@ import { colors } from "@/styles/colors";
 import { router } from "expo-router";
 import { Ellipsis } from "lucide-react-native";
 
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
 import Toast from "react-native-toast-message";
 
 import React, {
