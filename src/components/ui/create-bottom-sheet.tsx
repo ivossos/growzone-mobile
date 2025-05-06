@@ -652,7 +652,7 @@ const CreateBottomSheet = React.forwardRef<
             />
           </View>
 
-          <View style={{ marginTop: 16 }}>
+          <View style={{ marginTop: 40 }}>
             <VideoPicker
               onMediaSelected={(media) =>
                 setSelectedVideos((prev) => [...prev, media])

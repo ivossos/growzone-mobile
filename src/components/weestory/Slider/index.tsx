@@ -1,59 +1,49 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, FlatList } from "react-native";
 import { router } from "expo-router";
+
+import { getWeestory } from "@/api/social/weestory/get-weestory";
 
 import ModalWeestory from "../ModalWeestory";
 import Avatar from "../Avatar";
 
-const users = [
-  {
-    id: "1",
-    name: "Diego",
-    username: "diego",
-    backgroundColor: "tomato",
-    avatar:
-      "https://dev.img.growzone.co/media/user_images/90f0d201-e509-4134-9ecb-8ac0976fd50a.webp",
-    stories: [
-      {
-        type: "image",
-        uri: "https://dev.img.growzone.co/media/social_post_files/48a51456-9f77-44c6-9846-8eb325dfa76e.webp",
-      },
-      {
-        type: "video",
-        uri: "https://stream.mux.com/xno9Qw2Z6W8eA8d4JOz62E5RM01ZqjLOC01IdWZDh6TTs.m3u8",
-      },
-    ],
-  },
-  {
-    id: "2",
-    name: "Pedro",
-    username: "pedro",
-    backgroundColor: "skyblue",
-    avatar:
-      "https://dev.img.growzone.co/media/user_images/c3a4b411-c2d9-41bf-b65b-b01202364d29.webp",
-    stories: [
-      {
-        type: "image",
-        uri: "https://dev.img.growzone.co/media/social_post_files/264da6c8-7b02-4565-8f14-592dacbee80e.webp",
-      },
-      {
-        type: "video",
-        uri: "https://stream.mux.com/NM00bwHHE4O6JpVLhpr28RTYMhj8vccE5KW9EWtKB02Ro.m3u8",
-      },
-    ],
-  },
-];
-
-export default function WeeStorySlider() {
+export default function WeeStorySlider({
+  refreshPage,
+}: {
+  refreshPage: boolean;
+}) {
+  const [weestories, setWeestories] = useState<any>([]);
   const [selectedUserIndex, setSelectedUserIndex] = useState<number | null>(
     null
   );
+
+  async function listWeestories() {
+    try {
+      const response = await getWeestory({
+        userId: 454,
+      });
+
+      setWeestories(response);
+    } catch (error) {
+      setWeestories([]);
+    }
+  }
 
   const handleClose = () => {
     setSelectedUserIndex(null);
   };
 
-  const weestory = [{ id: "0", isAddButton: true }, ...users];
+  useEffect(() => {
+    if (refreshPage) {
+      listWeestories();
+    }
+  }, [refreshPage]);
+
+  useEffect(() => {
+    listWeestories();
+  }, []);
+
+  const weestory = [{ id: "0", isAddButton: true }, ...weestories];
 
   return (
     <View className="flex-row p-5">
@@ -66,7 +56,7 @@ export default function WeeStorySlider() {
             <Avatar addButton onPress={() => router.push("/weestory")} />
           ) : (
             <Avatar
-              name={item.name}
+              name={item.name || item.username}
               avatar={{
                 image: item.avatar,
               }}
@@ -78,7 +68,7 @@ export default function WeeStorySlider() {
 
       {selectedUserIndex !== null && (
         <ModalWeestory
-          users={users}
+          users={weestories}
           initialUserIndex={selectedUserIndex}
           onClose={handleClose}
         />

@@ -32,7 +32,7 @@ export default function Avatar({
   return (
     <TouchableOpacity className="items-center mx-2 gap-2" onPress={onPress}>
       <View className="w-20 h-20 rounded-full border-2 border-brand-green bg-muted p-1">
-        {avatar ? (
+        {avatar?.image ? (
           <Image
             source={{ uri: avatar.image }}
             className="w-full h-full rounded-full"

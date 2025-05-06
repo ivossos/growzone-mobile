@@ -2,6 +2,7 @@ import React from "react";
 import { View, Image, TouchableOpacity, Text, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { getInitials } from "@/lib/utils";
 
 import { styles } from "./styles";
 
@@ -30,8 +31,23 @@ export default function ModalHeader({
         },
       ]}
     >
-      <View className="flex flex-row align-center">
-        <Image source={{ uri: avatar }} style={styles.avatar} />
+      <View className="flex flex-row align-center gap-2">
+        {avatar ? (
+          <Image source={{ uri: avatar }} style={styles.avatar} />
+        ) : (
+          <View
+            style={{ width: 40, height: 40 }}
+            className="bg-black-80 h-full rounded-full justify-center items-center"
+          >
+            <Text
+              className="text-brand-green text-primary"
+              style={{ fontSize: 22 }}
+            >
+              {getInitials(name)}
+            </Text>
+          </View>
+        )}
+
         <View>
           <Text style={styles.title}>{name}</Text>
           <Text style={styles.subTitle}>ontem, 18:33</Text>

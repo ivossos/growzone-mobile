@@ -16,10 +16,10 @@ export const styles = StyleSheet.create({
     marginRight: 10,
   },
   avatar: {
-    width: 32,
-    height: 32,
+    width: 40,
+    height: 40,
     borderRadius: 20,
-    marginRight: 10,
+    marginRight: 5,
   },
   title: {
     color: "#fff",

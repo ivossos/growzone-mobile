@@ -121,7 +121,11 @@ export default function ModalWeestory({
       currentProgress.current = value;
     });
     progressAnimation.current?.stop();
-    openBottomSheet({ type: "report", id: 1 });
+
+    openBottomSheet({
+      type: "report",
+      id: currentUser.stories[storyIndex].postId,
+    });
   };
 
   const closeReportBottomSheet = () => {
@@ -207,7 +211,7 @@ export default function ModalWeestory({
 
         <Header
           avatar={currentUser.avatar}
-          name={currentUser.name}
+          name={currentUser.name || currentUser.username}
           onPress={onClose}
           handlePressReport={handlePressReport}
         />

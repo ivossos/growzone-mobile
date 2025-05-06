@@ -13,6 +13,7 @@ import {
   Linking,
 } from "react-native";
 import { ResizeMode, Video } from "expo-av";
+import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import {
@@ -26,6 +27,8 @@ import Entypo from "@expo/vector-icons/Entypo";
 
 import Button from "@/components/ui/button";
 import { useCameraModal } from "@/context/camera-modal-context";
+
+import { createWeestory } from "@/api/social/weestory/create-weestory";
 
 import GalleryIcon from "@/assets/icons/gallery-icon.svg";
 import RevertIcon from "@/assets/icons/revert-icon.svg";
@@ -52,6 +55,7 @@ export default function ModalCamera() {
   const [pressTimer, setPressTimer] = useState<any>(null);
   const [didLongPress, setDidLongPress] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null | undefined>(
     null
   );
@@ -152,12 +156,39 @@ export default function ModalCamera() {
     closeCamera();
   };
 
+  const handleSubmit = async () => {
+    setIsLoading(true);
+    try {
+      await createWeestory({
+        image: capturedPhoto,
+        video: capturedVideo,
+      });
+
+      handleClose();
+
+      Toast.show({
+        type: "success",
+        text1: "Sucesso",
+        text2: "Seu Weestory foi postado com sucesso!",
+      });
+    } catch (error) {
+      console.error("error ", error);
+      handleClose();
+      Toast.show({
+        type: "error",
+        text1: "Erro",
+        text2: "Não foi possível adicionar seu weestory",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleClosePreview = () => {
     if (infoCamera.mediaType) {
       handleClose();
       return;
     }
-
     handleCloseModal();
     setCapturedPhoto(null);
     setCapturedVideo(null);
@@ -400,7 +431,8 @@ export default function ModalCamera() {
               </TouchableOpacity>
             </View>
             <Button
-              handlePress={handleClosePreview}
+              isLoading={isLoading}
+              handlePress={handleSubmit}
               containerStyles="mt-4 w-full"
               title="Compartilhar"
             />

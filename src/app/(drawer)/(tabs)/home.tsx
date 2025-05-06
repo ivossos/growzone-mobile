@@ -43,6 +43,8 @@ export default function HomeScreen() {
 
   const [activePost, setActivePost] = useState<number | undefined>();
 
+  const [refreshWeestory, setRefreshWeestory] = useState(false);
+
   const { setFlatListRef } = useScrollToTop();
 
   const handleVideoChange = useCallback(
@@ -187,12 +189,14 @@ export default function HomeScreen() {
       } finally {
         setLoading(false);
         setIsRefreshing(false);
+        setRefreshWeestory(false);
       }
     },
     [page]
   );
 
   const onRefresh = () => {
+    setRefreshWeestory(true);
     loadData(true);
   };
 
@@ -286,7 +290,7 @@ export default function HomeScreen() {
           ListHeaderComponent={
             <React.Fragment>
               <Header />
-              <WeestorySlider />
+              <WeestorySlider refreshPage={refreshWeestory} />
             </React.Fragment>
           }
           ListEmptyComponent={renderEmptyComponent}
