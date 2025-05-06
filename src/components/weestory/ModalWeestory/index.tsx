@@ -50,6 +50,7 @@ export default function ModalWeestory({
   const { openBottomSheet } = useBottomSheetContext();
 
   const currentUser = users[userIndex];
+
   const currentStory = currentUser.stories[storyIndex];
 
   const startProgress = (fromValue: number, duration: number) => {
@@ -212,6 +213,7 @@ export default function ModalWeestory({
         <Header
           avatar={currentUser.avatar}
           name={currentUser.name || currentUser.username}
+          createdAt={currentStory.createdAt}
           onPress={onClose}
           handlePressReport={handlePressReport}
         />

@@ -19,10 +19,7 @@ export default function WeeStorySlider({
 
   async function listWeestories() {
     try {
-      const response = await getWeestory({
-        userId: 454,
-      });
-
+      const response = await getWeestory({});
       setWeestories(response);
     } catch (error) {
       setWeestories([]);

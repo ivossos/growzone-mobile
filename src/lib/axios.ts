@@ -130,7 +130,10 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
           "----> error",
           JSON.stringify(requestError?.response?.status)
         );
-        console.log("----> error", JSON.stringify(requestError?.response?.data));
+        console.log(
+          "----> error",
+          JSON.stringify(requestError?.response?.data)
+        );
         return Promise.reject(requestError);
       }
     );

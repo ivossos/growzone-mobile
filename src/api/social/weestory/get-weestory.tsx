@@ -1,50 +1,78 @@
 import { socialApi } from "@/lib/axios";
 
 interface GetWeestoryProps {
-  userId: number;
   skip?: number;
   limit?: number;
 }
 
-export async function getWeestory({
-  userId,
-  skip = 0,
-  limit = 100,
-}: GetWeestoryProps) {
-  const followResponse = await socialApi.get<[]>(`follow/following/${userId}`, {
-    params: {
-      skip,
-      limit,
-    },
-  });
+function isStoryExpired(createdAt: string): boolean {
+  const postDate = new Date(createdAt).getTime();
+  const now = Date.now();
+  const diffInHours = (now - postDate) / (1000 * 60 * 60);
+  return diffInHours > 24;
+}
 
-  const followers = followResponse.data;
+export async function getWeestory({ skip = 0, limit = 100 }: GetWeestoryProps) {
+  try {
+    const userResponse = await socialApi.get("/user/");
 
-  const storyFetches = followers.map(async (item: any) => {
-    const follower = item.followed;
+    const followResponse = await socialApi.get<[]>(
+      `follow/following/${userResponse.data.id}`,
+      {
+        params: {
+          skip,
+          limit,
+        },
+      }
+    );
 
-    const storyRes = await socialApi.get(`/listed-story-post/${follower.id}`, {
-      params: { skip, limit },
+    const followers = followResponse.data as any;
+
+    followers.unshift({
+      followed: {
+        id: userResponse.data.id,
+        image: userResponse.data.image,
+        name: userResponse.data.name,
+        username: userResponse.data.username,
+      },
     });
 
-    const stories = storyRes.data.map((story: any) => ({
-      postId: story.post_id,
-      type: story.file.type,
-      uri: story.file.file,
-    }));
+    const storyFetches = followers.map(async (item: any) => {
+      const follower = item.followed;
 
-    return {
-      id: String(follower.id),
-      name: follower.name,
-      username: follower.username,
-      avatar: follower.image,
-      stories,
-    };
-  });
+      const storyRes = await socialApi.get(
+        `/listed-story-post/${follower.id}`,
+        {
+          params: { skip, limit },
+        }
+      );
 
-  const allUsers = await Promise.all(storyFetches);
+      const stories = storyRes.data
+        .filter(
+          (item: { file: { file: any; created_at: string } }) =>
+            item.file && item.file.file && !isStoryExpired(item.file.created_at)
+        )
+        .map((story: any) => ({
+          postId: story.post_id,
+          type: story.file.type,
+          uri: story.file.file,
+          createdAt: story.file.created_at,
+        }));
 
-  const usersWithStories = allUsers.filter((user) => user.stories.length > 0);
+      return {
+        id: String(follower.id),
+        name: follower.name,
+        username: follower.username,
+        avatar: follower.image,
+        stories,
+      };
+    });
 
-  return usersWithStories;
+    const allUsers = await Promise.all(storyFetches);
+    const usersWithStories = allUsers.filter((user) => user.stories.length > 0);
+
+    return usersWithStories;
+  } catch (error) {
+    return [];
+  }
 }

@@ -202,6 +202,7 @@ export default function HomeScreen() {
 
   const handleEndReached = () => {
     if (!loading && !isLastPage) {
+      setRefreshWeestory(true);
       setPage((prevPage) => prevPage + 10);
     }
   };

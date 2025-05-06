@@ -9,6 +9,7 @@ import { styles } from "./styles";
 interface ModalHeaderProps {
   avatar: string;
   name: string;
+  createdAt: string;
   onPress: VoidFunction;
   handlePressReport: VoidFunction;
 }
@@ -17,10 +18,33 @@ export default function ModalHeader({
   avatar,
   name,
   onPress,
+  createdAt,
   handlePressReport,
 }: ModalHeaderProps) {
   const insets = useSafeAreaInsets();
   const userTop = Platform.OS === "ios" ? insets.top + 30 : insets.top - 10;
+
+  function formatTimeAgo(isoDateString: string | number | Date) {
+    const postDate = new Date(isoDateString);
+    const now = new Date();
+
+    const diffMs = Number(now) - Number(postDate);
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMinutes < 1) {
+      return "agora";
+    } else if (diffMinutes < 60) {
+      return `${diffMinutes} min`;
+    } else if (diffHours < 24) {
+      return `${diffHours} h`;
+    } else if (diffDays === 1) {
+      return "ontem";
+    } else {
+      return `${diffDays} d`;
+    }
+  }
 
   return (
     <View
@@ -50,7 +74,7 @@ export default function ModalHeader({
 
         <View>
           <Text style={styles.title}>{name}</Text>
-          <Text style={styles.subTitle}>ontem, 18:33</Text>
+          <Text style={styles.subTitle}>{formatTimeAgo(createdAt)}</Text>
         </View>
       </View>
 
