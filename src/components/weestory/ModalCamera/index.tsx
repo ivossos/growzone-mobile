@@ -24,6 +24,7 @@ import {
 } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
+import * as ImageManipulator from "expo-image-manipulator";
 
 import Button from "@/components/ui/button";
 import { useCameraModal } from "@/context/camera-modal-context";
@@ -99,9 +100,13 @@ export default function ModalCamera() {
       setIsRecording(true);
       startPulsing();
       try {
-        const video = await cameraRef.current.recordAsync({ maxDuration: 10 });
-        await new Promise((res) => setTimeout(res, 500));
-        setCapturedVideo(video?.uri);
+        setTimeout(async () => {
+          const video = await cameraRef.current?.recordAsync({
+            maxDuration: 10,
+          });
+          setCapturedVideo(video?.uri);
+          setIsRecording(false);
+        }, 600);
       } catch (e) {
         console.error("Erro ao gravar:", e);
       }
@@ -118,8 +123,26 @@ export default function ModalCamera() {
 
   const handleCapture = async () => {
     if (isRecording || !cameraRef.current) return;
-    const photo = await cameraRef.current.takePictureAsync();
-    setCapturedPhoto(photo?.uri);
+
+    const photo = await cameraRef.current.takePictureAsync({});
+    if (!photo) return;
+
+    try {
+      const fixed = await ImageManipulator.manipulateAsync(photo.uri, [], {
+        compress: 1,
+        format: ImageManipulator.SaveFormat.JPEG,
+      });
+
+      const final = await ImageManipulator.manipulateAsync(
+        fixed.uri,
+        [{ resize: { width: 1080, height: 1920 } }],
+        { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      setCapturedPhoto(final.uri);
+    } catch (e) {
+      console.error("Image manipulation failed", e);
+    }
   };
 
   const handlePressIn = () => {
@@ -324,7 +347,10 @@ export default function ModalCamera() {
                     ref={cameraRef}
                     facing={facing}
                     style={styles.camera}
-                    mode="video"
+                    // mode={Platform.OS === "ios" ? "video" : "picture"}
+                    mode={isRecording ? "video" : "picture"}
+                    ratio="16:9"
+                    pictureSize="1080x1920"
                   />
                 </>
               )}

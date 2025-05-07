@@ -247,7 +247,7 @@ export default function ModalWeestory({
               <Video
                 ref={videoRef}
                 source={{ uri: currentStory.uri }}
-                style={{ width, height: "92%", borderRadius: 20 }}
+                style={{ width, height: "90%", borderRadius: 20 }}
                 resizeMode={ResizeMode.COVER}
                 shouldPlay={!isPaused}
                 onPlaybackStatusUpdate={handleVideoStatusUpdate}

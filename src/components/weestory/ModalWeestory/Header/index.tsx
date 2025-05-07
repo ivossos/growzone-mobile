@@ -7,7 +7,9 @@ import { getInitials } from "@/lib/utils";
 import { styles } from "./styles";
 
 interface ModalHeaderProps {
-  avatar: string;
+  avatar: {
+    image?: string;
+  };
   name: string;
   createdAt: string;
   onPress: VoidFunction;
@@ -57,7 +59,7 @@ export default function ModalHeader({
     >
       <View className="flex flex-row align-center gap-2">
         {avatar ? (
-          <Image source={{ uri: avatar }} style={styles.avatar} />
+          <Image source={{ uri: avatar?.image }} style={styles.avatar} />
         ) : (
           <View
             style={{ width: 40, height: 40 }}

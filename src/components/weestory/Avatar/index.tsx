@@ -6,7 +6,9 @@ import { getInitials } from "@/lib/utils";
 interface AvatarProps {
   addButton?: boolean;
   avatar?: {
-    image: string;
+    image: {
+      image: string;
+    };
   };
   name?: string;
   onPress: VoidFunction;
@@ -34,7 +36,7 @@ export default function Avatar({
       <View className="w-20 h-20 rounded-full border-2 border-brand-green bg-muted p-1">
         {avatar?.image ? (
           <Image
-            source={{ uri: avatar.image }}
+            source={{ uri: avatar.image?.image }}
             className="w-full h-full rounded-full"
           />
         ) : (
