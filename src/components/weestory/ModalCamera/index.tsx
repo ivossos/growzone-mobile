@@ -347,7 +347,6 @@ export default function ModalCamera() {
                     ref={cameraRef}
                     facing={facing}
                     style={styles.camera}
-                    // mode={Platform.OS === "ios" ? "video" : "picture"}
                     mode={isRecording ? "video" : "picture"}
                     ratio="16:9"
                     pictureSize="1080x1920"
@@ -444,7 +443,12 @@ export default function ModalCamera() {
             </View>
             <View className="flex-row items-center justify-between w-full gap-3">
               <View className="flex-row items-center gap-3">
-                <WeestoryCircleIcon />
+                <TouchableOpacity
+                  onPress={handleClosePreview}
+                  className="w-12 h-12 rounded-full bg-black-70 items-center justify-center"
+                >
+                  <WeestoryCircleIcon />
+                </TouchableOpacity>
                 <Text className="text-base font-semibold text-white">
                   Weestory
                 </Text>

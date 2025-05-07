@@ -3,19 +3,19 @@ import {
   Modal,
   View,
   Image,
-  TouchableOpacity,
+  // TouchableOpacity,
   Dimensions,
   Animated,
   Pressable,
   SafeAreaView,
-  KeyboardAvoidingView,
+  // KeyboardAvoidingView,
   Platform,
-  TextInput,
+  // TextInput,
   Easing,
 } from "react-native";
 import { Video, ResizeMode } from "expo-av";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+// import { Ionicons } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
 
 import ReportBottomSheet from "@/components/ui/report-bottom-sheet";
@@ -26,7 +26,7 @@ import Header from "../ModalWeestory/Header";
 
 import { styles } from "./styles";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 export default function ModalWeestory({
   users,
@@ -45,7 +45,7 @@ export default function ModalWeestory({
   const reportSheetRef = useRef<BottomSheet>(null);
   const videoRef = useRef<Video>(null);
   const [videoDuration, setVideoDuration] = useState(5000);
-  const [comment, setComment] = useState("");
+  // const [comment, setComment] = useState("");
 
   const { openBottomSheet } = useBottomSheetContext();
 
@@ -238,7 +238,7 @@ export default function ModalWeestory({
                 source={{ uri: currentStory.uri }}
                 style={{
                   width,
-                  height: "90%",
+                  height,
                   resizeMode: "cover",
                   borderRadius: 20,
                 }}
@@ -247,7 +247,7 @@ export default function ModalWeestory({
               <Video
                 ref={videoRef}
                 source={{ uri: currentStory.uri }}
-                style={{ width, height: "90%", borderRadius: 20 }}
+                style={{ width, height, borderRadius: 20 }}
                 resizeMode={ResizeMode.COVER}
                 shouldPlay={!isPaused}
                 onPlaybackStatusUpdate={handleVideoStatusUpdate}
@@ -261,7 +261,7 @@ export default function ModalWeestory({
           handlePrevious={handlePreviousStory}
         />
 
-        <KeyboardAvoidingView
+        {/* <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 50}
           style={{
@@ -333,7 +333,7 @@ export default function ModalWeestory({
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
+        </KeyboardAvoidingView> */}
       </SafeAreaView>
 
       <ReportBottomSheet
