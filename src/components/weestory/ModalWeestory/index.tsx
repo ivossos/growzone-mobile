@@ -3,20 +3,18 @@ import {
   Modal,
   View,
   Image,
-  // TouchableOpacity,
   Dimensions,
   Animated,
   Pressable,
   SafeAreaView,
-  // KeyboardAvoidingView,
   Platform,
-  // TextInput,
   Easing,
 } from "react-native";
-import { Video, ResizeMode } from "expo-av";
+import { useEventListener, useEvent } from "expo";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-// import { Ionicons } from "@expo/vector-icons";
 import BottomSheet from "@gorhom/bottom-sheet";
+
+import { useVideoPlayer, VideoView } from "expo-video";
 
 import ReportBottomSheet from "@/components/ui/report-bottom-sheet";
 import { useBottomSheetContext } from "@/context/bottom-sheet-context";
@@ -41,17 +39,25 @@ export default function ModalWeestory({
   const progressAnimation = useRef<Animated.CompositeAnimation | null>(null);
   const transitionAnim = useRef(new Animated.Value(0)).current;
   const currentProgress = useRef(0);
-
   const reportSheetRef = useRef<BottomSheet>(null);
-  const videoRef = useRef<Video>(null);
   const [videoDuration, setVideoDuration] = useState(5000);
-  // const [comment, setComment] = useState("");
 
   const { openBottomSheet } = useBottomSheetContext();
 
   const currentUser = users[userIndex];
-
   const currentStory = currentUser.stories[storyIndex];
+
+  const player = useVideoPlayer(currentStory.uri, (player) => {
+    player.muted = false;
+    player.timeUpdateEventInterval = 500;
+    player.volume = 1.0;
+  });
+
+  useEventListener(player, "playToEnd", () => {
+    if (currentStory.type === "video") {
+      handleNextStory();
+    }
+  });
 
   const startProgress = (fromValue: number, duration: number) => {
     progress.setValue(fromValue);
@@ -98,26 +104,9 @@ export default function ModalWeestory({
     }
   };
 
-  const handleVideoStatusUpdate = (status: any) => {
-    if (!status?.isLoaded) return;
-
-    if (status.durationMillis && status.durationMillis !== videoDuration) {
-      setVideoDuration(status.durationMillis);
-    }
-
-    if (status.didJustFinish) {
-      handleNextStory();
-      return;
-    }
-
-    if (!isPaused && status.isPlaying && progressAnimation.current === null) {
-      startProgress(0, status.durationMillis);
-    }
-  };
-
   const handlePressReport = () => {
     setIsPaused(true);
-    videoRef.current?.pauseAsync();
+    player?.pause();
     progress.stopAnimation((value) => {
       currentProgress.current = value;
     });
@@ -131,7 +120,7 @@ export default function ModalWeestory({
 
   const closeReportBottomSheet = () => {
     setIsPaused(false);
-    videoRef.current?.playAsync();
+    player?.play();
     const duration = currentStory.type === "image" ? 5000 : videoDuration;
     startProgress(currentProgress.current, duration);
     reportSheetRef.current?.close();
@@ -161,19 +150,42 @@ export default function ModalWeestory({
     }).start();
   }, [userIndex]);
 
+  useEffect(() => {
+    if (player) {
+      if (isPaused) {
+        player.pause();
+      } else {
+        player.play();
+      }
+    }
+  }, [isPaused, player]);
+
+  useEffect(() => {
+    if (Platform.OS === "ios" && currentStory.type === "video") {
+      const updateProgress = () => {
+        if (player) {
+          const currentTime = player.currentTime;
+          const duration = player.duration;
+          if (currentTime != null && duration != null && duration > 0) {
+            const progressValue = currentTime / duration;
+            progress.setValue(progressValue);
+          }
+        }
+      };
+
+      const interval = setInterval(updateProgress, 100);
+      return () => clearInterval(interval);
+    } else {
+      startProgress(0, 5000);
+    }
+  }, [player]);
+
   const headerTop = Platform.OS === "ios" ? insets.top + 10 : insets.top - 25;
 
   return (
     <Modal visible animationType="fade">
       <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-        <View
-          style={[
-            styles.header,
-            {
-              top: headerTop,
-            },
-          ]}
-        >
+        <View style={[styles.header, { top: headerTop }]}>
           {currentUser.stories.map((_: any, i: number) => (
             <View
               key={i}
@@ -244,14 +256,18 @@ export default function ModalWeestory({
                 }}
               />
             ) : (
-              <Video
-                ref={videoRef}
-                source={{ uri: currentStory.uri }}
-                style={{ width, height, borderRadius: 20 }}
-                resizeMode={ResizeMode.COVER}
-                shouldPlay={!isPaused}
-                onPlaybackStatusUpdate={handleVideoStatusUpdate}
-              />
+              player && (
+                <VideoView
+                  player={player}
+                  nativeControls={false}
+                  contentFit="cover"
+                  style={{
+                    width,
+                    height,
+                    borderRadius: 20,
+                  }}
+                />
+              )
             )}
           </Pressable>
         </Animated.View>
@@ -260,80 +276,6 @@ export default function ModalWeestory({
           handleNext={handleNextStory}
           handlePrevious={handlePreviousStory}
         />
-
-        {/* <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 50}
-          style={{
-            position: "absolute",
-            zIndex: 6,
-            bottom: insets.bottom,
-            width,
-          }}
-        >
-          <View
-            style={{
-              justifyContent: "flex-end",
-              marginHorizontal: 10,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                borderRadius: 8,
-                paddingVertical: 15,
-                paddingHorizontal: 15,
-                borderWidth: 1,
-                borderColor: "#333",
-                gap: 10,
-              }}
-            >
-              <TextInput
-                style={{
-                  flex: 1,
-                  color: "white",
-                  borderRadius: 20,
-                  width: "100%",
-                }}
-                value={comment}
-                onChangeText={setComment}
-                placeholder="Comentar..."
-                placeholderTextColor="#ffffff"
-                onFocus={() => {
-                  setIsPaused(true);
-                  videoRef.current?.pauseAsync();
-                  progress.stopAnimation((value) => {
-                    currentProgress.current = value;
-                  });
-                  progressAnimation.current?.stop();
-                }}
-                onBlur={() => {
-                  setIsPaused(false);
-                  videoRef.current?.playAsync();
-                  const duration =
-                    currentStory.type === "image" ? 5000 : videoDuration;
-                  startProgress(currentProgress.current, duration);
-                }}
-              />
-
-              <TouchableOpacity
-                onPress={() =>
-                  console.log("curtir o video/imagem", currentUser)
-                }
-              >
-                <Ionicons name="heart-outline" size={22} color="#2CC420" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() =>
-                  console.log("comentar o video/imagem", currentUser)
-                }
-              >
-                <Ionicons name="send" size={18} color="#2CC420" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </KeyboardAvoidingView> */}
       </SafeAreaView>
 
       <ReportBottomSheet
