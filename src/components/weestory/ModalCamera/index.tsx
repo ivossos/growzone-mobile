@@ -432,6 +432,7 @@ export default function ModalCamera() {
           snapPoints={[height * 0.3]}
           onClose={handleCloseModal}
           enablePanDownToClose={true}
+          enableHandlePanningGesture={false}
           handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
           backgroundStyle={{ backgroundColor: colors.black[100] }}
         >
