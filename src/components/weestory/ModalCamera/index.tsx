@@ -409,8 +409,8 @@ export default function ModalCamera() {
                       <Text
                         className="text-white text-base font-semibold text-neutral-400 absolute"
                         style={{
-                          fontSize: 16,
-                          top: 35,
+                          fontSize: 14,
+                          top: 30,
                           width: 100,
                         }}
                       >

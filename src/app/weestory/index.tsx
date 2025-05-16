@@ -64,7 +64,7 @@ export default function WeestoryScreen() {
         album.assets.map(async (asset) => {
           try {
             let assetInfo = await MediaLibrary.getAssetInfoAsync(asset.id);
-            let localUri = assetInfo.localUri;
+            let localUri = assetInfo.localUri || assetInfo.uri;
             let thumbnail = null;
 
             if (asset.mediaType === "video" && localUri) {
