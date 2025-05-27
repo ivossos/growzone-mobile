@@ -12,7 +12,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { ChevronLeft } from "lucide-react-native";
 import { View } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { getReel } from "@/api/social/post/get-reel";

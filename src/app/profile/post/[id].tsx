@@ -17,7 +17,7 @@ import { createVideoPlayer } from "expo-video";
 import { ArrowLeft } from "lucide-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 

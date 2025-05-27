@@ -14,17 +14,24 @@ interface CreateNewReelsResponse {
   is_active: boolean;
 }
 
-export default async function createNewReels({ video, description }: CreateReelsPostBody) {
+export default async function createNewReels({
+  video,
+  description,
+}: CreateReelsPostBody) {
   const formData = new FormData();
 
-  formData.append('video', video);
-  formData.append('description', description ?? '');
+  formData.append("video", video);
+  formData.append("description", description ?? "");
 
-  const response = await socialApi.post<CreateNewReelsResponse>(`/new-reel-post/`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+  const response = await socialApi.post<CreateNewReelsResponse>(
+    `/new-reel-post/`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
 
   return response.data;
 }

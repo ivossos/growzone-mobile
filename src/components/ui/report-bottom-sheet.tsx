@@ -187,7 +187,7 @@ const ReportBottomSheet = React.forwardRef<BottomSheet, ReportBottomSheetProps>(
         handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
         backgroundStyle={{ backgroundColor: colors.black[100] }}
         backdropComponent={renderBackdrop}
-        onClose={closeBottomSheet}
+        onClose={handleClose}
       >
         {reportSubmitted ? (
           <ReportedSuccessfully />

@@ -281,7 +281,7 @@ export default function Timeline() {
   };
 
   const handlerGoBack = () => {
-    router.back();
+    router.push(`/profile?id=${userId}`);
   };
 
   const renderItem = useCallback(

@@ -77,16 +77,34 @@ export default function RootLayout() {
       <ThemeProvider value={DarkTheme}>
         <QueryClientProvider client={queryClient}>
           <AuthContextProvider>
-            <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.black[100]}}>
+            <GestureHandlerRootView
+              style={{ flex: 1, backgroundColor: colors.black[100] }}
+            >
               <Stack>
                 <Stack.Screen name="(auth)" options={{ headerShown: false }} />
                 {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
                 <Stack.Screen name="index" options={{ headerShown: false }} />
                 <Stack.Screen
                   name="notifications"
-                  options={{ headerShown: false, contentStyle: { backgroundColor: colors.black[100] } }}
+                  options={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.black[100] },
+                  }}
                 />
-                <Stack.Screen name="profile" options={{ headerShown: false, contentStyle: { backgroundColor: colors.black[100] } }} />
+                <Stack.Screen
+                  name="weestory"
+                  options={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.black[100] },
+                  }}
+                />
+                <Stack.Screen
+                  name="profile"
+                  options={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.black[100] },
+                  }}
+                />
                 <Stack.Screen
                   name="followers"
                   options={{ headerShown: false }}
@@ -110,7 +128,10 @@ export default function RootLayout() {
                 />
                 <Stack.Screen
                   name="(drawer)"
-                  options={{ headerShown: false, contentStyle: { backgroundColor: colors.black[100] } }}
+                  options={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: colors.black[100] },
+                  }}
                 />
                 <Stack.Screen name="+not-found" />
               </Stack>

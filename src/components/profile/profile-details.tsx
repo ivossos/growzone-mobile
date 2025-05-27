@@ -99,7 +99,7 @@ export default function ProfileDetails({
       <View className="flex flex-row items-center gap-4 h-[72px] px-6 border-b-[1px] border-black-80">
         <TouchableOpacity
           className="p-2 rounded-lg border border-black-80"
-          onPress={() => router.back()}
+          onPress={() => router.push(`/profile?id=${userId}`)}
         >
           <ChevronLeft className="w-8 h-8" color={colors.brand.white} />
         </TouchableOpacity>
@@ -241,7 +241,7 @@ export default function ProfileDetails({
                   </Text>
                 </View>
                 <Text className="text-sm text-brand-grey font-regular">
-                  Avaliação
+                  Avaliação 123
                 </Text>
               </TouchableOpacity>
             </View>

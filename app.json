@@ -3,7 +3,7 @@
     "owner": "growzone.inc",
     "name": "Growzone",
     "slug": "growzone",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "growzone",
@@ -19,22 +19,29 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
+        "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
+        "NSPhotoLibraryAddUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
         "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
         "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
         "NSUserNotificationUsageDescription": "Precisamos de permissão para enviar notificações.",
-        "NSMicrophoneUsageDescription": "Precisamos de permissão para acessar o microfone para gravar áudio.",
         "UIBackgroundModes": ["fetch", "remote-notification"]
       },
       "locales": {
         "pt-BR": {
+          "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
+          "NSPhotoLibraryAddUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
           "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
           "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
         },
         "es": {
+          "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
+          "NSPhotoLibraryAddUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
           "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
           "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para capturar fotos y videos."
         },
         "en": {
+          "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
+          "NSPhotoLibraryAddUsageDescription": "We need access to your photo library to select photos and videos.",
           "NSPhotoLibraryUsageDescription": "We need access to your photo library to select photos and videos.",
           "NSCameraUsageDescription": "We need access to your camera to capture photos and videos."
         }
@@ -46,22 +53,14 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/images/adaptive-icon.png",
-        "backgroundColor": "#000000",
-        "permissions": {
-          "READ_EXTERNAL_STORAGE": {
-            "message": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos."
-          },
-          "CAMERA": {
-            "message": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
-          },
-          "MEDIA_LIBRARY": {
-            "message": "Precisamos de acesso à sua galeria para upload de fotos e vídeos."
-          },
-          "NOTIFICATIONS": {
-            "message": "Precisamos de permissão para enviar notificações."
-          }
-        }
+        "backgroundColor": "#000000"
       },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "MEDIA_LIBRARY",
+        "NOTIFICATIONS"
+      ],
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.growzone.app"
     },
@@ -105,6 +104,22 @@
           "color": "#ffffff",
           "defaultChannel": "default",
           "enableBackgroundRemoteNotifications": true
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your photos.",
+          "savePhotosPermission": "Allow $(PRODUCT_NAME) to save photos.",
+          "isAccessMediaLocationEnabled": true
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
         }
       ]
     ],

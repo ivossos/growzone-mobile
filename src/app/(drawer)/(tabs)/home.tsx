@@ -23,6 +23,8 @@ import { useScrollToTop } from "@/context/scroll-top-context";
 import UpdateAppModal from "@/components/ui/update-app";
 import { useIsFocused } from "@react-navigation/native";
 
+import WeestorySlider from "@/components/weestory/Slider";
+
 export default function HomeScreen() {
   const [data, setData] = useState<any>([]);
   const [loading, setLoading] = useState(true);
@@ -41,57 +43,65 @@ export default function HomeScreen() {
 
   const [activePost, setActivePost] = useState<number | undefined>();
 
+  const [refreshWeestory, setRefreshWeestory] = useState(false);
+
   const { setFlatListRef } = useScrollToTop();
 
-  const handleVideoChange = useCallback((postId: number, videoIndex: number) => {
-    const newPlayerKey = `${postId}-${videoIndex}`;
-    const lastPlayerKey = `${lastActivePostId.current?.postId}-${lastActivePostId.current?.index}`;
-  
-    lastsPostsCarrocelIndex.current[postId] = videoIndex;
-    if (newPlayerKey !== lastPlayerKey) {
-      const lastPlayer = playerRef.current.get(lastPlayerKey);
-      if (lastPlayer) {
-        lastPlayer.pause();
-      }
-  
-      const newPlayer = playerRef.current.get(newPlayerKey);
-      if (newPlayer) {
-        newPlayer.play();
-      }
-  
-      setActivePost(postId);
-      lastActivePostId.current = { postId, index: videoIndex };
-    }
-  }, []);
-
-  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
-    if (viewableItems.length === 0) {
-      return;
-    }
-  
-    const firstVisibleItem = viewableItems.find((item: any) => item.isViewable);
-  
-    if (firstVisibleItem) {
-      const newActivePostId = firstVisibleItem.item.post.post_id;
-      const videoIndex = lastsPostsCarrocelIndex.current[newActivePostId] ?? 0;
-  
-      const newPlayerKey = `${newActivePostId}-${videoIndex}`;
+  const handleVideoChange = useCallback(
+    (postId: number, videoIndex: number) => {
+      const newPlayerKey = `${postId}-${videoIndex}`;
       const lastPlayerKey = `${lastActivePostId.current?.postId}-${lastActivePostId.current?.index}`;
-  
+
+      lastsPostsCarrocelIndex.current[postId] = videoIndex;
       if (newPlayerKey !== lastPlayerKey) {
         const lastPlayer = playerRef.current.get(lastPlayerKey);
         if (lastPlayer) {
           lastPlayer.pause();
         }
-  
+
         const newPlayer = playerRef.current.get(newPlayerKey);
         if (newPlayer) {
           newPlayer.play();
-        } 
-  
+        }
+
+        setActivePost(postId);
+        lastActivePostId.current = { postId, index: videoIndex };
+      }
+    },
+    []
+  );
+
+  const onViewableItemsChanged = useCallback(({ viewableItems }: any) => {
+    if (viewableItems.length === 0) {
+      return;
+    }
+
+    const firstVisibleItem = viewableItems.find((item: any) => item.isViewable);
+
+    if (firstVisibleItem) {
+      const newActivePostId = firstVisibleItem.item.post.post_id;
+      const videoIndex = lastsPostsCarrocelIndex.current[newActivePostId] ?? 0;
+
+      const newPlayerKey = `${newActivePostId}-${videoIndex}`;
+      const lastPlayerKey = `${lastActivePostId.current?.postId}-${lastActivePostId.current?.index}`;
+
+      if (newPlayerKey !== lastPlayerKey) {
+        const lastPlayer = playerRef.current.get(lastPlayerKey);
+        if (lastPlayer) {
+          lastPlayer.pause();
+        }
+
+        const newPlayer = playerRef.current.get(newPlayerKey);
+        if (newPlayer) {
+          newPlayer.play();
+        }
+
         setActivePost(newActivePostId);
-  
-        lastActivePostId.current = { postId: newActivePostId, index: videoIndex };
+
+        lastActivePostId.current = {
+          postId: newActivePostId,
+          index: videoIndex,
+        };
       }
     }
   }, []);
@@ -179,17 +189,20 @@ export default function HomeScreen() {
       } finally {
         setLoading(false);
         setIsRefreshing(false);
+        setRefreshWeestory(false);
       }
     },
     [page]
   );
 
   const onRefresh = () => {
+    setRefreshWeestory(true);
     loadData(true);
   };
 
   const handleEndReached = () => {
     if (!loading && !isLastPage) {
+      setRefreshWeestory(true);
       setPage((prevPage) => prevPage + 10);
     }
   };
@@ -226,7 +239,7 @@ export default function HomeScreen() {
 
       const currentPost = lastActivePostId.current;
       if (currentPost) {
-        const playerKey = `${currentPost.postId}-${currentPost.index}`; 
+        const playerKey = `${currentPost.postId}-${currentPost.index}`;
         const currentPlayer = playerRef.current.get(playerKey);
         if (currentPlayer) {
           currentPlayer.play();
@@ -235,7 +248,7 @@ export default function HomeScreen() {
 
       return () => {
         const currentPost = lastActivePostId.current;
-        if(currentPost) {
+        if (currentPost) {
           const playerKey = `${currentPost.postId}-${currentPost.index}`;
           const currentPlayer = playerRef.current.get(playerKey);
           if (currentPlayer) {
@@ -257,7 +270,11 @@ export default function HomeScreen() {
   return (
     <>
       <UpdateAppModal />
-      <SafeAreaView style={{ flex: 1 }} className="bg-black-100" edges={["top"]}>
+      <SafeAreaView
+        style={{ flex: 1 }}
+        className="bg-black-100"
+        edges={["top"]}
+      >
         <FlashList
           ref={setFlatListRef}
           data={data}
@@ -271,7 +288,12 @@ export default function HomeScreen() {
           refreshing={isRefreshing}
           viewabilityConfig={viewabilityConfig}
           showsVerticalScrollIndicator={false}
-          ListHeaderComponent={<Header />}
+          ListHeaderComponent={
+            <React.Fragment>
+              <Header />
+              <WeestorySlider refreshPage={refreshWeestory} />
+            </React.Fragment>
+          }
           ListEmptyComponent={renderEmptyComponent}
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
