@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { View, Dimensions, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Dimensions,
+  TouchableOpacity,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
 import images from "@/constants/images";
 
 import { ArrowLeft } from "lucide-react-native";
@@ -192,12 +198,9 @@ const SignUp = () => {
         <Progress value={progress} className="max-h-1 max-w-20" />
       </View>
 
-      <KeyboardAwareScrollView
-        className="bg-black-100"
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        extraScrollHeight={70}
-        enableOnAndroid={true}
+      <KeyboardAvoidingView
+        className="bg-black-100 flex-1"
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <View
           className="w-full flex items-center h-full px-6"
@@ -224,7 +227,7 @@ const SignUp = () => {
             />
           </FormProvider>
         </View>
-      </KeyboardAwareScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
