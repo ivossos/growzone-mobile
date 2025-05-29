@@ -36,7 +36,7 @@ export default function WeestoryScreen() {
   const { openCamera } = useCameraModal();
   const [permission, requestPermission] = MediaLibrary.usePermissions();
   const [media, setMedia] = useState<any>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState("all");
 
   const handlePermissionRequest = async () => {
