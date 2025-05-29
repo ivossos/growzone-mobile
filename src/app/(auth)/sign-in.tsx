@@ -40,7 +40,7 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const { signIn, user } = useAuth();
+  const { signIn } = useAuth();
 
   const form = useForm({
     resolver: zodResolver(SigninValidation),
