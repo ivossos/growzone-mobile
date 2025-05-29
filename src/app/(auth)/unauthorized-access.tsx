@@ -1,11 +1,6 @@
 import { Redirect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  View,
-  Text,
-  Image,
-} from "react-native";
-import images from "@/constants/images";
+import { View, Text } from "react-native";
 import { useAuth } from "@/hooks/use-auth";
 import Loader from "@/components/ui/loader";
 import { StatusBar } from "expo-status-bar";
@@ -36,7 +31,7 @@ const UnauthorizedAccess = () => {
           </View>
         </View>
       </SafeAreaView>
-      <StatusBar backgroundColor="#000000" style="light" />
+      <StatusBar style="light" />
     </>
   );
 };

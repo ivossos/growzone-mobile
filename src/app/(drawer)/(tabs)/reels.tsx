@@ -104,7 +104,7 @@ export default function Reels() {
 
   return (
     <View>
-      <StatusBar translucent backgroundColor={"transparent"} />
+      <StatusBar translucent />
       <FlatList
         data={reelsData?.pages.flat() || []}
         renderItem={renderItem}

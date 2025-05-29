@@ -1,7 +1,7 @@
 {
   "name": "growzone-mobile",
   "main": "expo-router/entry",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "scripts": {
     "start": "expo start --go",
     "start:clear": "expo start --clear",
@@ -38,7 +38,6 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "expo": "53.0.9",
-    "expo-av": "~15.1.4",
     "expo-blur": "~14.1.4",
     "expo-camera": "~16.1.6",
     "expo-constants": "~17.1.6",

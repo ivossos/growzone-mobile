@@ -46,7 +46,7 @@ export default function Layout() {
           ref={rateProfileSheetRef}
           onClose={rateProfileBottomSheet}
         />
-        <StatusBar backgroundColor={colors.black[100]} style="light" />
+        <StatusBar style="light" />
       </VideoPlayerProvider>
     </BottomSheetProvider>
   );
