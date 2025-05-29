@@ -128,164 +128,162 @@ export default function TabLayout() {
   };
 
   return (
-    <>
-      <BottomSheetProvider>
-        <Tabs
-          screenOptions={{
-            tabBarActiveTintColor: "#2CC420",
-            tabBarInactiveTintColor: "#FFF",
-            tabBarShowLabel: false,
-            tabBarStyle: {
-              height: Platform.OS === "ios" ? 72 : 66,
-              backgroundColor: "#161616",
-              justifyContent: "center",
-              alignItems: "center",
+    <BottomSheetProvider>
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: "#2CC420",
+          tabBarInactiveTintColor: "#FFF",
+          tabBarShowLabel: false,
+          tabBarStyle: {
+            height: Platform.OS === "ios" ? 72 : 66,
+            backgroundColor: "#161616",
+            justifyContent: "center",
+            alignItems: "center",
+          },
+        }}
+      >
+        <Tabs.Screen
+          name="home"
+          listeners={({ navigation, route }) => ({
+            tabPress: (e) => {
+              const state = navigation.getState();
+              const isHomeFocused =
+                state?.routes[state.index]?.name === "home";
+
+              if (isHomeFocused) {
+                e.preventDefault();
+                scrollToTop();
+              } else {
+                navigation.navigate(route.name);
+              }
+            },
+          })}
+          options={{
+            title: "Home",
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                name={focused ? "home" : "home-outline"}
+                color={color}
+                focused={focused}
+                icon={icons.home}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="search"
+          options={{
+            title: "Pesquisa Global",
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                name={focused ? "community" : "community-outline"}
+                color={color}
+                focused={focused}
+                icon={icons.community}
+              />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="create"
+          listeners={{
+            tabPress: (e) => {
+              e.preventDefault();
+              if (isProcessing) {
+                toggleVibration();
+                return;
+              }
+              //pauseVideo();
+              openBottomSheet();
             },
           }}
-        >
-          <Tabs.Screen
-            name="home"
-            listeners={({ navigation, route }) => ({
-              tabPress: (e) => {
-                const state = navigation.getState();
-                const isHomeFocused =
-                  state?.routes[state.index]?.name === "home";
-
-                if (isHomeFocused) {
-                  e.preventDefault();
-                  scrollToTop();
-                } else {
-                  navigation.navigate(route.name);
-                }
-              },
-            })}
-            options={{
-              title: "Home",
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon
-                  name={focused ? "home" : "home-outline"}
-                  color={color}
-                  focused={focused}
-                  icon={icons.home}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="search"
-            options={{
-              title: "Pesquisa Global",
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon
-                  name={focused ? "community" : "community-outline"}
-                  color={color}
-                  focused={focused}
-                  icon={icons.community}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="create"
-            listeners={{
-              tabPress: (e) => {
-                e.preventDefault();
-                if (isProcessing) {
-                  toggleVibration();
-                  return;
-                }
-                //pauseVideo();
-                openBottomSheet();
-              },
-            }}
-            options={{
-              title: "Create",
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon
-                  name={focused ? "create" : "create-outline"}
-                  color={color}
-                  focused={focused}
-                  icon={icons.create}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="reels"
-            options={{
-              title: "Reels",
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <TabIcon
-                  name={focused ? "reels" : "reels-outline"}
-                  color={color}
-                  focused={focused}
-                  icon={icons.reels}
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="profile"
-            options={{
-              title: "Perfil",
-              headerShown: false,
-              tabBarIcon: ({ focused }) => (
-                <Avatar
-                  className={`w-8 h-8 bg-black-80 ${
-                    focused && "border border-brand-green"
-                  }`}
-                >
-                  {user.image?.image && (
-                    <AvatarImage
-                      className="rounded-full"
-                      source={{ uri: user.image?.image }}
-                    />
-                  )}
-                  <AvatarFallback>
-                    {getInitials(user.name || user.username)}
-                  </AvatarFallback>
-                </Avatar>
-              ),
-            }}
-          />
-        </Tabs>
-        <StatusBar backgroundColor="#000000" style="light" />
-        <CreateBottomSheet
-          ref={bottomSheetRef}
-          onClose={closeCreateBottomSheet}
-          handlerCreateBottomSheet={handlerCreateBottomSheet}
+          options={{
+            title: "Create",
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                name={focused ? "create" : "create-outline"}
+                color={color}
+                focused={focused}
+                icon={icons.create}
+              />
+            ),
+          }}
         />
-        <CommentBottomSheet ref={commentSheetRef} />
-        <ReportBottomSheet
-          ref={reportSheetRef}
-          onClose={closeReportBottomSheet}
+        <Tabs.Screen
+          name="reels"
+          options={{
+            title: "Reels",
+            headerShown: false,
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                name={focused ? "reels" : "reels-outline"}
+                color={color}
+                focused={focused}
+                icon={icons.reels}
+              />
+            ),
+          }}
         />
-        <ReportCommentBottomSheet
-          ref={reportCommentSheetRef}
-          onClose={closeReportCommentBottomSheet}
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Perfil",
+            headerShown: false,
+            tabBarIcon: ({ focused }) => (
+              <Avatar
+                className={`w-8 h-8 bg-black-80 ${
+                  focused && "border border-brand-green"
+                }`}
+              >
+                {user.image?.image && (
+                  <AvatarImage
+                    className="rounded-full"
+                    source={{ uri: user.image?.image }}
+                  />
+                )}
+                <AvatarFallback>
+                  {getInitials(user.name || user.username)}
+                </AvatarFallback>
+              </Avatar>
+            ),
+          }}
         />
-        <GlobalSearchBottomSheet
-          ref={searchSheetRef}
-          onClose={closeSeachBottomSheet}
-        />
-        <RateProfileBottomSheet
-          ref={rateProfileSheetRef}
-          onClose={rateProfileBottomSheet}
-        />
-        <ProfileBottomSheet
-          ref={profileSheetRef}
-          onClose={profileBottomSheet}
-        />
-        <PostBottomSheet ref={postSheetRef} onClose={closePostBottomSheet} />
-        <DeletePostBottomSheet
-          ref={deletePostSheetRef}
-          onClose={closeDeletePostBottomSheet}
-        />
-      </BottomSheetProvider>
-    </>
+      </Tabs>
+      <StatusBar style="light" />
+      <CreateBottomSheet
+        ref={bottomSheetRef}
+        onClose={closeCreateBottomSheet}
+        handlerCreateBottomSheet={handlerCreateBottomSheet}
+      />
+      <CommentBottomSheet ref={commentSheetRef} />
+      <ReportBottomSheet
+        ref={reportSheetRef}
+        onClose={closeReportBottomSheet}
+      />
+      <ReportCommentBottomSheet
+        ref={reportCommentSheetRef}
+        onClose={closeReportCommentBottomSheet}
+      />
+      <GlobalSearchBottomSheet
+        ref={searchSheetRef}
+        onClose={closeSeachBottomSheet}
+      />
+      <RateProfileBottomSheet
+        ref={rateProfileSheetRef}
+        onClose={rateProfileBottomSheet}
+      />
+      <ProfileBottomSheet
+        ref={profileSheetRef}
+        onClose={profileBottomSheet}
+      />
+      <PostBottomSheet ref={postSheetRef} onClose={closePostBottomSheet} />
+      <DeletePostBottomSheet
+        ref={deletePostSheetRef}
+        onClose={closeDeletePostBottomSheet}
+      />
+    </BottomSheetProvider>
   );
 }
