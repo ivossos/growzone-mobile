@@ -97,7 +97,7 @@ export default function Layout() {
             ref={profileCoverSheetRef}
             onClose={closeProfileCoverBottomSheet}
           />
-          <StatusBar backgroundColor={colors.black[100]} style="light" />
+          <StatusBar style="light" />
         </VideoPlayerProvider>
       </ActivePostHomeProvider>
     </BottomSheetProvider>

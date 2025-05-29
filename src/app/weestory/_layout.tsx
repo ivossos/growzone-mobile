@@ -11,7 +11,7 @@ export default function Layout() {
   return (
     <CameraModalProvider>
       <Slot />
-      <StatusBar backgroundColor={colors.black[100]} style="light" />
+      <StatusBar style="light" />
       <ModalCamera />
       <Toast />
     </CameraModalProvider>

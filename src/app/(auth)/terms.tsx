@@ -134,7 +134,7 @@ export default function Terms() {
 
       </SafeAreaView>
       <Loader isLoading={isLoading} />
-      <StatusBar backgroundColor={colors.black[90]} style="light" />
+      <StatusBar style="light" />
     </>
   );
 }

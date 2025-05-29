@@ -300,10 +300,7 @@ export default function DrawerLayout() {
                     ref={deletePostSheetRef}
                     onClose={closeDeletePostBottomSheet}
                   />
-                  <StatusBar
-                    backgroundColor={colors.black[100]}
-                    style="light"
-                  />
+                  <StatusBar style="light" />
                 </ScrollToTopProvider>
               </BottomSheetProvider>
             </PlayerProvider>

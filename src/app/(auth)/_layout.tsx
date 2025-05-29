@@ -81,8 +81,8 @@ export default function AuthLayout() {
       />
     </Stack>
 
-    <Loader isLoading={isLoadingUserStorage} />
-    <StatusBar backgroundColor="#000000" style="light" />
-  </>
+      <Loader isLoading={isLoadingUserStorage} />
+      <StatusBar style="light" />
+    </>
   );
 }

@@ -210,7 +210,7 @@ const SignIn = () => {
         </View>
       </ScrollView>
     </SafeAreaView>
-    <StatusBar backgroundColor="#000000" style="light" />
+      <StatusBar style="light" />
     </>
   );
 };

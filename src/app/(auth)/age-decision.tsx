@@ -58,7 +58,7 @@ const AgeDecision = () => {
           </View>
           </View>
       </SafeAreaView>
-      <StatusBar backgroundColor="#000000" style="light" />
+      <StatusBar style="light" />
     </>
   );
 };

@@ -45,7 +45,7 @@ export default function Reels() {
   return (
     <View style={{  backgroundColor: colors.black[100], flex: 1 }}>
     <Stack.Screen options={{ headerShown: false }} />
-    <StatusBar backgroundColor={colors.black[100]} style="light" />
+      <StatusBar style="light" />
 
     <SafeAreaView
       style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}>
