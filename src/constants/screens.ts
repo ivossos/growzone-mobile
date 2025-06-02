@@ -4,9 +4,15 @@ import PadlockIcon from "@/assets/icons/padlock.svg";
 import SettingsIcon from "@/assets/icons/settings.svg";
 import FileIcon from "@/assets/icons/file.svg";
 import SecurityIcon from "@/assets/icons/security.svg";
+import GrowsyncIcon from "@/assets/icons/sync.svg";
 import CloseIcon from "@/assets/icons/close.svg";
 
 export const screens = {
+  'growsync': {
+    title: 'Growsync',
+    description: 'Se conecte com sua conta no Instagram',
+    Icon: GrowsyncIcon,
+  },
   'edit-profile': {
     title: 'Dados gerais',
     description: 'Gerencie e atualize suas informações pessoais com facilidade e segurança.',

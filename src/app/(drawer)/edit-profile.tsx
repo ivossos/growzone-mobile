@@ -9,8 +9,8 @@ import { formatDate, formatDateApi, getInitials, maskDate, maskPhone } from "@/l
 import { colors } from "@/styles/colors";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router, useNavigation } from "expo-router";
-import { ArrowLeft, CalendarDays, Camera, Pencil } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { ArrowLeft, CalendarDays, Camera } from "lucide-react-native";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ScrollView, Text, TouchableOpacity, View, KeyboardAvoidingView, Platform, Image, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

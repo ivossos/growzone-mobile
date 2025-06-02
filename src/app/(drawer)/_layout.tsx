@@ -2,6 +2,7 @@ import { CustomOptions } from "@/@types/navigation";
 import { DrawerContent } from "@/components/ui/drawer-content";
 import { Drawer } from "expo-router/drawer";
 import ProfileIcon from "@/assets/icons/profile.svg";
+import GrowsyncIcon from "@/assets/icons/sync.svg";
 import PadlockIcon from "@/assets/icons/padlock.svg";
 import FileIcon from "@/assets/icons/file.svg";
 import QuestionIcon from "@/assets/icons/question.svg";
@@ -130,6 +131,16 @@ export default function DrawerLayout() {
                     drawerContent={(props) => <DrawerContent {...props} />}
                   >
                     <Drawer.Screen name="(tabs)" />
+
+                    <Drawer.Screen
+                      name="growsync/index"
+                      options={{
+                        title: "Growsync",
+                        iconName: GrowsyncIcon,
+                        isDivider: true,
+                        animationEnabled: true,
+                      } as CustomOptions}
+                    />
 
                     <Drawer.Screen
                       name="edit-profile"
