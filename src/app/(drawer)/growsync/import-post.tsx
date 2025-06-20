@@ -343,20 +343,15 @@ export default function ImportPost() {
       </View>
       {showModal && (
          <BlurView intensity={80} tint="dark" className="flex-1 justify-center items-center px-6 absolute inset-0">
-      <Animated.View style={{ transform: [{ translateY }], width: "100%", maxWidth: 360 }}>
-        <ReportModal
-          onCancel={() => {
-            setShowModal(false);
-            setPendingTab(null);
-          }}
-          onConfirm={() => {
-            if (pendingTab) setActiveTab(pendingTab);
-            setShowModal(false);
-            setPendingTab(null);
-          }}
-        />
-      </Animated.View>
-    </BlurView>
+          <Animated.View style={{ transform: [{ translateY }], width: "100%", maxWidth: 360 }}>
+            <ReportModal
+              onCancel={() => {
+                setShowModal(false);
+                setPendingTab(null);
+              }}
+            />
+          </Animated.View>
+        </BlurView>
       )}
     </SafeAreaView>
   );
