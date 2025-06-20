@@ -1,17 +1,23 @@
-import { useState, useRef  } from "react";
+import { useState, useRef, useEffect  } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   SectionList,
   ListRenderItemInfo,
+  Animated, 
+  Easing,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
-import { colors } from "@/styles/colors";
+import { BlurView } from "expo-blur";
+
 import { screens } from "@/constants/screens";
 import ImportItemCard from "@/components/ui/import-item-card";
+import ReportModal from "@/components/ui/report-modal";
+
+import { colors } from "@/styles/colors";
 
 interface ImportDataItem {
   id: string;
@@ -28,8 +34,11 @@ export default function ImportPost() {
   const publishedIdsRef = useRef<string[]>([]);
   const [selectedReelsIds, setSelectedReelsIds] = useState<string[]>([]);
   const [selectedPostsIds, setSelectedPostsIds] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [pendingTab, setPendingTab] = useState<"reels" | "posts" | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [showOnlySelected, setShowOnlySelected] = useState(false);
+  const translateY = useRef(new Animated.Value(300)).current;
 
   const [data, setData] = useState<ImportDataItem[]>([  
     { id: "r1", title: "Content 1", date: "2025-02-24", thumbnail: "", status: "idle", type: "reels" },
@@ -184,6 +193,19 @@ export default function ImportPost() {
     }));
   }
 
+  useEffect(() => {
+  if (showModal) {
+    Animated.timing(translateY, {
+      toValue: 0,
+      duration: 300,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
+  } else {
+    translateY.setValue(300);
+  }
+}, [showModal]);
+
   const groupedData = groupByMonthAndYear(data);
   const anyImportedItems = data.some((item) => item.status === "imported");
   const allImported = anyImportedItems;
@@ -236,7 +258,8 @@ export default function ImportPost() {
                     className="flex-1 items-center pb-2"
                     onPress={() => {
                       if (isBlocked) {
-                        alert("You must finish the import/publish flow before switching tabs.");
+                        setPendingTab(tab as "reels" | "posts");
+                        setShowModal(true);
                       } else {
                         setActiveTab(tab as "reels" | "posts");
                       }
@@ -318,6 +341,23 @@ export default function ImportPost() {
         </TouchableOpacity>
         </View>
       </View>
+      {showModal && (
+         <BlurView intensity={80} tint="dark" className="flex-1 justify-center items-center px-6 absolute inset-0">
+      <Animated.View style={{ transform: [{ translateY }], width: "100%", maxWidth: 360 }}>
+        <ReportModal
+          onCancel={() => {
+            setShowModal(false);
+            setPendingTab(null);
+          }}
+          onConfirm={() => {
+            if (pendingTab) setActiveTab(pendingTab);
+            setShowModal(false);
+            setPendingTab(null);
+          }}
+        />
+      </Animated.View>
+    </BlurView>
+      )}
     </SafeAreaView>
   );
 }
