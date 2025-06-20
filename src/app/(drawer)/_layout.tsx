@@ -2,6 +2,7 @@ import { CustomOptions } from "@/@types/navigation";
 import { DrawerContent } from "@/components/ui/drawer-content";
 import { Drawer } from "expo-router/drawer";
 import ProfileIcon from "@/assets/icons/profile.svg";
+import GrowsyncIcon from "@/assets/icons/sync.svg";
 import PadlockIcon from "@/assets/icons/padlock.svg";
 import FileIcon from "@/assets/icons/file.svg";
 import QuestionIcon from "@/assets/icons/question.svg";
@@ -132,6 +133,16 @@ export default function DrawerLayout() {
                     <Drawer.Screen name="(tabs)" />
 
                     <Drawer.Screen
+                      name="growsync/index"
+                      options={{
+                        title: "Growsync",
+                        iconName: GrowsyncIcon,
+                        isDivider: true,
+                        animationEnabled: true,
+                      } as CustomOptions}
+                    />
+
+                    <Drawer.Screen
                       name="edit-profile"
                       options={
                         {
@@ -143,17 +154,6 @@ export default function DrawerLayout() {
                       }
                     />
 
-                    {/* <Drawer.Screen
-                  name="event"
-                  options={
-                    {
-                      title: 'Eventos',
-                      iconName: CalenderIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
-
                     <Drawer.Screen
                       name="security"
                       options={
@@ -164,17 +164,6 @@ export default function DrawerLayout() {
                         } as CustomOptions
                       }
                     />
-
-                    {/* <Drawer.Screen
-                  name="preference-center"
-                  options={
-                    {
-                      title: 'Central de preferências',
-                      iconName: SettingsIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
 
                     <Drawer.Screen
                       name="terms-conditions"
@@ -219,28 +208,6 @@ export default function DrawerLayout() {
                         } as CustomOptions
                       }
                     />
-
-                    {/* <Drawer.Screen
-                  name="user-category"
-                  options={
-                    {
-                      title: 'Perfil Grower',
-                      iconName: FileIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
-
-                    {/* <Drawer.Screen
-                  name="privacy-policy"
-                  options={
-                    {
-                      title: 'Política de privacidade',
-                      iconName: SecurityIcon,
-                      isDivider: true
-                    } as CustomOptions
-                  }
-                /> */}
 
                     <Drawer.Screen
                       listeners={{
