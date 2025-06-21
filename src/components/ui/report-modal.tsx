@@ -15,7 +15,7 @@ export default function ReportModal({ onCancel }: { onCancel: () => void}) {
         onPress={onCancel}
         className="bg-[#32CD32] py-3 rounded-lg items-center"
       >
-        <Text className="text-black-50 font-medium text-base">Cancel</Text>
+        <Text className="text-black font-medium text-base">Cancel</Text>
       </TouchableOpacity>
     </View>
   );
