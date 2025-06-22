@@ -1,7 +1,7 @@
 {
   "name": "growzone-mobile",
   "main": "expo-router/entry",
-  "version": "1.0.13",
+  "version": "1.0.15",
   "scripts": {
     "start": "expo start --go",
     "start:clear": "expo start --clear",
@@ -23,6 +23,7 @@
   "dependencies": {
     "@expo/config-plugins": "~10.0.0",
     "@expo/prebuild-config": "~9.0.0",
+    "@expo/react-native-action-sheet": "^4.1.1",
     "@expo/vector-icons": "^14.1.0",
     "@gorhom/bottom-sheet": "^5.0.6",
     "@hookform/resolvers": "^3.9.1",
@@ -72,6 +73,7 @@
     "react-native-autocomplete-input": "^5.5.2",
     "react-native-element-dropdown": "^2.12.2",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-image-crop-picker": "^0.50.1",
     "react-native-mime-types": "^2.5.0",
     "react-native-pager-view": "6.7.1",
     "react-native-reanimated": "~3.17.4",
