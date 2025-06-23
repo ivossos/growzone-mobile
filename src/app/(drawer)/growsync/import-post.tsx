@@ -345,7 +345,10 @@ export default function ImportPost() {
          <BlurView intensity={80} tint="dark" className="flex-1 justify-center items-center px-6 absolute inset-0">
           <Animated.View style={{ transform: [{ translateY }], width: "100%", maxWidth: 360 }}>
             <ReportModal
-              onCancel={() => {
+              title="Tab switch not allowed"
+              description="You can’t switch tabs after selecting content. To choose a different tab, please clear your current selection first."
+              primaryLabel="Cancel"
+              onPrimary={() => {
                 setShowModal(false);
                 setPendingTab(null);
               }}
