@@ -306,7 +306,7 @@ export default function HomeScreen() {
             )
           }
         />
-        <StatusBar style="light" />
+        <StatusBar backgroundColor={colors.black[100]} style="light" />
       </SafeAreaView>
     </>
   );

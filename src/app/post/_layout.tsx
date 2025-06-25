@@ -109,7 +109,7 @@ export default function Layout() {
               ref={deletePostSheetRef}
               onClose={closeDeletePostBottomSheet}
             />
-            <StatusBar style="light" />
+            <StatusBar backgroundColor={colors.black[100]} style="light" />
           </PlayerProvider>
         </VideoPlayerProvider>
       </ActivePostHomeProvider>

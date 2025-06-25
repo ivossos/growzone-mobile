@@ -36,7 +36,7 @@ export default function WeestoryScreen() {
   const { openCamera } = useCameraModal();
   const [permission, requestPermission] = MediaLibrary.usePermissions();
   const [media, setMedia] = useState<any>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
 
   const handlePermissionRequest = async () => {
@@ -50,16 +50,10 @@ export default function WeestoryScreen() {
     }
   };
 
-  /**
-   * Loads media assets from the device's media library based on the current filter.
-   * Requests and processes up to 50 media assets, sorting them by creation time.
-   * If a video asset is found, generates a thumbnail and copies the video to a safe path.
-   * Updates the state with the processed media assets, excluding any that failed to process.
-   * Handles errors by logging warnings or errors to the console.
-   */
   const loadMedia = async () => {
     try {
       setLoading(true);
+
       const album = await MediaLibrary.getAssetsAsync({
         mediaType: filter === "all" ? ["photo", "video"] : ([filter] as any),
         first: 50,
@@ -70,7 +64,7 @@ export default function WeestoryScreen() {
         album.assets.map(async (asset) => {
           try {
             let assetInfo = await MediaLibrary.getAssetInfoAsync(asset.id);
-            let localUri = assetInfo.localUri ?? assetInfo.uri;
+            let localUri = assetInfo.localUri || assetInfo.uri;
             let thumbnail = null;
 
             if (asset.mediaType === "video" && localUri) {
@@ -123,7 +117,7 @@ export default function WeestoryScreen() {
     if (permission?.status !== "granted") {
       requestPermission();
     } else {
-      //loadMedia(); -> Comentando função que realiza busca das imagens e videos, apenas possibilitando adicionar weestores ao vivo.
+      loadMedia();
     }
   }, [permission, filter]);
 
