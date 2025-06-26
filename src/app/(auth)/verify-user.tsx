@@ -1,17 +1,9 @@
 import { z } from "zod";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  View,
-  Text,
-  ScrollView,
-  Dimensions,
-  Image,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
+import { View, Text, ScrollView, Dimensions, Image, TouchableOpacity, Platform } from "react-native";
 import images from "@/constants/images";
-import Toast from "react-native-toast-message";
+import Toast from 'react-native-toast-message';
 
 import Button from "@/components/ui/button";
 import { ArrowLeft, RefreshCw } from "lucide-react-native";
@@ -27,9 +19,10 @@ import { verifyCode } from "@/api/user";
 import { resendEmailCode } from "@/api/user/resend-email-code";
 import { FormField } from "@/components/ui/form-field";
 
-const codeSchema = z.object({
-  code: z.string().min(6, "Digite o código de 6 dígitos"),
-});
+const codeSchema = z
+  .object({
+    code: z.string().min(6, "Digite o código de 6 dígitos"),
+  });
 
 type CodeSchema = z.infer<typeof codeSchema>;
 
@@ -37,7 +30,7 @@ const VerifyUser = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [timer, setTimer] = useState<number>(60);
-  const { user, signOut, updateUserData } = useAuth();
+  const { user, signOut, updateUserData} = useAuth();
 
   const methods = useForm<CodeSchema>({
     resolver: zodResolver(codeSchema),
@@ -53,16 +46,16 @@ const VerifyUser = () => {
     try {
       await resendEmailCode({ email: email });
       Toast.show({
-        type: "success",
-        text1: "Código enviado com sucesso",
-        text2: "Verifique sua caixa de entrada ou seu spam.",
+        type: 'success',
+        text1: 'Código enviado com sucesso',
+        text2: 'Verifique sua caixa de entrada ou seu spam.'
       });
 
       setIsResendDisabled(true);
       setTimer(60);
 
       const interval = setInterval(() => {
-        setTimer((prev) => {
+        setTimer(prev => {
           if (prev <= 1) {
             clearInterval(interval);
             setIsResendDisabled(false);
@@ -71,31 +64,31 @@ const VerifyUser = () => {
           return prev - 1;
         });
       }, 1000);
+      
     } catch (error) {
-      console.error("[Erro ao enviar código]: ", error);
+      console.error('Erro ao enviar código');
       Toast.show({
-        type: "error",
-        text1: "Opss",
-        text2: "Ocorreu um erro ao enviar código, tente novamente mais tarde.",
+        type: 'error',
+        text1: 'Opss',
+        text2: 'Ocorreu um erro ao enviar código, tente novamente mais tarde.'
       });
     }
   }
 
   async function submit(values: CodeSchema) {
     try {
-      setIsLoading(true);
+      setIsLoading(true)
       const { code } = values;
       await verifyCode({
-        email: user.email,
-        code,
+        email: user.email, code
       });
-      await updateUserData();
+      await updateUserData()
+
     } catch (error) {
       if (axios.isAxiosError(error)) {
         methods.setError("code", {
           type: "manual",
-          message:
-            "O código de verificação está incorreto. Por favor, tente novamente.",
+          message: "O código de verificação está incorreto. Por favor, tente novamente.",
         });
       }
       return;
@@ -104,21 +97,20 @@ const VerifyUser = () => {
     }
 
     router.replace("/home");
-  }
+  };
 
   async function goBack() {
     await signOut();
-    router.replace("/welcome");
+    router.replace("/welcome")
   }
 
   return (
     <Fragment>
       <SafeAreaView className="bg-black-100 h-full">
-        <TouchableOpacity
+        <TouchableOpacity 
           className="flex flex-row items-center justify-between bg-black-100 w-full px-6 min-h-14 border-b-[1px] border-black-80"
-          activeOpacity={0.7}
-          onPress={goBack}
-        >
+          activeOpacity={0.7} 
+          onPress={goBack}>
           <ArrowLeft width={24} height={24} color={colors.brand.white} />
         </TouchableOpacity>
         <ScrollView className="bg-black-100 pb-10">
@@ -151,63 +143,47 @@ const VerifyUser = () => {
               </View>
             </View>
 
-            <View className="flex flex-col w-full">
-              {Platform.OS === "ios" ? (
-                <Controller
-                  control={methods.control}
-                  name="code"
-                  render={({ fieldState, field: { onChange, value } }) => (
-                    <OtpInput
-                      title="Código"
-                      onComplete={onChange}
-                      defaultValue={value}
-                      otpLength={6}
-                      errorMessage={fieldState.error?.message}
-                    />
-                  )}
-                />
-              ) : (
-                <Controller
-                  control={methods.control}
-                  name="code"
-                  render={({
-                    fieldState,
-                    field: { onChange, onBlur, value },
-                  }) => (
-                    <FormField
-                      title="Código"
-                      placeholder="Digite seu código"
-                      otherStyles="mt-6"
-                      onBlur={onBlur}
-                      value={value || ""}
-                      keyboardType="decimal-pad"
-                      handleChangeText={onChange}
-                      error={fieldState.error?.message}
-                    />
-                  )}
+            <View className='flex flex-col w-full'>
+            {Platform.OS === 'ios' ?  <Controller
+                control={methods.control}
+                name="code"
+                render={({ fieldState, field: { onChange, value } }) => (
+                  <OtpInput
+                    title="Código"
+                    onComplete={onChange}
+                    defaultValue={value}
+                    otpLength={6}
+                    errorMessage={fieldState.error?.message}
+                  />
+                )}
+              />
+            : 
+            <Controller
+              control={methods.control}
+              name="code"
+              render={({ fieldState, field: { onChange, onBlur, value} }) => (
+                <FormField
+                  title="Código"
+                  placeholder="Digite seu código"
+                  otherStyles="mt-6"
+                  onBlur={onBlur}
+                  value={value || ''}
+                  keyboardType="decimal-pad"
+                  handleChangeText={onChange}
+                  error={fieldState.error?.message}
                 />
               )}
+            />}
 
+        
               <TouchableOpacity
-                className="flex flex-row items-center gap-2 mt-2"
+                className='flex flex-row items-center gap-2 mt-2'
                 onPress={() => resendCodeEmail(user.email)}
                 disabled={isResendDisabled}
               >
-                <RefreshCw
-                  width={16}
-                  height={16}
-                  color={
-                    isResendDisabled ? colors.black[70] : colors.brand.white
-                  }
-                />
-                <Text
-                  className={`text-lg font-medium ${
-                    isResendDisabled ? "text-black-70" : "text-brand-grey"
-                  }`}
-                >
-                  {isResendDisabled
-                    ? `Reenviar código em ${timer}s`
-                    : "Reenviar código"}
+                <RefreshCw width={16} height={16} color={isResendDisabled ? colors.black[70] : colors.brand.white} />
+                <Text className={`text-lg font-medium ${isResendDisabled ? 'text-black-70' : 'text-brand-grey'}`}>
+                  {isResendDisabled ? `Reenviar código em ${timer}s` : 'Reenviar código'}
                 </Text>
               </TouchableOpacity>
 
@@ -221,7 +197,7 @@ const VerifyUser = () => {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <StatusBar style="light" />
+      <StatusBar backgroundColor="#000000" style="light" />
     </Fragment>
   );
 };
