@@ -133,7 +133,7 @@ export default function Reels() {
 
   return (
     <View style={{ backgroundColor: colors.black[100], flex: 1 }}>
-      <StatusBar translucent/>
+      <StatusBar translucent backgroundColor={"transparent"} />
 
       <SafeAreaView
         style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 10 }}

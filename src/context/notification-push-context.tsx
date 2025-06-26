@@ -32,8 +32,8 @@ export const NotificationPushProvider: React.FC<NotificationProviderProps> = ({
     useState<Notifications.Notification | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
-  const notificationListener = useRef<Notifications.EventSubscription>(null);
-  const responseListener = useRef<Notifications.EventSubscription>(null);
+  const notificationListener = useRef<Notifications.EventSubscription>();
+  const responseListener = useRef<Notifications.EventSubscription>();
 
   const getTokenPushNotification = async () => {
     let token: string | null = null;
@@ -75,8 +75,14 @@ export const NotificationPushProvider: React.FC<NotificationProviderProps> = ({
     setupNotifications();
 
     return () => {
-      notificationListener.current?.remove();
-      responseListener.current?.remove();
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(
+          notificationListener.current
+        );
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
     };
   }, []);
 

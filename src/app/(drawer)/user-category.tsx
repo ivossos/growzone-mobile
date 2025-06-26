@@ -27,13 +27,13 @@ export default function UserCategoryScreen() {
   const { updateUserData } = useAuth();
 
   async function handleSaveCategory() {
-    if (!selectedCategory) {
+    if(!selectedCategory) {
       Toast.show({
-        type: "error",
-        text1: "Ops!",
-        text2: "Você precisa selecionar uma categoria!",
+        type: 'error',
+        text1: 'Ops!',
+        text2: 'Você precisa selecionar uma categoria!',
       });
-      return;
+      return 
     }
 
     try {
@@ -41,20 +41,21 @@ export default function UserCategoryScreen() {
       await updateUser({ category_id: selectedCategory });
       await updateUserData();
       Toast.show({
-        type: "success",
-        text1: "Sucesso",
-        text2: "Sua categoria foi adicionada com sucesso.",
+        type: 'success',
+        text1: 'Sucesso',
+        text2: 'Sua categoria foi adicionada com sucesso.',
       });
     } catch (err) {
-      console.error("Erro ao atualizar perfil", err);
+      console.error('Erro ao atualizar perfil', err);
       Toast.show({
-        type: "error",
-        text1: "Ops!",
-        text2: "Ocorreu um erro ao Salvar sua categoria",
+        type: 'error',
+        text1: 'Ops!',
+        text2: 'Ocorreu um erro ao Salvar sua categoria',
       });
+
     } finally {
       setIsLoadingSaveCategory(false);
-      router.push("/home");
+      router.push('/home');
     }
   }
 
@@ -119,6 +120,7 @@ export default function UserCategoryScreen() {
           stickyHeaderIndices={[0]}
           showsVerticalScrollIndicator={false}
         >
+
           <View className="bg-black-100">
             <View className="flex flex-row justify-center items-center pt-10">
               <LogoIcon width={150} height={30} />
@@ -147,16 +149,14 @@ export default function UserCategoryScreen() {
           )}
         </ScrollView>
 
-        {!loading && (
-          <View className="absolute bottom-0 w-full px-6 py-3 mb-6">
-            <Button
-              containerStyles="w-full"
-              title="Selecionar"
-              handlePress={() => handleSaveCategory()}
-              isLoading={isLoadingSaveCategory}
-            />
-          </View>
-        )}
+        {!loading && <View className="absolute bottom-0 w-full px-6 py-3 mb-6">
+          <Button
+            containerStyles="w-full"
+            title="Selecionar"
+            handlePress={() => handleSaveCategory()}
+            isLoading={isLoadingSaveCategory}
+          />
+        </View>}
       </SafeAreaView>
     </View>
   );
