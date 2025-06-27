@@ -19,31 +19,31 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Usamos o microfone para que você possa gravar áudio nos vídeos criados e publicados na plataforma.",
-        "NSPhotoLibraryAddUsageDescription": "Acessamos sua galeria para que você possa selecionar imagens e vídeos ao criar postagens ou compartilhar conteúdo no app.",
-        "NSPhotoLibraryUsageDescription": "Acessamos sua galeria para que você possa selecionar imagens e vídeos ao criar postagens ou compartilhar conteúdo no app.",
-        "NSCameraUsageDescription": "Usamos a câmera do dispositivo para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
-        "NSUserNotificationUsageDescription": "Enviamos notificações para avisar sobre curtidas, comentários, novos seguidores e outras atualizações importantes do app.",
+        "NSCameraUsageDescription": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
+        "NSPhotoLibraryUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
+        "NSPhotoLibraryAddUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
+        "NSMicrophoneUsageDescription": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
+        "NSUserNotificationUsageDescription": "Enviamos notificações para avisar sobre curtidas, comentários, seguidores e outras atualizações importantes.",
         "UIBackgroundModes": ["fetch", "remote-notification"]
       },
       "locales": {
         "pt-BR": {
-          "NSMicrophoneUsageDescription": "Usamos o microfone para que você possa gravar áudio nos vídeos criados e publicados na plataforma.",
-          "NSPhotoLibraryAddUsageDescription": "Acessamos sua galeria para que você possa selecionar imagens e vídeos ao criar postagens ou compartilhar conteúdo no app.",
-          "NSPhotoLibraryUsageDescription": "Acessamos sua galeria para que você possa selecionar imagens e vídeos ao criar postagens ou compartilhar conteúdo no app.",
-          "NSCameraUsageDescription": "Usamos a câmera do dispositivo para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo."
+          "NSMicrophoneUsageDescription": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
+          "NSPhotoLibraryAddUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
+          "NSPhotoLibraryUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
+          "NSCameraUsageDescription": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo."
         },
         "es": {
-          "NSMicrophoneUsageDescription": "Usamos el micrófono para que puedas grabar audio en los videos creados y publicados en la plataforma",
-          "NSPhotoLibraryAddUsageDescription": "Accedemos a tu galería para que puedas seleccionar imágenes y vídeos al crear publicaciones o compartir contenido en la aplicación.",
-          "NSPhotoLibraryUsageDescription": "Accedemos a tu galería para que puedas seleccionar imágenes y vídeos al crear publicaciones o compartir contenido en la aplicación.",
-          "NSCameraUsageDescription": "Usamos la cámara de tu dispositivo para que puedas tomar fotos y videos dentro de la aplicación, como publicaciones o registros de cultivos"
+          "NSMicrophoneUsageDescription": "Se necesita el micrófono para grabar audio en los videos que creas y publicas en la plataforma.",
+          "NSPhotoLibraryAddUsageDescription": "Usamos tu galería para que puedas seleccionar imágenes y videos para publicar o compartir en la app.",
+          "NSPhotoLibraryUsageDescription": "Usamos tu galería para que puedas seleccionar imágenes y videos para publicar o compartir en la app.",
+          "NSCameraUsageDescription": "Necesitamos usar la cámara de tu dispositivo para que puedas tomar fotos y grabar videos dentro de la app, como en publicaciones o registros de cultivo."
         },
         "en": {
-          "NSMicrophoneUsageDescription": "We use the microphone so you can record audio in the videos created and published on the platform.",
-          "NSPhotoLibraryAddUsageDescription": "We access your gallery so you can select images and videos when creating posts or sharing content in the app.",
-          "NSPhotoLibraryUsageDescription": "We access your gallery so you can select images and videos when creating posts or sharing content in the app.",
-          "NSCameraUsageDescription": "We use your device's camera so you can take photos and videos within the app, like posts or crop records."
+          "NSMicrophoneUsageDescription": "The microphone is required to record audio in the videos you create and publish on the platform.",
+          "NSPhotoLibraryAddUsageDescription": "We use your photo library so you can select images and videos to post or share within the app.",
+          "NSPhotoLibraryUsageDescription": "We use your photo library so you can select images and videos to post or share within the app.",
+          "NSCameraUsageDescription": "We need to use your device’s camera so you can take photos and record videos within the app, such as for posts or cultivation logs."
         }
       },
       "config": {
