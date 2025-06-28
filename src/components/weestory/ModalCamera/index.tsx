@@ -38,6 +38,7 @@ import WeestoryCircleIcon from "@/assets/icons/weestory-circle-icon.svg";
 
 import { colors } from "@/styles/colors";
 import { styles } from "./styles";
+import { router } from "expo-router";
 
 const { height, width } = Dimensions.get("window");
 
@@ -183,6 +184,9 @@ export default function ModalCamera() {
     stopPulsing();
     setScale(-1);
     closeCamera();
+    setTimeout(() => {
+      router.push("/(drawer)/(tabs)/home");
+    }, 800);
   };
 
   const handleSubmit = async () => {

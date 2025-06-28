@@ -33,7 +33,7 @@ const options = [
 ];
 
 export default function WeestoryScreen() {
-  const { openCamera } = useCameraModal();
+  const { openCamera, loading: loadingCamera } = useCameraModal();
   const [permission, requestPermission] = MediaLibrary.usePermissions();
   const [media, setMedia] = useState<any>([]);
   const [loading, setLoading] = useState(true);
@@ -123,7 +123,7 @@ export default function WeestoryScreen() {
 
   const gallery = [{ id: "add-weestory", isAddButton: true }, ...media];
 
-  if (!permission) {
+  if (!permission || loadingCamera) {
     return (
       <SafeAreaView className="flex-1 bg-black-100">
         <View className="flex-1 items-center justify-center">
@@ -183,7 +183,7 @@ export default function WeestoryScreen() {
           </View>
 
           <View className="flex-1">
-            {loading ? (
+            {loading || loadingCamera ? (
               <View className="flex justify-center items-center bg-black-100 h-full">
                 <ActivityIndicator size="large" color={colors.brand.green} />
               </View>
