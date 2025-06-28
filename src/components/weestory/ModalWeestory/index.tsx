@@ -40,7 +40,7 @@ export default function ModalWeestory({
   const transitionAnim = useRef(new Animated.Value(0)).current;
   const currentProgress = useRef(0);
   const reportSheetRef = useRef<BottomSheet>(null);
-  const [videoDuration, setVideoDuration] = useState(5000);
+  const [videoDuration, setVideoDuration] = useState(15000);
 
   const { openBottomSheet } = useBottomSheetContext();
 
@@ -58,6 +58,12 @@ export default function ModalWeestory({
       handleNextStory();
     }
   });
+  //TODO: Talvez usar isso aqui para corrigir o problema da tela preta entre stories;
+  // useEventListener(player, "playingChange", (event) => {
+  //   if (currentStory.type === "video") {
+  //     console.log("timeUpdate", event);
+  //   }
+  // });
 
   const startProgress = (fromValue: number, duration: number) => {
     progress.setValue(fromValue);
@@ -161,7 +167,8 @@ export default function ModalWeestory({
   }, [isPaused, player]);
 
   useEffect(() => {
-    if (Platform.OS === "ios" && currentStory.type === "video") {
+    if (currentStory.type !== "video") return;
+    if (Platform.OS === "ios") {
       const updateProgress = () => {
         if (player) {
           const currentTime = player.currentTime;
@@ -176,7 +183,7 @@ export default function ModalWeestory({
       const interval = setInterval(updateProgress, 100);
       return () => clearInterval(interval);
     } else {
-      startProgress(0, 5000);
+      startProgress(0, 16000);
     }
   }, [player]);
 
