@@ -63,14 +63,20 @@ export default function ModalCamera() {
   const [capturedVideo, setCapturedVideo] = useState<string | null | undefined>(
     null
   );
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [bottomSheetIndex, setBottomSheetIndex] = useState(0);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const handlePresentModal = () => {
-    bottomSheetRef.current?.expand();
+    //bottomSheetRef.current?.expand();
+    setShowBottomSheet(true);
+    setBottomSheetIndex(0);
   };
 
   const handleCloseModal = () => {
-    bottomSheetRef.current?.close();
+    //bottomSheetRef.current?.close();
+    setShowBottomSheet(false);
+    setBottomSheetIndex(-1);
   };
 
   const startPulsing = () => {
@@ -187,13 +193,15 @@ export default function ModalCamera() {
         video: capturedVideo,
       });
 
-      handleClose();
-
       Toast.show({
         type: "success",
         text1: "Sucesso",
         text2: "Seu Weestory foi postado com sucesso!",
       });
+
+      handleClose();
+      // setTimeout(() => {
+      // }, 300);
     } catch (error) {
       console.error("error ", error);
       handleClose();
@@ -247,6 +255,8 @@ export default function ModalCamera() {
   }, [permission, microphonePermission]);
 
   useEffect(() => {
+    setShowBottomSheet(false);
+    setBottomSheetIndex(-1);
     if (infoCamera.mediaType) {
       if (infoCamera.mediaType === "video") {
         setScale(1);
@@ -426,49 +436,51 @@ export default function ModalCamera() {
             )}
           </>
         )}
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          snapPoints={[height * 0.3]}
-          onClose={handleCloseModal}
-          enablePanDownToClose={true}
-          enableHandlePanningGesture={false}
-          handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
-          backgroundStyle={{ backgroundColor: colors.black[100] }}
-        >
-          <BottomSheetView className="flex flex-col flex-1 gap-5 p-6 bg-black-100">
-            <View className="flex-column justify-start border-b-[2px] border-black-80 p-3">
-              <Text className="text-base font-semibold text-white">
-                Compartilhar
-              </Text>
-            </View>
-            <View className="flex-row items-center justify-between w-full gap-3">
-              <View className="flex-row items-center gap-3">
-                <TouchableOpacity
-                  onPress={handleClosePreview}
-                  className="w-12 h-12 rounded-full bg-black-70 items-center justify-center"
-                >
-                  <WeestoryCircleIcon />
-                </TouchableOpacity>
+        {showBottomSheet && (
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={bottomSheetIndex}
+            snapPoints={[height * 0.3]}
+            onClose={handleCloseModal}
+            enablePanDownToClose={true}
+            enableHandlePanningGesture={false}
+            handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
+            backgroundStyle={{ backgroundColor: colors.black[100] }}
+          >
+            <BottomSheetView className="flex flex-col flex-1 gap-5 p-6 bg-black-100">
+              <View className="flex-column justify-start border-b-[2px] border-black-80 p-3">
                 <Text className="text-base font-semibold text-white">
-                  Weestory
+                  Compartilhar
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={handleClosePreview}
-                className="w-8 h-8 rounded-full bg-primary items-center justify-center"
-              >
-                <Entypo name="check" size={15} color="black" />
-              </TouchableOpacity>
-            </View>
-            <Button
-              isLoading={isLoading}
-              handlePress={handleSubmit}
-              containerStyles="mt-4 w-full"
-              title="Compartilhar"
-            />
-          </BottomSheetView>
-        </BottomSheet>
+              <View className="flex-row items-center justify-between w-full gap-3">
+                <View className="flex-row items-center gap-3">
+                  <TouchableOpacity
+                    onPress={handleClosePreview}
+                    className="w-12 h-12 rounded-full bg-black-70 items-center justify-center"
+                  >
+                    <WeestoryCircleIcon />
+                  </TouchableOpacity>
+                  <Text className="text-base font-semibold text-white">
+                    Weestory
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={handleClosePreview}
+                  className="w-8 h-8 rounded-full bg-primary items-center justify-center"
+                >
+                  <Entypo name="check" size={15} color="black" />
+                </TouchableOpacity>
+              </View>
+              <Button
+                isLoading={isLoading}
+                handlePress={handleSubmit}
+                containerStyles="mt-4 w-full"
+                title="Compartilhar"
+              />
+            </BottomSheetView>
+          </BottomSheet>
+        )}
       </SafeAreaView>
     </Modal>
   );
