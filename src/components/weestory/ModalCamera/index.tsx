@@ -68,14 +68,20 @@ export default function ModalCamera() {
   const [bottomSheetIndex, setBottomSheetIndex] = useState(0);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
+  const [showProgress, setShowProgress] = useState(false);
+  const progress = useRef(new Animated.Value(0)).current;
+
   const handlePresentModal = () => {
     //bottomSheetRef.current?.expand();
+    progress.setValue(0);
     setShowBottomSheet(true);
     setBottomSheetIndex(0);
   };
 
   const handleCloseModal = () => {
     //bottomSheetRef.current?.close();
+    progress.setValue(0);
+    setShowProgress(false);
     setShowBottomSheet(false);
     setBottomSheetIndex(-1);
   };
@@ -191,10 +197,15 @@ export default function ModalCamera() {
 
   const handleSubmit = async () => {
     setIsLoading(true);
+    setShowProgress(true);
     try {
       await createWeestory({
         image: capturedPhoto,
         video: capturedVideo,
+        onProgress: (progressValue) => {
+          console.log("[Progress] ", progressValue, "%");
+          progress.setValue(progressValue / 100);
+        },
       });
 
       Toast.show({
@@ -216,6 +227,7 @@ export default function ModalCamera() {
       });
     } finally {
       setIsLoading(false);
+      setShowProgress(false);
     }
   };
 
@@ -394,9 +406,10 @@ export default function ModalCamera() {
                   style={{ paddingBottom: insets.bottom || 16 }}
                 >
                   <View className="flex-row items-center justify-around w-full">
-                    <TouchableOpacity onPress={handleClose} activeOpacity={0.8}>
+                    {/* <TouchableOpacity onPress={handleClose} activeOpacity={0.8}>
                       <GalleryIcon />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
+                    <View style={{ width: 30 }} />
                     <View>
                       <TouchableWithoutFeedback
                         onPressIn={handlePressIn}
@@ -444,7 +457,7 @@ export default function ModalCamera() {
           <BottomSheet
             ref={bottomSheetRef}
             index={bottomSheetIndex}
-            snapPoints={[height * 0.3]}
+            snapPoints={[height * 0.45]}
             onClose={handleCloseModal}
             enablePanDownToClose={true}
             enableHandlePanningGesture={false}
@@ -482,6 +495,29 @@ export default function ModalCamera() {
                 containerStyles="mt-4 w-full"
                 title="Compartilhar"
               />
+              {showProgress && (
+                <View
+                  style={{
+                    flex: 1,
+                    height: 0.5,
+                    backgroundColor: "#0B2F08",
+                    overflow: "hidden",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Animated.View
+                    style={{
+                      flex: 1,
+                      height: 0.5,
+                      backgroundColor: "#2CC420",
+                      width: progress.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ["0%", "100%"],
+                      }),
+                    }}
+                  />
+                </View>
+              )}
             </BottomSheetView>
           </BottomSheet>
         )}
