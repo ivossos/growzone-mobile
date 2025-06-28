@@ -457,7 +457,7 @@ export default function ModalCamera() {
           <BottomSheet
             ref={bottomSheetRef}
             index={bottomSheetIndex}
-            snapPoints={[height * 0.45]}
+            snapPoints={[height * 0.42]}
             onClose={handleCloseModal}
             enablePanDownToClose={true}
             enableHandlePanningGesture={false}
@@ -497,18 +497,16 @@ export default function ModalCamera() {
               />
               {showProgress && (
                 <View
+                  className="h-1"
                   style={{
-                    flex: 1,
-                    height: 0.5,
                     backgroundColor: "#0B2F08",
                     overflow: "hidden",
-                    borderRadius: 2,
                   }}
                 >
                   <Animated.View
                     style={{
                       flex: 1,
-                      height: 0.5,
+                      height: 1,
                       backgroundColor: "#2CC420",
                       width: progress.interpolate({
                         inputRange: [0, 1],
