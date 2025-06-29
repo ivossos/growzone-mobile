@@ -113,17 +113,21 @@ export default function WeestoryScreen() {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  // useEffect(() => {
+  //   if (permission?.status !== "granted") {
+  //     requestPermission();
+  //   } else {
+  //     loadMedia();
+  //   }
+  // }, [permission, filter]);
+
   useEffect(() => {
-    if (permission?.status !== "granted") {
-      requestPermission();
-    } else {
-      loadMedia();
-    }
-  }, [permission, filter]);
+    openCamera({});
+  }, []);
 
   const gallery = [{ id: "add-weestory", isAddButton: true }, ...media];
 
-  if (!permission || loadingCamera) {
+  if (!permission || loadingCamera || loading) {
     return (
       <SafeAreaView className="flex-1 bg-black-100">
         <View className="flex-1 items-center justify-center">
