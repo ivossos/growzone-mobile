@@ -27,6 +27,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import * as ImageManipulator from "expo-image-manipulator";
+import * as Device from "expo-device";
 
 import Button from "@/components/ui/button";
 import { useCameraModal } from "@/context/camera-modal-context";
@@ -55,8 +56,12 @@ export default function ModalCamera() {
     hasPermission: hasMicrophonePermission,
     requestPermission: requestMicrophonePermission,
   } = useMicrophonePermission();
-  const device = useCameraDevice("front");
+
+  // Usar getCameraDevice como fallback
+  const frontDevice = useCameraDevice("front");
   const backDevice = useCameraDevice("back");
+  const [loading, setLoading] = useState(true);
+
   const cameraRef = useRef<Camera | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [facing, setFacing] = useState<"front" | "back">("front");
@@ -79,7 +84,13 @@ export default function ModalCamera() {
   const [showProgress, setShowProgress] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
 
-  const currentDevice = facing === "front" ? device : backDevice;
+  // Verificações de segurança para devices
+  const currentDevice = facing === "front" ? frontDevice : backDevice;
+
+  // Verificar se estamos em um simulador
+  const isSimulator = Platform.OS === "ios" && !Device.isDevice;
+
+  // Só tenta usar o formato se o device estiver disponível
   const format = useCameraFormat(currentDevice, [
     { videoResolution: { width: 1080, height: 1920 } },
     { fps: 60 },
@@ -312,7 +323,24 @@ export default function ModalCamera() {
     if (!hasMicrophonePermission) {
       requestMicrophonePermission();
     }
-  }, [hasCameraPermission, hasMicrophonePermission]);
+
+    setLoading(false);
+
+    // Log adicional para debug no iOS
+    if (Platform.OS === "ios") {
+      console.log("[iOS Debug] isSimulator:", isSimulator);
+      console.log("[iOS Debug] Device.isDevice:", Device.isDevice);
+      console.log("[iOS Debug] frontDevice available:", !!frontDevice);
+      console.log("[iOS Debug] backDevice available:", !!backDevice);
+      console.log("[iOS Debug] currentDevice available:", !!currentDevice);
+
+      if (isSimulator) {
+        console.warn(
+          "[iOS] Você está usando um simulador. VisionCamera pode não funcionar corretamente. Teste em um dispositivo físico."
+        );
+      }
+    }
+  }, [hasCameraPermission, hasMicrophonePermission, frontDevice, backDevice]);
 
   useEffect(() => {
     setShowBottomSheet(false);
@@ -333,7 +361,7 @@ export default function ModalCamera() {
   return (
     <Modal visible={isVisible} animationType="fade">
       <SafeAreaView style={styles.safearea}>
-        {!currentDevice ? (
+        {loading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color={colors.brand.green} />
           </View>
@@ -347,6 +375,24 @@ export default function ModalCamera() {
               handlePress={handlePermissionRequest}
               containerStyles="mt-4 w-50"
               title="Conceder permissão"
+            />
+          </View>
+        ) : !currentDevice || isSimulator ? (
+          <View className="flex-1 items-center justify-center px-6">
+            <Text className="text-base font-medium text-white text-center mb-4">
+              {isSimulator
+                ? "O simulador iOS não suporta câmera física."
+                : "Nenhum dispositivo de câmera encontrado."}
+            </Text>
+            <Text className="text-sm font-regular text-neutral-400 text-center mb-4">
+              {isSimulator
+                ? "Por favor, teste em um dispositivo iPhone físico para usar a câmera."
+                : "Verifique se as permissões de câmera foram concedidas e tente novamente."}
+            </Text>
+            <Button
+              handlePress={handleClose}
+              containerStyles="mt-4 w-50"
+              title="Fechar"
             />
           </View>
         ) : (
@@ -401,7 +447,7 @@ export default function ModalCamera() {
                   </TouchableOpacity>
                   <Camera
                     ref={cameraRef}
-                    device={currentDevice}
+                    device={currentDevice!}
                     style={styles.camera}
                     videoBitRate="low"
                     isActive={true}
