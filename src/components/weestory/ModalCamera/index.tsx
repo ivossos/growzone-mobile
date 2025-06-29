@@ -11,17 +11,19 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
   Linking,
+  Platform,
 } from "react-native";
 import { ResizeMode, Video } from "expo-av";
 import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import {
-  CameraView,
-  CameraType,
-  useCameraPermissions,
-  useMicrophonePermissions,
-} from "expo-camera";
+  Camera,
+  useCameraDevice,
+  useCameraPermission,
+  useMicrophonePermission,
+  useCameraFormat,
+} from "react-native-vision-camera";
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import * as ImageManipulator from "expo-image-manipulator";
@@ -45,13 +47,19 @@ const { height, width } = Dimensions.get("window");
 export default function ModalCamera() {
   const insets = useSafeAreaInsets();
   const { infoCamera, isVisible, closeCamera } = useCameraModal();
-  const [permission, requestPermission] = useCameraPermissions();
-  const [microphonePermission, requestMicrophonePermission] =
-    useMicrophonePermissions();
-  const cameraRef = useRef<CameraView | null>(null);
+  const {
+    hasPermission: hasCameraPermission,
+    requestPermission: requestCameraPermission,
+  } = useCameraPermission();
+  const {
+    hasPermission: hasMicrophonePermission,
+    requestPermission: requestMicrophonePermission,
+  } = useMicrophonePermission();
+  const device = useCameraDevice("front");
+  const backDevice = useCameraDevice("back");
+  const cameraRef = useRef<Camera | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [facing, setFacing] = useState<CameraType>("front");
-  const [scale, setScale] = useState<number>(-1);
+  const [facing, setFacing] = useState<"front" | "back">("front");
   const [pulseAnim] = useState(new Animated.Value(1));
   const [scaleAnim] = useState(new Animated.Value(1));
   const [pressTimer, setPressTimer] = useState<any>(null);
@@ -70,6 +78,17 @@ export default function ModalCamera() {
 
   const [showProgress, setShowProgress] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
+
+  const currentDevice = facing === "front" ? device : backDevice;
+  const format = useCameraFormat(currentDevice, [
+    { videoResolution: { width: 1080, height: 1920 } },
+    { fps: 60 },
+  ]);
+
+  const normalizeFileUri = (path: string) =>
+    Platform.OS === "android" && !path.startsWith("file://")
+      ? `file://${path}`
+      : path;
 
   const handlePresentModal = () => {
     //bottomSheetRef.current?.expand();
@@ -109,19 +128,48 @@ export default function ModalCamera() {
   };
 
   const startRecording = async () => {
-    if (cameraRef.current && !isRecording) {
+    if (cameraRef.current && !isRecording && currentDevice) {
       setIsRecording(true);
       startPulsing();
       try {
         setTimeout(async () => {
-          const video = await cameraRef.current?.recordAsync({
-            maxDuration: 10,
-          });
-          setCapturedVideo(video?.uri);
-          setIsRecording(false);
+          try {
+            cameraRef.current?.startRecording({
+              onRecordingFinished: (video) => {
+                console.log("Entrei no onRecordingFinished", video.path);
+                const normalizedPath = normalizeFileUri(video.path);
+                setCapturedVideo(normalizedPath);
+                setIsRecording(false);
+                stopPulsing();
+              },
+              onRecordingError: (error) => {
+                console.error("Erro ao gravar:", error);
+                setIsRecording(false);
+                stopPulsing();
+              },
+              videoCodec: "h264",
+              fileType: "mp4",
+            });
+
+            // Para a gravação após 15 segundos
+            setTimeout(() => {
+              console.log("⏰ Timeout atingido, parando gravação");
+              if (cameraRef.current) {
+                cameraRef.current.stopRecording();
+                setIsRecording(false);
+                stopPulsing();
+              }
+            }, 15000);
+          } catch (error) {
+            console.error("Erro ao iniciar gravação:", error);
+            setIsRecording(false);
+            stopPulsing();
+          }
         }, 600);
       } catch (e) {
         console.error("Erro ao gravar:", e);
+        setIsRecording(false);
+        stopPulsing();
       }
     }
   };
@@ -135,13 +183,18 @@ export default function ModalCamera() {
   };
 
   const handleCapture = async () => {
-    if (isRecording || !cameraRef.current) return;
-
-    const photo = await cameraRef.current.takePictureAsync({});
-    if (!photo) return;
+    if (isRecording || !cameraRef.current || !currentDevice) return;
 
     try {
-      const fixed = await ImageManipulator.manipulateAsync(photo.uri, [], {
+      const photo = await cameraRef.current.takePhoto({
+        flash: "off",
+      });
+
+      if (!photo) return;
+
+      const photoUri = normalizeFileUri(photo.path);
+
+      const fixed = await ImageManipulator.manipulateAsync(photoUri, [], {
         compress: 1,
         format: ImageManipulator.SaveFormat.JPEG,
       });
@@ -154,7 +207,7 @@ export default function ModalCamera() {
 
       setCapturedPhoto(final.uri);
     } catch (e) {
-      console.error("Image manipulation failed", e);
+      console.error("Erro ao tirar foto:", e);
     }
   };
 
@@ -188,7 +241,6 @@ export default function ModalCamera() {
     setCapturedVideo(null);
     setIsRecording(false);
     stopPulsing();
-    setScale(-1);
     closeCamera();
     setTimeout(() => {
       router.push("/(drawer)/(tabs)/home");
@@ -215,8 +267,6 @@ export default function ModalCamera() {
       });
 
       handleClose();
-      // setTimeout(() => {
-      // }, 300);
     } catch (error) {
       console.error("error ", error);
       handleClose();
@@ -239,7 +289,6 @@ export default function ModalCamera() {
     handleCloseModal();
     setCapturedPhoto(null);
     setCapturedVideo(null);
-    setScale(-1);
   };
 
   function toggleCameraFacing() {
@@ -247,41 +296,34 @@ export default function ModalCamera() {
   }
 
   const handlePermissionRequest = async () => {
-    if (permission?.canAskAgain) {
-      await requestPermission();
-    }
+    await requestCameraPermission();
+    await requestMicrophonePermission();
 
-    if (microphonePermission?.canAskAgain) {
-      await requestMicrophonePermission();
-    }
-
-    if (!permission?.canAskAgain || !microphonePermission?.canAskAgain) {
+    if (!hasCameraPermission || !hasMicrophonePermission) {
       await Linking.openSettings();
     }
   };
 
   useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
+    if (!hasCameraPermission) {
+      requestCameraPermission();
     }
 
-    if (!microphonePermission?.granted) {
+    if (!hasMicrophonePermission) {
       requestMicrophonePermission();
     }
-  }, [permission, microphonePermission]);
+  }, [hasCameraPermission, hasMicrophonePermission]);
 
   useEffect(() => {
     setShowBottomSheet(false);
     setBottomSheetIndex(-1);
     if (infoCamera.mediaType) {
       if (infoCamera.mediaType === "video") {
-        setScale(1);
         setCapturedVideo(infoCamera.uri);
         return;
       }
 
       if (infoCamera.mediaType === "photo") {
-        setScale(1);
         setCapturedPhoto(infoCamera.uri);
         return;
       }
@@ -291,11 +333,11 @@ export default function ModalCamera() {
   return (
     <Modal visible={isVisible} animationType="fade">
       <SafeAreaView style={styles.safearea}>
-        {!permission ? (
+        {!currentDevice ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color={colors.brand.green} />
           </View>
-        ) : !permission?.granted || !microphonePermission?.granted ? (
+        ) : !hasCameraPermission || !hasMicrophonePermission ? (
           <View className="flex-1 items-center justify-center">
             <Text className="text-base font-medium text-white text-center">
               Precisamos de acesso à sua câmera e microfone para capturar fotos
@@ -304,11 +346,7 @@ export default function ModalCamera() {
             <Button
               handlePress={handlePermissionRequest}
               containerStyles="mt-4 w-50"
-              title={
-                permission?.canAskAgain
-                  ? "Conceder permissão"
-                  : "Abrir configurações"
-              }
+              title="Conceder permissão"
             />
           </View>
         ) : (
@@ -321,10 +359,6 @@ export default function ModalCamera() {
                       source={{ uri: capturedPhoto }}
                       className="w-full h-full"
                       resizeMode="cover"
-                      style={{
-                        transform:
-                          facing === "front" ? [{ scaleX: scale }] : undefined,
-                      }}
                     />
                   ) : capturedVideo ? (
                     <>
@@ -340,10 +374,6 @@ export default function ModalCamera() {
                         style={{
                           width,
                           height,
-                          transform:
-                            facing === "front"
-                              ? [{ scaleX: scale }]
-                              : undefined,
                         }}
                         resizeMode={ResizeMode.COVER}
                         useNativeControls={false}
@@ -369,13 +399,17 @@ export default function ModalCamera() {
                   >
                     <Ionicons name="close" size={28} color="white" />
                   </TouchableOpacity>
-                  <CameraView
+                  <Camera
                     ref={cameraRef}
-                    facing={facing}
+                    device={currentDevice}
                     style={styles.camera}
-                    mode={isRecording ? "video" : "picture"}
-                    ratio="16:9"
-                    pictureSize="1080x1920"
+                    videoBitRate="low"
+                    isActive={true}
+                    video={true}
+                    audio={true}
+                    photo={true}
+                    format={format}
+                    resizeMode="cover"
                   />
                 </>
               )}
