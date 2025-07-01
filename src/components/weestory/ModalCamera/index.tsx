@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Modal,
   View,
@@ -22,7 +22,7 @@ import {
   useCameraDevice,
   useCameraPermission,
   useMicrophonePermission,
-  useCameraFormat,
+  //useCameraFormat,
 } from "react-native-vision-camera";
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -34,7 +34,7 @@ import { useCameraModal } from "@/context/camera-modal-context";
 
 import { createWeestory } from "@/api/social/weestory/create-weestory";
 
-import GalleryIcon from "@/assets/icons/gallery-icon.svg";
+//import GalleryIcon from "@/assets/icons/gallery-icon.svg";
 import RevertIcon from "@/assets/icons/revert-icon.svg";
 import CopyIcon from "@/assets/icons/copy-item-icon.svg";
 import WeestoryCircleIcon from "@/assets/icons/weestory-circle-icon.svg";
@@ -94,10 +94,10 @@ export default function ModalCamera() {
   const isSimulator = Platform.OS === "ios" && !Device.isDevice;
 
   // Só tenta usar o formato se o device estiver disponível
-  const format = useCameraFormat(currentDevice, [
-    { videoResolution: { width: 1080, height: 1920 } },
-    { fps: 60 },
-  ]);
+  // const format = useCameraFormat(currentDevice, [
+  //   { videoResolution: { width: 1080, height: 1920 } },
+  //   { fps: 60 },
+  // ]);
 
   const normalizeFileUri = (path: string) =>
     Platform.OS === "android" && !path.startsWith("file://")
@@ -105,14 +105,12 @@ export default function ModalCamera() {
       : path;
 
   const handlePresentModal = () => {
-    //bottomSheetRef.current?.expand();
     progress.setValue(0);
     setShowBottomSheet(true);
     setBottomSheetIndex(0);
   };
 
   const handleCloseModal = () => {
-    //bottomSheetRef.current?.close();
     progress.setValue(0);
     setShowProgress(false);
     setShowBottomSheet(false);
@@ -162,7 +160,6 @@ export default function ModalCamera() {
                 stopPulsing();
               },
               videoCodec: "h264",
-              fileType: "mp4",
             });
 
             // Para a gravação após 15 segundos
@@ -208,16 +205,10 @@ export default function ModalCamera() {
 
       const photoUri = normalizeFileUri(photo.path);
 
-      const fixed = await ImageManipulator.manipulateAsync(photoUri, [], {
+      const final = await ImageManipulator.manipulateAsync(photoUri, [], {
         compress: 1,
         format: ImageManipulator.SaveFormat.JPEG,
       });
-
-      const final = await ImageManipulator.manipulateAsync(
-        fixed.uri,
-        [{ resize: { width: 1080, height: 1920 } }],
-        { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
-      );
 
       setCapturedPhoto(final.uri);
     } catch (e) {
@@ -452,12 +443,12 @@ export default function ModalCamera() {
                     ref={cameraRef}
                     device={currentDevice!}
                     style={styles.camera}
-                    videoBitRate="low"
+                    //videoBitRate="low"
                     isActive={true}
                     video={true}
                     audio={true}
                     photo={true}
-                    format={format}
+                    //format={format}
                     resizeMode="cover"
                   />
                 </>
@@ -540,7 +531,7 @@ export default function ModalCamera() {
           <BottomSheet
             ref={bottomSheetRef}
             index={bottomSheetIndex}
-            snapPoints={[height * 0.35]}
+            snapPoints={[height * 0.32]}
             onClose={handleCloseModal}
             enablePanDownToClose={true}
             enableHandlePanningGesture={false}
