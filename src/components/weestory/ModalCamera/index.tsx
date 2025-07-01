@@ -537,7 +537,7 @@ export default function ModalCamera() {
           <BottomSheet
             ref={bottomSheetRef}
             index={bottomSheetIndex}
-            snapPoints={[height * 0.42]}
+            snapPoints={[height * 0.3]}
             onClose={handleCloseModal}
             enablePanDownToClose={true}
             enableHandlePanningGesture={false}
@@ -569,13 +569,8 @@ export default function ModalCamera() {
                   <Entypo name="check" size={15} color="black" />
                 </TouchableOpacity>
               </View>
-              <Button
-                isLoading={isLoading}
-                handlePress={handleSubmit}
-                containerStyles="mt-4 w-full"
-                title="Compartilhar"
-              />
-              {showProgress && (
+
+              {showProgress ? (
                 <View
                   className="h-1"
                   style={{
@@ -595,6 +590,13 @@ export default function ModalCamera() {
                     }}
                   />
                 </View>
+              ) : (
+                <Button
+                  isLoading={isLoading}
+                  handlePress={handleSubmit}
+                  containerStyles="mt-4 w-full"
+                  title="Compartilhar"
+                />
               )}
             </BottomSheetView>
           </BottomSheet>
