@@ -45,6 +45,9 @@ import { router } from "expo-router";
 
 const { height, width } = Dimensions.get("window");
 
+// Constante para o tempo máximo de gravação em milissegundos
+const MAX_RECORDING_DURATION = 15000; // 15 segundos
+
 export default function ModalCamera() {
   const insets = useSafeAreaInsets();
   const { infoCamera, isVisible, closeCamera } = useCameraModal();
@@ -170,7 +173,7 @@ export default function ModalCamera() {
                 setIsRecording(false);
                 stopPulsing();
               }
-            }, 15000);
+            }, MAX_RECORDING_DURATION);
           } catch (error) {
             console.error("Erro ao iniciar gravação:", error);
             setIsRecording(false);
