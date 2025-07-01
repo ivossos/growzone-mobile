@@ -540,7 +540,7 @@ export default function ModalCamera() {
           <BottomSheet
             ref={bottomSheetRef}
             index={bottomSheetIndex}
-            snapPoints={[height * 0.3]}
+            snapPoints={[height * 0.35]}
             onClose={handleCloseModal}
             enablePanDownToClose={true}
             enableHandlePanningGesture={false}
