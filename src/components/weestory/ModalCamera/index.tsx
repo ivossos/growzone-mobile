@@ -87,6 +87,12 @@ export default function ModalCamera() {
   const [showProgress, setShowProgress] = useState(false);
   const progress = useRef(new Animated.Value(0)).current;
 
+  // Refs para limpeza de recursos
+  const recordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const startRecordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pulseAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const isMountedRef = useRef(true);
+
   // Verificações de segurança para devices
   const currentDevice = facing === "front" ? frontDevice : backDevice;
 
@@ -105,12 +111,14 @@ export default function ModalCamera() {
       : path;
 
   const handlePresentModal = () => {
+    if (!isMountedRef.current) return;
     progress.setValue(0);
     setShowBottomSheet(true);
     setBottomSheetIndex(0);
   };
 
   const handleCloseModal = () => {
+    if (!isMountedRef.current) return;
     progress.setValue(0);
     setShowProgress(false);
     setShowBottomSheet(false);
@@ -118,7 +126,14 @@ export default function ModalCamera() {
   };
 
   const startPulsing = () => {
-    Animated.loop(
+    if (!isMountedRef.current) return;
+
+    // Limpa animação anterior se existir
+    if (pulseAnimationRef.current) {
+      pulseAnimationRef.current.stop();
+    }
+
+    pulseAnimationRef.current = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.2,
@@ -131,39 +146,79 @@ export default function ModalCamera() {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+
+    pulseAnimationRef.current.start();
   };
 
   const stopPulsing = () => {
-    pulseAnim.stopAnimation();
+    if (pulseAnimationRef.current) {
+      pulseAnimationRef.current.stop();
+      pulseAnimationRef.current = null;
+    }
     pulseAnim.setValue(1);
   };
 
+  const clearAllTimers = () => {
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+
+    if (startRecordingTimeoutRef.current) {
+      clearTimeout(startRecordingTimeoutRef.current);
+      startRecordingTimeoutRef.current = null;
+    }
+
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
   const startRecording = async () => {
-    if (cameraRef.current && !isRecording && currentDevice) {
+    if (
+      cameraRef.current &&
+      !isRecording &&
+      currentDevice &&
+      isMountedRef.current
+    ) {
       setIsRecording(true);
       startPulsing();
+
       try {
-        setTimeout(async () => {
+        startRecordingTimeoutRef.current = setTimeout(async () => {
+          if (!isMountedRef.current || !cameraRef.current) return;
+
           try {
             cameraRef.current?.startRecording({
               onRecordingFinished: (video) => {
+                if (!isMountedRef.current) return;
                 console.log("Entrei no onRecordingFinished", video.path);
                 const normalizedPath = normalizeFileUri(video.path);
                 setCapturedVideo(normalizedPath);
                 setIsRecording(false);
                 stopPulsing();
+
+                // Limpa o timeout de gravação se ainda estiver ativo
+                if (recordingTimeoutRef.current) {
+                  clearTimeout(recordingTimeoutRef.current);
+                  recordingTimeoutRef.current = null;
+                }
               },
               onRecordingError: (error) => {
+                if (!isMountedRef.current) return;
                 console.error("Erro ao gravar:", error);
                 setIsRecording(false);
                 stopPulsing();
+                clearAllTimers();
               },
               videoCodec: "h264",
             });
 
             // Para a gravação após 15 segundos
-            setTimeout(() => {
+            recordingTimeoutRef.current = setTimeout(() => {
+              if (!isMountedRef.current) return;
               console.log("⏰ Timeout atingido, parando gravação");
               if (cameraRef.current) {
                 cameraRef.current.stopRecording();
@@ -172,15 +227,19 @@ export default function ModalCamera() {
               }
             }, MAX_RECORDING_DURATION);
           } catch (error) {
+            if (!isMountedRef.current) return;
             console.error("Erro ao iniciar gravação:", error);
             setIsRecording(false);
             stopPulsing();
+            clearAllTimers();
           }
         }, 600);
       } catch (e) {
+        if (!isMountedRef.current) return;
         console.error("Erro ao gravar:", e);
         setIsRecording(false);
         stopPulsing();
+        clearAllTimers();
       }
     }
   };
@@ -190,18 +249,25 @@ export default function ModalCamera() {
       cameraRef.current.stopRecording();
       stopPulsing();
       setIsRecording(false);
+      clearAllTimers();
     }
   };
 
   const handleCapture = async () => {
-    if (isRecording || !cameraRef.current || !currentDevice) return;
+    if (
+      isRecording ||
+      !cameraRef.current ||
+      !currentDevice ||
+      !isMountedRef.current
+    )
+      return;
 
     try {
       const photo = await cameraRef.current.takePhoto({
         flash: "off",
       });
 
-      if (!photo) return;
+      if (!photo || !isMountedRef.current) return;
 
       const photoUri = normalizeFileUri(photo.path);
 
@@ -210,14 +276,19 @@ export default function ModalCamera() {
         format: ImageManipulator.SaveFormat.JPEG,
       });
 
-      setCapturedPhoto(final.uri);
+      if (isMountedRef.current) {
+        setCapturedPhoto(final.uri);
+      }
     } catch (e) {
       console.error("Erro ao tirar foto:", e);
     }
   };
 
   const handlePressIn = () => {
+    if (!isMountedRef.current) return;
+
     const timer = setTimeout(() => {
+      if (!isMountedRef.current) return;
       setDidLongPress(true);
       startRecording();
     }, 200);
@@ -231,6 +302,8 @@ export default function ModalCamera() {
       setPressTimer(null);
     }
 
+    if (!isMountedRef.current) return;
+
     if (didLongPress) {
       stopRecording();
     } else {
@@ -242,28 +315,39 @@ export default function ModalCamera() {
 
   const handleClose = () => {
     stopRecording();
+    clearAllTimers();
+    stopPulsing();
+
     setCapturedPhoto(null);
     setCapturedVideo(null);
     setIsRecording(false);
-    stopPulsing();
     closeCamera();
+
     setTimeout(() => {
-      router.push("/(drawer)/(tabs)/home");
+      if (isMountedRef.current) {
+        router.push("/(drawer)/(tabs)/home");
+      }
     }, 800);
   };
 
   const handleSubmit = async () => {
+    if (!isMountedRef.current) return;
+
     setIsLoading(true);
     setShowProgress(true);
+
     try {
       await createWeestory({
         image: capturedPhoto,
         video: capturedVideo,
         onProgress: (progressValue) => {
+          if (!isMountedRef.current) return;
           console.log("[Progress] ", progressValue, "%");
           progress.setValue(progressValue / 100);
         },
       });
+
+      if (!isMountedRef.current) return;
 
       Toast.show({
         type: "success",
@@ -275,14 +359,19 @@ export default function ModalCamera() {
     } catch (error) {
       console.error("error ", error);
       handleClose();
-      Toast.show({
-        type: "error",
-        text1: "Erro",
-        text2: "Não foi possível adicionar seu weestory",
-      });
+
+      if (isMountedRef.current) {
+        Toast.show({
+          type: "error",
+          text1: "Erro",
+          text2: "Não foi possível adicionar seu weestory",
+        });
+      }
     } finally {
-      setIsLoading(false);
-      setShowProgress(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+        setShowProgress(false);
+      }
     }
   };
 
@@ -297,6 +386,7 @@ export default function ModalCamera() {
   };
 
   function toggleCameraFacing() {
+    if (!isMountedRef.current) return;
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
@@ -310,6 +400,8 @@ export default function ModalCamera() {
   };
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     if (!hasCameraPermission) {
       requestCameraPermission();
     }
@@ -334,6 +426,22 @@ export default function ModalCamera() {
         );
       }
     }
+
+    // Cleanup function
+    return () => {
+      isMountedRef.current = false;
+      clearAllTimers();
+      stopPulsing();
+
+      // Para qualquer gravação em andamento
+      if (cameraRef.current && isRecording) {
+        try {
+          cameraRef.current.stopRecording();
+        } catch (e) {
+          console.warn("Erro ao parar gravação no cleanup:", e);
+        }
+      }
+    };
   }, [hasCameraPermission, hasMicrophonePermission, frontDevice, backDevice]);
 
   useEffect(() => {
@@ -351,6 +459,20 @@ export default function ModalCamera() {
       }
     }
   }, [infoCamera]);
+
+  // Cleanup quando o modal não está visível
+  useEffect(() => {
+    if (!isVisible) {
+      clearAllTimers();
+      stopPulsing();
+      setIsRecording(false);
+      setCapturedPhoto(null);
+      setCapturedVideo(null);
+      setVideoReady(false);
+      setShowProgress(false);
+      setShowBottomSheet(false);
+    }
+  }, [isVisible]);
 
   return (
     <Modal visible={isVisible} animationType="fade">
@@ -531,7 +653,7 @@ export default function ModalCamera() {
           <BottomSheet
             ref={bottomSheetRef}
             index={bottomSheetIndex}
-            snapPoints={[height * 0.32]}
+            snapPoints={[height * (showProgress ? 0.28 : 0.32)]}
             onClose={handleCloseModal}
             enablePanDownToClose={true}
             enableHandlePanningGesture={false}
