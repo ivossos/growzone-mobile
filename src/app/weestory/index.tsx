@@ -16,6 +16,8 @@ import {
 } from "react-native";
 //import Button from "@/components/ui/button";
 //import * as MediaLibrary from "expo-media-library";
+// TODO: Quando reativar a galeria nos weestory, verificar se é necessário usar metadados de localização das imagens
+// Se necessário, alterar "isAccessMediaLocationEnabled" para true no app.json
 //import { MasonryFlashList } from "@shopify/flash-list";
 //import { Dropdown } from "react-native-element-dropdown";
 //import * as VideoThumbnails from "expo-video-thumbnails";
