@@ -291,7 +291,11 @@ export default function HomeScreen() {
           ListHeaderComponent={
             <React.Fragment>
               <Header />
-              <WeestorySlider refreshPage={refreshWeestory} />
+              <WeestorySlider
+                refreshPage={refreshWeestory}
+                playerRef={playerRef}
+                lastActivePostId={lastActivePostId}
+              />
             </React.Fragment>
           }
           ListEmptyComponent={renderEmptyComponent}

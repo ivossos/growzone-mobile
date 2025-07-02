@@ -9,8 +9,12 @@ import Avatar from "../Avatar";
 
 export default function WeeStorySlider({
   refreshPage,
+  playerRef,
+  lastActivePostId,
 }: {
   refreshPage: boolean;
+  playerRef: any;
+  lastActivePostId: any;
 }) {
   const [weestories, setWeestories] = useState<any>([]);
   const [selectedUserIndex, setSelectedUserIndex] = useState<number | null>(
@@ -28,6 +32,16 @@ export default function WeeStorySlider({
 
   const handleClose = () => {
     setSelectedUserIndex(null);
+
+    // Retomar o vídeo que estava ativo antes de abrir o weestory
+    const currentPost = lastActivePostId.current;
+    if (currentPost && playerRef.current) {
+      const playerKey = `${currentPost.postId}-${currentPost.index}`;
+      const activePlayer = playerRef.current.get(playerKey);
+      if (activePlayer) {
+        activePlayer.play();
+      }
+    }
   };
 
   useEffect(() => {
@@ -39,6 +53,20 @@ export default function WeeStorySlider({
   useEffect(() => {
     listWeestories();
   }, []);
+
+  useEffect(() => {
+    if (selectedUserIndex !== null) {
+      // Pausar o vídeo que estava ativo quando abrir o weestory
+      const currentPost = lastActivePostId.current;
+      if (currentPost && playerRef.current) {
+        const playerKey = `${currentPost.postId}-${currentPost.index}`;
+        const activePlayer = playerRef.current.get(playerKey);
+        if (activePlayer) {
+          activePlayer.pause();
+        }
+      }
+    }
+  }, [selectedUserIndex]);
 
   const weestory = [{ id: "0", isAddButton: true }, ...weestories];
 
@@ -53,7 +81,7 @@ export default function WeeStorySlider({
             <Avatar addButton onPress={() => router.push("/weestory")} />
           ) : (
             <Avatar
-              name={item.name || item.username}
+              name={item.name ?? item.username}
               avatar={{
                 image: item.avatar,
               }}
