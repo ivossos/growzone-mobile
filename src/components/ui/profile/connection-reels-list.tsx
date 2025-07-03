@@ -1,4 +1,3 @@
-import { TimelineType } from "@/api/@types/enums";
 import { ReelsDetail } from "@/api/@types/models";
 import { useAuth } from "@/hooks/use-auth";
 import { getMuxThumbnailUrl } from "@/lib/utils";
@@ -20,6 +19,8 @@ import Animated from "react-native-reanimated";
 
 const numColumns = 2;
 const w = Dimensions.get("window").width;
+const itemWidth = w / numColumns;
+const itemHeight = itemWidth * 1.25;
 
 type Props = {
   userId: number;
@@ -85,8 +86,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.black[100],
   },
   image: {
-    width: "100%",
-    height: 224,
+    width: itemWidth,
+    height: itemHeight,
     borderRadius: 16,
   },
   description: {

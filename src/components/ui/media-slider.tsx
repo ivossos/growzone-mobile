@@ -1,16 +1,15 @@
-import { StyleSheet, Image, View, TouchableOpacity, Text } from "react-native";
-import React, { memo } from "react";
-import Carousel from "pinar";
-import { colors } from "@/styles/colors";
+import { PostType } from "@/api/@types/enums";
 import {
   GrowPostDetail,
   PostDetail,
   SocialPostFile,
 } from "@/api/@types/models";
-import { usePlayerContext } from "@/context/player-context";
-import { Volume2, VolumeX } from "lucide-react-native";
-import { PostType } from "@/api/@types/enums";
 import VideoPlayer from "@/components/player/Video";
+import { colors } from "@/styles/colors";
+import Carousel from "pinar";
+import React, { memo } from "react";
+import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
+import MuteToggleButton from "./mute-toggle-button";
 
 interface MediaSliderProps {
   post: GrowPostDetail | PostDetail;
@@ -29,11 +28,9 @@ const MediaSlider = ({
   playerRef,
   postId,
   isVisible,
-  onVideoChange
+  onVideoChange,
 }: MediaSliderProps) => {
-  const { isMuted, toggleMute } = usePlayerContext();
-
-  const handleIndexChange = ({ index }: {index: number; total: number;}) => {
+  const handleIndexChange = ({ index }: { index: number; total: number }) => {
     onVideoChange(postId, index);
   };
 
@@ -41,10 +38,10 @@ const MediaSlider = ({
     ({ item, index }: { item: SocialPostFile; index: number }) => {
       if (item.type === "image") {
         return (
-          <View className="relative">
+          <View style={[styles.item, { flex: 1 }]}>
             <Image
               source={{ uri: item.file }}
-              style={styles.item}
+              style={[styles.mediaImage, { flex: 1 }]}
               resizeMode="cover"
             />
             <View className="absolute bottom-6 w-full flex flex-row justify-between items-center px-4">
@@ -68,7 +65,7 @@ const MediaSlider = ({
               uri={item.file}
               videoId={postId}
               isVisible={isVisible}
-              index={index} 
+              index={index}
             />
           </View>
 
@@ -81,15 +78,7 @@ const MediaSlider = ({
               </View>
             )}
 
-            <View className="border border-black-80 bg-white px-4 py-2 rounded-full">
-              <TouchableOpacity onPress={toggleMute}>
-                {isMuted ? (
-                  <VolumeX size={20} color={colors.brand.black} />
-                ) : (
-                  <Volume2 size={20} color={colors.brand.black} />
-                )}
-              </TouchableOpacity>
-            </View>
+            <MuteToggleButton />
           </View>
         </View>
       );
@@ -117,6 +106,9 @@ const MediaSlider = ({
 
 export default memo(MediaSlider);
 
+const screenWidth = Dimensions.get("window").width;
+const aspectRatioHeight = screenWidth * 1.25;
+
 const styles = StyleSheet.create({
   dotStyle: {
     width: 8,
@@ -127,13 +119,23 @@ const styles = StyleSheet.create({
     marginBottom: -90,
   },
   carousel: {
-    height: 350,
-    width: "100%",
-    borderRadius: 16,
+    width: screenWidth,
+    height: aspectRatioHeight,
+    alignSelf: "center",
   },
   item: {
-    width: "100%",
-    height: 350,
-    borderRadius: 16,
+    width: screenWidth,
+    height: aspectRatioHeight,
+    alignSelf: "center",
+  },
+  mediaWrapper: {
+    width: screenWidth,
+    height: aspectRatioHeight,
+    alignSelf: "center",
+  },
+  mediaImage: {
+    width: screenWidth,
+    height: aspectRatioHeight,
+    alignSelf: "center",
   },
 });
