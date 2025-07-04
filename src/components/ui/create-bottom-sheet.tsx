@@ -224,7 +224,7 @@ const CreateBottomSheet = React.forwardRef<
     setIsLoadingCreatePost(true);
 
     try {
-      createSocialPost({
+      await createSocialPost({
         userId: user.id,
         images: selectedImages,
         videos: selectedVideos,
