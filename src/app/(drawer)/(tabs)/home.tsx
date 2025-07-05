@@ -259,6 +259,17 @@ export default function HomeScreen() {
     }, [])
   );
 
+  useEffect(() => {
+    return () => {
+      // Limpa todos os players ao desmontar a tela
+      playerRef.current.forEach((player, key) => {
+        player.pause();
+        player.release?.();
+      });
+      playerRef.current.clear();
+    };
+  }, []);
+
   if (error) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
