@@ -563,7 +563,7 @@ export default function ModalCamera() {
                   </TouchableOpacity>
                   <Camera
                     ref={cameraRef}
-                    device={currentDevice!}
+                    device={currentDevice}
                     style={styles.camera}
                     //videoBitRate="low"
                     isActive={true}
