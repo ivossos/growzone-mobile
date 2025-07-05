@@ -1,5 +1,6 @@
 import { socialApi } from "@/lib/axios";
 import { getAuthenticatedUrl } from "../../mux/get-authenticated-url";
+import * as FileSystem from "expo-file-system";
 
 /**
  * Uploads a video file to a given URL using an XMLHttpRequest.
@@ -7,59 +8,42 @@ import { getAuthenticatedUrl } from "../../mux/get-authenticated-url";
  * @param {string} fileUri - The URI of the video file to be uploaded.
  * @param {string} uploadUrl - The URL to which the video will be uploaded.
  * @param {Function} [onProgress] - Optional callback function that receives the upload progress as a percentage (0-100).
- * @returns {Promise<void>} A promise that resolves when the upload is complete or rejects if an error occurs.
- *
- * The function fetches the video file as a blob and uses XMLHttpRequest to upload it. The upload progress is tracked
- * and reported via the onProgress callback, if provided. The promise resolves on successful upload and rejects
- * if an error occurs, including network errors or timeouts.
  */
-
 async function uploadVideoToUrl(
   fileUri: string,
   uploadUrl: string,
-  onProgress?: (progress: number) => void
+  onProgress: (progress: number) => void
 ): Promise<void> {
-  return new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", uploadUrl, true);
-
-    // Progress tracking
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable && onProgress) {
-        const percentComplete = (event.loaded / event.total) * 100;
-        onProgress(Math.round(percentComplete));
+  try {
+    const uploader = FileSystem.createUploadTask(
+      uploadUrl,
+      fileUri,
+      {
+        httpMethod: "PUT",
+        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+        headers: {
+          "Content-Type": "video/mp4",
+        },
+      },
+      (uploadProgress) => {
+        const progress =
+          uploadProgress.totalBytesSent /
+          uploadProgress.totalBytesExpectedToSend;
+        onProgress(Math.round(progress * 100));
       }
-    };
+    );
 
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        onProgress?.(100);
-        resolve();
-      } else {
-        reject(new Error(`Upload falhou com status ${xhr.status}`));
-      }
-    };
+    const result = await uploader.uploadAsync();
 
-    xhr.onerror = () => {
-      reject(new Error("Erro no upload"));
-    };
-
-    xhr.ontimeout = () => {
-      reject(new Error("Upload timeout - tente novamente"));
-    };
-
-    // Upload direto via fetch para obter o blob e enviar ao Mux
-    fetch(fileUri)
-      .then((response) => response.blob())
-      .then((blob) => {
-        // Definir o content-type correto para vídeo
-        xhr.setRequestHeader("Content-Type", blob.type || "video/mp4");
-        xhr.send(blob);
-      })
-      .catch((error) => {
-        reject(new Error(`Erro ao processar arquivo: ${error.message}`));
-      });
-  });
+    if (result && result.status >= 200 && result.status < 300) {
+      onProgress(100);
+    } else {
+      throw new Error(`Upload failed with status ${result?.status}`);
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    throw new Error("Error during upload");
+  }
 }
 
 /**
