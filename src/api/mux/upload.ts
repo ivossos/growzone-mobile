@@ -3,7 +3,7 @@ import { queryClient } from "@/lib/react-query";
 import createNewSocialPost from "../social/post/create-new-social-post";
 import createNewReels from "../social/post/create-new-reels";
 import createNewGrowPost from "../social/post/create-new-grow-post";
-
+import * as FileSystem from "expo-file-system";
 
 export type FilePost = { uri: string; fileName: string; type: string };
 
@@ -12,47 +12,36 @@ async function uploadVideoToUrl(
   uploadUrl: string,
   onProgress: (progress: number) => void
 ): Promise<void> {
-  const response = await fetch(fileUri);
-  const blob = await response.blob();
-
-  return new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", uploadUrl, true);
-    xhr.setRequestHeader("Content-Type", blob.type);
-
-    let fakeProgress = 0;
-    const interval = setInterval(() => {
-      fakeProgress += 5;
-      if (fakeProgress >= 95) {
-        clearInterval(interval);
+  try {
+    const uploader = FileSystem.createUploadTask(
+      uploadUrl,
+      fileUri,
+      {
+        httpMethod: "PUT",
+        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+        headers: {
+          "Content-Type": "video/mp4",
+        },
+      },
+      (uploadProgress) => {
+        const progress =
+          uploadProgress.totalBytesSent /
+          uploadProgress.totalBytesExpectedToSend;
+        onProgress(Math.round(progress * 100));
       }
-      onProgress(fakeProgress);
-    }, 500);
+    );
 
-    xhr.upload.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const percentComplete = (event.loaded / event.total) * 100;
-        onProgress(Math.round(percentComplete));
-      }
-    };
+    const result = await uploader.uploadAsync();
 
-    xhr.onload = () => {
-      clearInterval(interval);
-      if (xhr.status >= 200 && xhr.status < 300) {
-        onProgress(100);
-        resolve();
-      } else {
-        reject(new Error(`Upload falhou com status ${xhr.status}`));
-      }
-    };
-
-    xhr.onerror = () => {
-      clearInterval(interval);
-      reject(new Error("Erro no upload"));
-    };
-
-    xhr.send(blob);
-  });
+    if (result && result.status >= 200 && result.status < 300) {
+      onProgress(100);
+    } else {
+      throw new Error(`Upload failed with status ${result?.status}`);
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    throw new Error("Error during upload");
+  }
 }
 
 async function processPost({
@@ -98,8 +87,11 @@ async function processPost({
         const { uploadUrl } = videoUploadData[i];
 
         await uploadVideoToUrl(videos[i].uri, uploadUrl, (progress) => {
-          const progressFromCurrentVideo = (progress / 100) * (100 / totalSteps);
-          onProgress(completedSteps * (100 / totalSteps) + progressFromCurrentVideo);
+          const progressFromCurrentVideo =
+            (progress / 100) * (100 / totalSteps);
+          onProgress(
+            completedSteps * (100 / totalSteps) + progressFromCurrentVideo
+          );
         });
 
         completedSteps++;
@@ -166,7 +158,8 @@ export async function processReels({
       videos: [video],
       description,
       onProgress,
-      createPostFn: ({videos, ...props}) =>  createNewReels({...props, video: videos[0] } ),
+      createPostFn: ({ videos, ...props }) =>
+        createNewReels({ ...props, video: videos[0] }),
       queryKey: "profile-reels",
     });
   } catch (error) {
@@ -201,7 +194,8 @@ export async function processGrow({
       videos,
       description,
       onProgress,
-      createPostFn: (data) => createNewGrowPost({ ...data, day, strain_id, phase_id }),
+      createPostFn: (data) =>
+        createNewGrowPost({ ...data, day, strain_id, phase_id }),
       queryKey: "profile-post-grow",
     });
   } catch (error) {
