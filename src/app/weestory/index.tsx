@@ -449,8 +449,13 @@ export default function WeestoryScreen() {
       return (
         <Image
           source={{ uri: capturedPhoto }}
-          className="flex-1 rounded"
-          resizeMode="cover"
+          className="rounded flex"
+          style={{
+            height: height * 0.92,
+            width: "100%",
+            borderRadius: 10,
+          }}
+          resizeMode="contain"
         />
       );
     }
@@ -458,12 +463,12 @@ export default function WeestoryScreen() {
       return (
         <VideoView
           player={playerVideoPreview}
-          className="flex-1"
           style={{
-            height: "90%",
+            height: height * 0.92,
             width: "100%",
             borderRadius: 10,
           }}
+          contentFit="contain"
         />
       );
     }
@@ -506,7 +511,7 @@ export default function WeestoryScreen() {
     const isDisabledButton = !cameraIsReady || isLoadingResponse;
     return (
       <View
-        className="relative w-full"
+        className="relative w-full bg-black-100"
         style={{
           height: height,
         }}
@@ -537,7 +542,8 @@ export default function WeestoryScreen() {
             videoBitRate="low"
             resizeMode="contain"
             style={{
-              flex: 1,
+              width: "100%",
+              height: "90%",
               zIndex: 0,
               borderRadius: 10,
             }}
@@ -550,12 +556,8 @@ export default function WeestoryScreen() {
             }}
           />
         )}
-        <View
-          className={`flex justify-end my-[2px] ${
-            hasCapturedMedia ? "h-[65px]" : "h-[40px]"
-          }`}
-        >
-          <View className="bg-black flex justify-center items-center">
+        <View className="flex justify-end flex-1">
+          <View className="bg-black-100 flex justify-center items-center">
             <View className="flex-row items-center justify-between w-full px-2 pt-5">
               {hasCapturedMedia ? (
                 <>
