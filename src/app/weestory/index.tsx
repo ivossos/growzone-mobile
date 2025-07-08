@@ -316,7 +316,6 @@ export default function WeestoryScreen() {
       closeCamera();
       return;
     }
-    console.log("[isRecording]", isRecording);
     startPulsing();
     try {
       camera.current.startRecording({
@@ -387,7 +386,7 @@ export default function WeestoryScreen() {
       console.log("[Estou gravando]", new Date().toISOString());
       setIsRecording(true);
       recordVideo();
-    }, 300);
+    }, 200);
   };
 
   /**
@@ -541,6 +540,7 @@ export default function WeestoryScreen() {
             audio={true}
             videoBitRate="low"
             resizeMode="contain"
+            outputOrientation="preview"
             style={{
               width: "100%",
               height: "90%",
