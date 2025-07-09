@@ -1,19 +1,31 @@
 import { useState, useCallback, useRef, useEffect  } from "react";
-import { View, Text, TouchableOpacity, Switch, Image, Modal } from "react-native";
+import { View, Text, TouchableOpacity, Switch, Image, Modal, Animated, Linking } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowLeft, Copy, ChevronRight } from "lucide-react-native";
+import axios from "axios";
+
 import { router } from "expo-router";
 import { useNavigation } from "expo-router";
+import { BlurView } from "expo-blur";
+
+import { ArrowLeft, Copy, ChevronRight } from "lucide-react-native";
+
 import { screens } from "@/constants/screens";
 import ReportModal from "@/components/ui/report-modal";
+
+import { useInstagramStatus } from "@/hooks/useInstagramStatus";
+import { useInstagramDisconnect } from "@/hooks/useInstagramDisconnect";
+import { useAuth } from "@/hooks/use-auth";
+import { showSuccess, showError } from '@/utils/toast';
+
 import { colors } from "@/styles/colors";
-import { BlurView } from "expo-blur";
-import { Animated } from "react-native";
 
 
 export default function GrowsyncDisconnect() {
   const navigation = useNavigation();
+  const { disconnectInstagram } = useInstagramDisconnect();
+  const { data, loading, error, refetch } = useInstagramStatus();
+  const { user, token } = useAuth();
   const { title, Icon } = screens["growsync"];
   const [isConnected, setIsConnected] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -21,10 +33,11 @@ export default function GrowsyncDisconnect() {
   const translateY = useRef(new Animated.Value(20)).current;
 
   useFocusEffect(
-    useCallback(() => {
-      setIsConnected(true);
-    }, [])
-  );
+  useCallback(() => {
+    refetch();
+    setIsConnected(true);
+  }, [])
+);
 
   useEffect(() => {
   if (showModal) {
@@ -36,7 +49,7 @@ export default function GrowsyncDisconnect() {
   }
 }, [showModal]);
 
-  function handleBack() {
+function handleBack() {
     navigation.goBack();
   }
 
@@ -55,6 +68,25 @@ export default function GrowsyncDisconnect() {
   }
 }
 
+async function handleConnectInstagram() {
+  try {
+      const res = await axios.get(
+        `https://dev1.auth.growzone.co/api/v1/instagram/oauth-url?user_id=${user.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const { authorization_url } = res.data;
+      showSuccess('Redirecting to Instagram...');
+      Linking.openURL(authorization_url);
+    } catch (err) {
+      showError('Failed to start Instagram connection');
+    }
+  }
+  
 
   return (
     <SafeAreaView className="flex-1 bg-black-100 px-6">
@@ -86,13 +118,18 @@ export default function GrowsyncDisconnect() {
                 setPendingDisconnect(false);
                 setIsConnected(true);
               }}
-              onSecondary={() => {
-                setShowModal(false);
-                setPendingDisconnect(false);
-                setIsConnected(false);
-                setTimeout(() => {
-                  navigation.goBack();
-                }, 300);
+              onSecondary={async () => {
+                try {
+                  await disconnectInstagram();
+                  await refetch();
+                  setIsConnected(false);
+                  showSuccess('Instagram account disconnected successfully');
+                } catch (error) {
+                  showError('Failed to disconnect. Please try again.');
+                } finally {
+                  setShowModal(false);
+                  setPendingDisconnect(false);
+                }
               }}
             />
           </Animated.View>
@@ -121,12 +158,35 @@ export default function GrowsyncDisconnect() {
               />
             </View>
           </View>
-          <Text className="text-white text-center font-bold mb-3">
-            @growzone.co
-          </Text>
-          <Text className="text-black-50 text-center font-medium">
-            Your Instagram is connected to Growzone
-          </Text>
+          {loading ? (
+            <Text className="text-white text-center font-medium">Checking connection...</Text>
+          ) : data?.is_connected ? (
+            <>
+              <Text className="text-white text-center font-bold mb-3">
+                @{data.instagram_username}
+              </Text>
+              <Text className="text-black-50 text-center font-medium">
+                Your Instagram is connected to Growzone
+              </Text>
+            </>
+          ) : (
+            <>
+              <Text className="text-white text-center font-bold mb-3">
+                No account connected
+              </Text>
+              <TouchableOpacity
+                onPress={handleConnectInstagram}
+                disabled={loading}
+                className={`mt-3 py-3 px-6 rounded-lg self-center ${
+                  loading ? 'bg-black-60' : 'bg-primary'
+                }`}
+              >
+                <Text className="text-black font-bold text-base">
+                  {loading ? 'Loading...' : 'Connect with Instagram'}
+                </Text>
+              </TouchableOpacity>
+            </>
+          )}
         </View>
         <TouchableOpacity
           className="mt-9"
@@ -156,7 +216,3 @@ export default function GrowsyncDisconnect() {
     </SafeAreaView>
   );
 }
-function useReff(arg0: any) {
-  throw new Error("Function not implemented.");
-}
-

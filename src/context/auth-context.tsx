@@ -16,6 +16,8 @@ import {
 import { createContext, ReactNode, useEffect, useState } from "react";
 
 type AuthContextProps = {
+  token: string | null;
+  setToken: (token: string | null) => void;
   user: UserSocial;
   isLoadingUserStorage: boolean;
   signIn: (email: string, password: string) => Promise<User>;
@@ -33,6 +35,7 @@ export const AuthContext = createContext<AuthContextProps>(
 
 export function AuthContextProvider({ children }: AuthContextProviderProps) {
   const [user, setUser] = useState({} as UserSocial);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoadingUserStorage, setIsLoadingUserStorage] = useState(true);
 
   async function loadUserData() {
@@ -147,6 +150,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       socialApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       setUser(user);
+      setToken(token);
     } catch (error) {
       throw error;
     }
@@ -168,7 +172,15 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ user, signIn, signOut, isLoadingUserStorage, updateUserData }}
+      value={{
+        user,
+        signIn,
+        signOut,
+        token,
+        setToken,
+        isLoadingUserStorage,
+        updateUserData,
+      }}
     >
       {children}
     </AuthContext.Provider>

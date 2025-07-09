@@ -10,6 +10,7 @@ import CloseIcon from "@/assets/icons/close.svg";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
+import Toast from 'react-native-toast-message';
 import { BottomSheetProvider } from "@/context/bottom-sheet-context";
 import BottomSheet from "@gorhom/bottom-sheet";
 import CommentBottomSheet from "@/components/ui/comment-bottom-sheet";
@@ -271,6 +272,7 @@ export default function DrawerLayout() {
                     backgroundColor={colors.black[100]}
                     style="light"
                   />
+                  <Toast />
                 </ScrollToTopProvider>
               </BottomSheetProvider>
             </PlayerProvider>
