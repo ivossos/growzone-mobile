@@ -519,7 +519,9 @@ export default function WeestoryScreen() {
           onPress={() => {
             hasCapturedMedia ? clearProcess() : closeCamera();
           }}
-          className="absolute top-[40px] left-5 w-12 h-12 rounded-full bg-black-80 items-center justify-center z-10"
+          className={`absolute left-5 w-12 h-12 rounded-full bg-black-80 items-center justify-center z-10 ${
+            Platform.OS === "ios" ? "top-[45px]" : "top-[40px]"
+          }`}
         >
           {hasCapturedMedia ? (
             <Entypo name="chevron-left" size={27} color="white" />
@@ -556,7 +558,11 @@ export default function WeestoryScreen() {
             }}
           />
         )}
-        <View className="flex justify-end flex-1">
+        <View
+          className={`flex justify-end flex-1 ${
+            Platform.OS === "ios" && "mb-[70px]"
+          }`}
+        >
           <View className="bg-black-100 flex justify-center items-center">
             <View className="flex-row items-center justify-between w-full px-2 pt-5">
               {hasCapturedMedia ? (
