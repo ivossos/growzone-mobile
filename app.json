@@ -23,6 +23,7 @@
         "NSPhotoLibraryAddUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
         "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
         "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
+        "NSLocationWhenInUseUsageDescription": "Este app não usa localização, mas algumas bibliotecas podem referenciar essas APIs.",
         "NSUserNotificationUsageDescription": "Precisamos de permissão para enviar notificações.",
         "UIBackgroundModes": ["fetch", "remote-notification"]
       },
@@ -31,19 +32,22 @@
           "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
           "NSPhotoLibraryAddUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
           "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
-          "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos."
+          "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
+          "NSLocationWhenInUseUsageDescription": "Este app não usa localização, mas algumas bibliotecas podem referenciar essas APIs."
         },
         "es": {
           "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
           "NSPhotoLibraryAddUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
           "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
-          "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para capturar fotos y videos."
+          "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para capturar fotos y videos.",
+          "NSLocationWhenInUseUsageDescription": "Esta aplicación no utiliza ubicación, pero algunas bibliotecas pueden referenciar estas APIs."
         },
         "en": {
           "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
           "NSPhotoLibraryAddUsageDescription": "We need access to your photo library to select photos and videos.",
           "NSPhotoLibraryUsageDescription": "We need access to your photo library to select photos and videos.",
-          "NSCameraUsageDescription": "We need access to your camera to capture photos and videos."
+          "NSCameraUsageDescription": "We need access to your camera to capture photos and videos.",
+          "NSLocationWhenInUseUsageDescription": "This app does not use location, but some libraries may reference these APIs."
         }
       },
       "config": {
