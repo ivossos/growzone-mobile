@@ -499,7 +499,7 @@ export default function WeestoryScreen() {
               : "Verifique se as permissões de câmera foram concedidas e tente novamente."}
           </Text>
           <Button
-            handlePress={() => {}}
+            handlePress={closeCamera}
             containerStyles="mt-4 w-50"
             title="Fechar"
           />
