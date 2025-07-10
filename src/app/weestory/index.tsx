@@ -510,7 +510,7 @@ export default function WeestoryScreen() {
     const isDisabledButton = !cameraIsReady || isLoadingResponse;
     return (
       <View
-        className="relative w-full bg-black-100"
+        className="relative w-full bg-[#000]"
         style={{
           height: height,
         }}
@@ -563,7 +563,7 @@ export default function WeestoryScreen() {
             Platform.OS === "ios" && "mb-[55px]"
           }`}
         >
-          <View className="bg-black-100 flex justify-center items-center">
+          <View className="bg-[#000]flex justify-center items-center">
             <View className="flex-row items-center justify-between w-full px-2 pt-5">
               {hasCapturedMedia ? (
                 <>
