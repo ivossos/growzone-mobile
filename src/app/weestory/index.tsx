@@ -560,7 +560,7 @@ export default function WeestoryScreen() {
         )}
         <View
           className={`flex justify-end flex-1 ${
-            Platform.OS === "ios" && "mb-[70px]"
+            Platform.OS === "ios" && "mb-[55px]"
           }`}
         >
           <View className="bg-black-100 flex justify-center items-center">
