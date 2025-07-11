@@ -19,34 +19,34 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
-        "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
-        "NSPhotoLibraryAddUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
-        "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para você selecionar fotos e vídeos.",
-        "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
+        "NSCameraUsageDescription": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
+        "NSPhotoLibraryUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
+        "NSPhotoLibraryAddUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
+        "NSMicrophoneUsageDescription": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
         "NSLocationWhenInUseUsageDescription": "Este app não usa localização, mas algumas bibliotecas podem referenciar essas APIs.",
-        "NSUserNotificationUsageDescription": "Precisamos de permissão para enviar notificações.",
+        "NSUserNotificationUsageDescription": "Enviamos notificações para avisar sobre curtidas, comentários, seguidores e outras atualizações importantes.",
         "UIBackgroundModes": ["fetch", "remote-notification"]
       },
       "locales": {
         "pt-BR": {
-          "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
-          "NSPhotoLibraryAddUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
-          "NSPhotoLibraryUsageDescription": "Precisamos de acesso à sua galeria para selecionar fotos e vídeos.",
-          "NSCameraUsageDescription": "Precisamos de acesso à sua câmera para capturar fotos e vídeos.",
+          "NSMicrophoneUsageDescription": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
+          "NSPhotoLibraryAddUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
+          "NSPhotoLibraryUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
+          "NSCameraUsageDescription": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
           "NSLocationWhenInUseUsageDescription": "Este app não usa localização, mas algumas bibliotecas podem referenciar essas APIs."
         },
         "es": {
-          "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
-          "NSPhotoLibraryAddUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
-          "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tu galería para seleccionar fotos y videos.",
-          "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para capturar fotos y videos.",
+          "NSMicrophoneUsageDescription": "Se necesita el micrófono para grabar audio en los videos que creas y publicas en la plataforma.",
+          "NSPhotoLibraryAddUsageDescription": "Usamos tu galería para que puedas seleccionar imágenes y videos para publicar o compartir en la app.",
+          "NSPhotoLibraryUsageDescription": "Usamos tu galería para que puedas seleccionar imágenes y videos para publicar o compartir en la app.",
+          "NSCameraUsageDescription": "Necesitamos usar la cámara de tu dispositivo para que puedas tomar fotos y grabar videos dentro de la app, como en publicaciones o registros de cultivo.",
           "NSLocationWhenInUseUsageDescription": "Esta aplicación no utiliza ubicación, pero algunas bibliotecas pueden referenciar estas APIs."
         },
         "en": {
-          "NSMicrophoneUsageDescription": "Precisamos de acesso ao microfone para gravar áudio no vídeo.",
-          "NSPhotoLibraryAddUsageDescription": "We need access to your photo library to select photos and videos.",
-          "NSPhotoLibraryUsageDescription": "We need access to your photo library to select photos and videos.",
-          "NSCameraUsageDescription": "We need access to your camera to capture photos and videos.",
+          "NSMicrophoneUsageDescription": "The microphone is required to record audio in the videos you create and publish on the platform.",
+          "NSPhotoLibraryAddUsageDescription": "We use your photo library so you can select images and videos to post or share within the app.",
+          "NSPhotoLibraryUsageDescription": "We use your photo library so you can select images and videos to post or share within the app.",
+          "NSCameraUsageDescription": "We need to use your device’s camera so you can take photos and record videos within the app, such as for posts or cultivation logs.",
           "NSLocationWhenInUseUsageDescription": "This app does not use location, but some libraries may reference these APIs."
         }
       },
@@ -123,8 +123,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "cameraPermission": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
+          "microphonePermission": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
           "recordAudioAndroid": true
         }
       ]
