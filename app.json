@@ -114,9 +114,9 @@
       [
         "react-native-vision-camera",
         {
-          "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
+          "cameraPermissionText": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
           "enableMicrophonePermission": true,
-          "microphonePermissionText": "$(PRODUCT_NAME) needs access to your Microphone.",
+          "microphonePermissionText": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
           "enableLocationPermission": false
         }
       ],
