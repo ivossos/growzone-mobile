@@ -1,7 +1,9 @@
+import { TimelineType } from "@/api/@types/enums";
 import { PostDetail } from "@/api/@types/models";
 import { getMuxThumbnailUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { router } from "expo-router";
+import { Video } from "lucide-react-native";
 import React, { forwardRef, Fragment, memo } from "react";
 import {
   ActivityIndicator,
@@ -11,8 +13,15 @@ import {
   View,
 } from "react-native";
 import Animated from "react-native-reanimated";
-import { TimelineType } from "@/api/@types/enums";
-import { Video } from "lucide-react-native";
+
+import { Dimensions } from "react-native";
+
+const gap = 7;
+const screenWidth = Dimensions.get("window").width;
+const numColumns = 3;
+const totalSpacing = gap * (numColumns + 1);
+const itemWidth = (screenWidth - totalSpacing) / numColumns;
+const itemHeight = itemWidth * 1.25;
 
 type Props = {
   userId: number;
@@ -80,8 +89,8 @@ const ConnectionPostList = forwardRef<Animated.FlatList<PostDetail>, Props>(
 
 const styles = StyleSheet.create({
   image: {
-    height: 140,
-    width: "100%",
+    width: itemWidth,
+    height: itemHeight,
     borderRadius: 4,
   },
   videoIconContainer: {

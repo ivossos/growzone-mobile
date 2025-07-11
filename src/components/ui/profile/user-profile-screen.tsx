@@ -16,6 +16,26 @@ import { Ellipsis } from "lucide-react-native";
 import { TouchableOpacity } from "react-native";
 import Toast from "react-native-toast-message";
 
+import { TimelineType } from "@/api/@types/enums";
+import { GrowPostDetail, PostDetail, ReelsDetail } from "@/api/@types/models";
+import GrowGreenIcon from "@/assets/icons/plant-green.svg";
+import GrowIcon from "@/assets/icons/plant.svg";
+import PostGreenIcon from "@/assets/icons/post-green.svg";
+import PostIcon from "@/assets/icons/post.svg";
+import ReelsGreenIcon from "@/assets/icons/reels-green.svg";
+import ReelsIcon from "@/assets/icons/reels.svg";
+import ConnectionGrowPostList from "@/components/ui/profile/connection-grow-post-list";
+import ConnectionPostList from "@/components/ui/profile/connection-post-list";
+import ConnectionReelstList from "@/components/ui/profile/connection-reels-list";
+import { EditProfileButton } from "@/components/ui/profile/edit-profile-button";
+import { ItemData, TabData } from "@/components/ui/profile/types";
+import useTimeline from "@/hooks/useTimeline";
+import { queryClient } from "@/lib/react-query";
+import {
+  MasonryFlashList,
+  MasonryListRenderItemInfo,
+} from "@shopify/flash-list";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import React, {
   ElementType,
   Fragment,
@@ -25,43 +45,8 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { HeaderConfig, ItemData, TabData } from "@/components/ui/profile/types";
-import PostIcon from "@/assets/icons/post.svg";
-import PostGreenIcon from "@/assets/icons/post-green.svg";
-import ReelsIcon from "@/assets/icons/reels.svg";
-import ReelsGreenIcon from "@/assets/icons/reels-green.svg";
-import GrowGreenIcon from "@/assets/icons/plant-green.svg";
-import GrowIcon from "@/assets/icons/plant.svg";
-import ConnectionPostList from "@/components/ui/profile/connection-post-list";
-import ConnectionReelstList from "@/components/ui/profile/connection-reels-list";
-import ConnectionGrowPostList from "@/components/ui/profile/connection-grow-post-list";
-import { EditProfileButton } from "@/components/ui/profile/edit-profile-button";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { queryClient } from "@/lib/react-query";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import Loader from "../loader";
-import {
-  MasonryFlashList,
-  MasonryListRenderItemInfo,
-} from "@shopify/flash-list";
-import { TimelineType } from "@/api/@types/enums";
-import useProfile from "@/hooks/useProfile";
-import {
-  GrowPost,
-  GrowPostDetail,
-  PostDetail,
-  ReelsDetail,
-  SocialPost,
-} from "@/api/@types/models";
-import useTimeline from "@/hooks/useTimeline";
 
 const TAB_BAR_HEIGHT = 48;
 const HEADER_HEIGHT = 0;
@@ -376,7 +361,7 @@ const UserProfileScreen = ({ userId, Header }: Props) => {
           </View>
         )}
         {user && user.id == userId && (
-          <View className="flex flex-row flex-1 px-6 mt-6 w-full">
+          <View className="flex flex-row px-6 mt-6">
             <EditProfileButton />
           </View>
         )}

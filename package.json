@@ -34,6 +34,8 @@
     "@tanstack/react-query": "^5.62.10",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
+    "@expo/react-native-action-sheet": "^4.1.1",
+    "react-native-image-crop-picker": "^0.50.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "expo": "~52.0.47",
