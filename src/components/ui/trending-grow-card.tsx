@@ -1,4 +1,5 @@
 import { GrowPost } from "@/api/@types/models";
+import { getMuxThumbnailUrl } from "@/lib/utils";
 import { colors } from "@/styles/colors";
 import { router } from "expo-router";
 import { CalendarDaysIcon, Video } from "lucide-react-native";
@@ -10,11 +11,11 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { getMuxThumbnailUrl } from "@/lib/utils";
 
 export function TrendingGrowCard({ item }: { item: GrowPost }) {
   const { width: screenWidth } = useWindowDimensions();
   const cardWidth = screenWidth * 0.42;
+  const imageHeight = cardWidth * 1.25;
   const handlerPress = useCallback(() => {
     router.push({
       pathname: "/post/[id]/grow",
@@ -37,7 +38,12 @@ export function TrendingGrowCard({ item }: { item: GrowPost }) {
                   ? item.file.file
                   : getMuxThumbnailUrl(item.file.file),
             }}
-            className="w-full h-64 rounded-lg"
+            style={{
+              width: "100%",
+              height: imageHeight,
+              borderTopLeftRadius: 12,
+              borderTopRightRadius: 12,
+            }}
             resizeMode="cover"
           />
 

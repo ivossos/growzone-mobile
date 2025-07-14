@@ -1,28 +1,31 @@
+import { MediaUpload } from "@/api/@types/models";
+import { colors } from "@/styles/colors";
+import { useActionSheet } from "@expo/react-native-action-sheet";
+import * as ImagePicker from "expo-image-picker";
+import { createVideoPlayer, VideoPlayer as VideoPlayerType } from "expo-video";
+import { Camera, ImageIcon, XIcon } from "lucide-react-native"; // Usando ícone de exclusão XCircleIcon
 import React, { useCallback, useMemo, useState } from "react";
 import {
-  View,
-  StyleSheet,
   Image,
-  TouchableOpacity,
-  Text,
   Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import { ImageIcon, XIcon, Camera } from "lucide-react-native"; // Usando ícone de exclusão XCircleIcon
-import { colors } from "@/styles/colors";
-import { Modal } from "../Modal";
-import Button from "./button";
+import ImageCropPicker from "react-native-image-crop-picker";
 import Toast from "react-native-toast-message";
-import { MediaUpload } from "@/api/@types/models";
-import { createVideoPlayer, VideoPlayer as VideoPlayerType } from "expo-video";
+import { Modal } from "../Modal";
 import VideoPlayer from "../VideoPlayer";
-const isAndroid = Platform.OS === 'android'
+import Button from "./button";
+const isAndroid = Platform.OS === "android";
 
 interface MediaPickerProps {
   onMediaSelected: (media: MediaUpload) => void;
 }
 
 const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
+  const { showActionSheetWithOptions } = useActionSheet();
   const [isOpenMedia, setIsOpenMedia] = useState(false);
   const [mediaUris, setMediaUris] = useState<
     Array<MediaUpload & { player?: VideoPlayerType }>
@@ -32,7 +35,31 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
     setIsOpenMedia(!isOpenMedia);
   }, [isOpenMedia]);
 
-  const selectFromGallery = async () => {
+  const selectPhotoWithCrop = async () => {
+    const image = await ImageCropPicker.openPicker({
+      cropping: true,
+      width: 1080,
+      height: 1350,
+      mediaType: "photo",
+      compressImageQuality: 1,
+      forceJpg: true,
+      cropperToolbarTitle: "Edite sua imagem",
+      cropperChooseText: "Cortar",
+      cropperCancelText: "Cancelar",
+    });
+
+    const newMedia: MediaUpload = {
+      uri: image.path,
+      fileName: `image-${Date.now()}.jpg`,
+      type: image.mime || "image/jpeg",
+    };
+
+    setMediaUris((prev) => [...prev, newMedia]);
+    onMediaSelected(newMedia);
+    handleMedia();
+  };
+
+  const selectVideoFromGallery = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -46,13 +73,29 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
     }
 
     const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
+      mediaTypes: "videos",
       allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
     });
 
-    handleMediaResult(pickerResult);
+    if (!pickerResult.canceled && pickerResult.assets.length > 0) {
+      handleMediaResult(pickerResult);
+      handleMedia();
+    }
+  };
+
+  const handleChooseMediaType = () => {
+    showActionSheetWithOptions(
+      {
+        options: ["Selecionar Foto", "Selecionar Vídeo", "Cancelar"],
+        cancelButtonIndex: 2,
+        title: "Escolher tipo de mídia",
+      },
+      (buttonIndex) => {
+        if (buttonIndex === 0) selectPhotoWithCrop();
+        else if (buttonIndex === 1) selectVideoFromGallery();
+      }
+    );
   };
 
   const captureWithCamera = async () => {
@@ -86,7 +129,7 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
       const newMedia: MediaUpload = {
         uri: asset.uri,
         fileName: asset.fileName || `media-${Date.now()}.${extension}`,
-        type:  (isAndroid ? asset.mimeType : asset.type) || 'image/jpeg',
+        type: (isAndroid ? asset.mimeType : asset.type) || "image/jpeg",
       };
 
       let player: VideoPlayerType | undefined = undefined;
@@ -146,7 +189,7 @@ const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
 
           <Button
             title="Escolher Foto ou Vídeo"
-            handlePress={selectFromGallery}
+            handlePress={handleChooseMediaType}
             variant="secondary"
             leftIcon={ImageIcon}
             textStyles="text-base font-medium text-brand-white"

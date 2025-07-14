@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   Modal,
   View,
@@ -11,46 +11,63 @@ import {
   TouchableWithoutFeedback,
   ActivityIndicator,
   Linking,
+  Platform,
 } from "react-native";
 import { ResizeMode, Video } from "expo-av";
 import Toast from "react-native-toast-message";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import {
-  CameraView,
-  CameraType,
-  useCameraPermissions,
-  useMicrophonePermissions,
-} from "expo-camera";
+  Camera,
+  useCameraDevice,
+  useCameraPermission,
+  useMicrophonePermission,
+  //useCameraFormat,
+} from "react-native-vision-camera";
 import { Ionicons } from "@expo/vector-icons";
 import Entypo from "@expo/vector-icons/Entypo";
 import * as ImageManipulator from "expo-image-manipulator";
+import * as Device from "expo-device";
 
 import Button from "@/components/ui/button";
 import { useCameraModal } from "@/context/camera-modal-context";
 
 import { createWeestory } from "@/api/social/weestory/create-weestory";
 
-import GalleryIcon from "@/assets/icons/gallery-icon.svg";
+//import GalleryIcon from "@/assets/icons/gallery-icon.svg";
 import RevertIcon from "@/assets/icons/revert-icon.svg";
 import CopyIcon from "@/assets/icons/copy-item-icon.svg";
 import WeestoryCircleIcon from "@/assets/icons/weestory-circle-icon.svg";
 
 import { colors } from "@/styles/colors";
 import { styles } from "./styles";
+import { router } from "expo-router";
 
 const { height, width } = Dimensions.get("window");
+
+// Constante para o tempo máximo de gravação em milissegundos
+const MAX_RECORDING_DURATION = 15000; // 15 segundos
 
 export default function ModalCamera() {
   const insets = useSafeAreaInsets();
   const { infoCamera, isVisible, closeCamera } = useCameraModal();
-  const [permission, requestPermission] = useCameraPermissions();
-  const [microphonePermission, requestMicrophonePermission] =
-    useMicrophonePermissions();
-  const cameraRef = useRef<CameraView | null>(null);
+  const {
+    hasPermission: hasCameraPermission,
+    requestPermission: requestCameraPermission,
+  } = useCameraPermission();
+  const {
+    hasPermission: hasMicrophonePermission,
+    requestPermission: requestMicrophonePermission,
+  } = useMicrophonePermission();
+
+  // Usar getCameraDevice como fallback
+  const frontDevice = useCameraDevice("front");
+  const backDevice = useCameraDevice("back");
+  const [loading, setLoading] = useState(true);
+
+  const cameraRef = useRef<Camera | null>(null);
   const [isRecording, setIsRecording] = useState(false);
-  const [facing, setFacing] = useState<CameraType>("front");
-  const [scale, setScale] = useState<number>(-1);
+  const [facing, setFacing] = useState<"front" | "back">("front");
   const [pulseAnim] = useState(new Animated.Value(1));
   const [scaleAnim] = useState(new Animated.Value(1));
   const [pressTimer, setPressTimer] = useState<any>(null);
@@ -63,18 +80,60 @@ export default function ModalCamera() {
   const [capturedVideo, setCapturedVideo] = useState<string | null | undefined>(
     null
   );
+  const [showBottomSheet, setShowBottomSheet] = useState(false);
+  const [bottomSheetIndex, setBottomSheetIndex] = useState(0);
   const bottomSheetRef = useRef<BottomSheet>(null);
 
+  const [showProgress, setShowProgress] = useState(false);
+  const progress = useRef(new Animated.Value(0)).current;
+
+  // Refs para limpeza de recursos
+  const recordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const startRecordingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pulseAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const isMountedRef = useRef(true);
+
+  // Verificações de segurança para devices
+  const currentDevice = facing === "front" ? frontDevice : backDevice;
+
+  // Verificar se estamos em um simulador
+  const isSimulator = Platform.OS === "ios" && !Device.isDevice;
+
+  // Só tenta usar o formato se o device estiver disponível
+  // const format = useCameraFormat(currentDevice, [
+  //   { videoResolution: { width: 1080, height: 1920 } },
+  //   { fps: 60 },
+  // ]);
+
+  const normalizeFileUri = (path: string) =>
+    Platform.OS === "android" && !path.startsWith("file://")
+      ? `file://${path}`
+      : path;
+
   const handlePresentModal = () => {
-    bottomSheetRef.current?.expand();
+    if (!isMountedRef.current) return;
+    progress.setValue(0);
+    setShowBottomSheet(true);
+    setBottomSheetIndex(0);
   };
 
   const handleCloseModal = () => {
-    bottomSheetRef.current?.close();
+    if (!isMountedRef.current) return;
+    progress.setValue(0);
+    setShowProgress(false);
+    setShowBottomSheet(false);
+    setBottomSheetIndex(-1);
   };
 
   const startPulsing = () => {
-    Animated.loop(
+    if (!isMountedRef.current) return;
+
+    // Limpa animação anterior se existir
+    if (pulseAnimationRef.current) {
+      pulseAnimationRef.current.stop();
+    }
+
+    pulseAnimationRef.current = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.2,
@@ -87,28 +146,100 @@ export default function ModalCamera() {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+
+    pulseAnimationRef.current.start();
   };
 
   const stopPulsing = () => {
-    pulseAnim.stopAnimation();
+    if (pulseAnimationRef.current) {
+      pulseAnimationRef.current.stop();
+      pulseAnimationRef.current = null;
+    }
     pulseAnim.setValue(1);
   };
 
+  const clearAllTimers = () => {
+    if (recordingTimeoutRef.current) {
+      clearTimeout(recordingTimeoutRef.current);
+      recordingTimeoutRef.current = null;
+    }
+
+    if (startRecordingTimeoutRef.current) {
+      clearTimeout(startRecordingTimeoutRef.current);
+      startRecordingTimeoutRef.current = null;
+    }
+
+    if (pressTimer) {
+      clearTimeout(pressTimer);
+      setPressTimer(null);
+    }
+  };
+
   const startRecording = async () => {
-    if (cameraRef.current && !isRecording) {
+    if (
+      cameraRef.current &&
+      !isRecording &&
+      currentDevice &&
+      isMountedRef.current
+    ) {
       setIsRecording(true);
       startPulsing();
+
       try {
-        setTimeout(async () => {
-          const video = await cameraRef.current?.recordAsync({
-            maxDuration: 10,
-          });
-          setCapturedVideo(video?.uri);
-          setIsRecording(false);
+        startRecordingTimeoutRef.current = setTimeout(async () => {
+          if (!isMountedRef.current || !cameraRef.current) return;
+
+          try {
+            cameraRef.current?.startRecording({
+              onRecordingFinished: (video) => {
+                if (!isMountedRef.current) return;
+                console.log("Entrei no onRecordingFinished", video.path);
+                const normalizedPath = normalizeFileUri(video.path);
+                setCapturedVideo(normalizedPath);
+                setIsRecording(false);
+                stopPulsing();
+
+                // Limpa o timeout de gravação se ainda estiver ativo
+                if (recordingTimeoutRef.current) {
+                  clearTimeout(recordingTimeoutRef.current);
+                  recordingTimeoutRef.current = null;
+                }
+              },
+              onRecordingError: (error) => {
+                if (!isMountedRef.current) return;
+                console.error("Erro ao gravar:", error);
+                setIsRecording(false);
+                stopPulsing();
+                clearAllTimers();
+              },
+              videoCodec: "h264",
+            });
+
+            // Para a gravação após 15 segundos
+            recordingTimeoutRef.current = setTimeout(() => {
+              if (!isMountedRef.current) return;
+              console.log("⏰ Timeout atingido, parando gravação");
+              if (cameraRef.current) {
+                cameraRef.current.stopRecording();
+                setIsRecording(false);
+                stopPulsing();
+              }
+            }, MAX_RECORDING_DURATION);
+          } catch (error) {
+            if (!isMountedRef.current) return;
+            console.error("Erro ao iniciar gravação:", error);
+            setIsRecording(false);
+            stopPulsing();
+            clearAllTimers();
+          }
         }, 600);
       } catch (e) {
+        if (!isMountedRef.current) return;
         console.error("Erro ao gravar:", e);
+        setIsRecording(false);
+        stopPulsing();
+        clearAllTimers();
       }
     }
   };
@@ -118,35 +249,46 @@ export default function ModalCamera() {
       cameraRef.current.stopRecording();
       stopPulsing();
       setIsRecording(false);
+      clearAllTimers();
     }
   };
 
   const handleCapture = async () => {
-    if (isRecording || !cameraRef.current) return;
-
-    const photo = await cameraRef.current.takePictureAsync({});
-    if (!photo) return;
+    if (
+      isRecording ||
+      !cameraRef.current ||
+      !currentDevice ||
+      !isMountedRef.current
+    )
+      return;
 
     try {
-      const fixed = await ImageManipulator.manipulateAsync(photo.uri, [], {
+      const photo = await cameraRef.current.takePhoto({
+        flash: "off",
+      });
+
+      if (!photo || !isMountedRef.current) return;
+
+      const photoUri = normalizeFileUri(photo.path);
+
+      const final = await ImageManipulator.manipulateAsync(photoUri, [], {
         compress: 1,
         format: ImageManipulator.SaveFormat.JPEG,
       });
 
-      const final = await ImageManipulator.manipulateAsync(
-        fixed.uri,
-        [{ resize: { width: 1080, height: 1920 } }],
-        { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
-      );
-
-      setCapturedPhoto(final.uri);
+      if (isMountedRef.current) {
+        setCapturedPhoto(final.uri);
+      }
     } catch (e) {
-      console.error("Image manipulation failed", e);
+      console.error("Erro ao tirar foto:", e);
     }
   };
 
   const handlePressIn = () => {
+    if (!isMountedRef.current) return;
+
     const timer = setTimeout(() => {
+      if (!isMountedRef.current) return;
       setDidLongPress(true);
       startRecording();
     }, 200);
@@ -160,6 +302,8 @@ export default function ModalCamera() {
       setPressTimer(null);
     }
 
+    if (!isMountedRef.current) return;
+
     if (didLongPress) {
       stopRecording();
     } else {
@@ -171,39 +315,63 @@ export default function ModalCamera() {
 
   const handleClose = () => {
     stopRecording();
+    clearAllTimers();
+    stopPulsing();
+
     setCapturedPhoto(null);
     setCapturedVideo(null);
     setIsRecording(false);
-    stopPulsing();
-    setScale(-1);
     closeCamera();
+
+    setTimeout(() => {
+      if (isMountedRef.current) {
+        router.push("/(drawer)/(tabs)/home");
+      }
+    }, 800);
   };
 
   const handleSubmit = async () => {
+    if (!isMountedRef.current) return;
+
     setIsLoading(true);
+    setShowProgress(true);
+
     try {
       await createWeestory({
         image: capturedPhoto,
         video: capturedVideo,
+        onProgress: (progressValue) => {
+          if (!isMountedRef.current) return;
+          console.log("[Progress] ", progressValue, "%");
+          progress.setValue(progressValue / 100);
+        },
       });
 
-      handleClose();
+      if (!isMountedRef.current) return;
 
       Toast.show({
         type: "success",
         text1: "Sucesso",
         text2: "Seu Weestory foi postado com sucesso!",
       });
+
+      handleClose();
     } catch (error) {
       console.error("error ", error);
       handleClose();
-      Toast.show({
-        type: "error",
-        text1: "Erro",
-        text2: "Não foi possível adicionar seu weestory",
-      });
+
+      if (isMountedRef.current) {
+        Toast.show({
+          type: "error",
+          text1: "Erro",
+          text2: "Não foi possível adicionar seu weestory",
+        });
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+        setShowProgress(false);
+      }
     }
   };
 
@@ -215,61 +383,105 @@ export default function ModalCamera() {
     handleCloseModal();
     setCapturedPhoto(null);
     setCapturedVideo(null);
-    setScale(-1);
   };
 
   function toggleCameraFacing() {
+    if (!isMountedRef.current) return;
     setFacing((current) => (current === "back" ? "front" : "back"));
   }
 
   const handlePermissionRequest = async () => {
-    if (permission?.canAskAgain) {
-      await requestPermission();
-    }
+    await requestCameraPermission();
+    await requestMicrophonePermission();
 
-    if (microphonePermission?.canAskAgain) {
-      await requestMicrophonePermission();
-    }
-
-    if (!permission?.canAskAgain || !microphonePermission?.canAskAgain) {
+    if (!hasCameraPermission || !hasMicrophonePermission) {
       await Linking.openSettings();
     }
   };
 
   useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
+    isMountedRef.current = true;
+
+    if (!hasCameraPermission) {
+      requestCameraPermission();
     }
 
-    if (!microphonePermission?.granted) {
+    if (!hasMicrophonePermission) {
       requestMicrophonePermission();
     }
-  }, [permission, microphonePermission]);
+
+    setLoading(false);
+
+    // Log adicional para debug no iOS
+    if (Platform.OS === "ios") {
+      console.log("[iOS Debug] isSimulator:", isSimulator);
+      console.log("[iOS Debug] Device.isDevice:", Device.isDevice);
+      console.log("[iOS Debug] frontDevice available:", !!frontDevice);
+      console.log("[iOS Debug] backDevice available:", !!backDevice);
+      console.log("[iOS Debug] currentDevice available:", !!currentDevice);
+
+      if (isSimulator) {
+        console.warn(
+          "[iOS] Você está usando um simulador. VisionCamera pode não funcionar corretamente. Teste em um dispositivo físico."
+        );
+      }
+    }
+
+    // Cleanup function
+    return () => {
+      isMountedRef.current = false;
+      clearAllTimers();
+      stopPulsing();
+
+      // Para qualquer gravação em andamento
+      if (cameraRef.current && isRecording) {
+        try {
+          cameraRef.current.stopRecording();
+        } catch (e) {
+          console.warn("Erro ao parar gravação no cleanup:", e);
+        }
+      }
+    };
+  }, [hasCameraPermission, hasMicrophonePermission, frontDevice, backDevice]);
 
   useEffect(() => {
+    setShowBottomSheet(false);
+    setBottomSheetIndex(-1);
     if (infoCamera.mediaType) {
       if (infoCamera.mediaType === "video") {
-        setScale(1);
         setCapturedVideo(infoCamera.uri);
         return;
       }
 
       if (infoCamera.mediaType === "photo") {
-        setScale(1);
         setCapturedPhoto(infoCamera.uri);
         return;
       }
     }
   }, [infoCamera]);
 
+  // Cleanup quando o modal não está visível
+  useEffect(() => {
+    if (!isVisible) {
+      clearAllTimers();
+      stopPulsing();
+      setIsRecording(false);
+      setCapturedPhoto(null);
+      setCapturedVideo(null);
+      setVideoReady(false);
+      setShowProgress(false);
+      setShowBottomSheet(false);
+    }
+  }, [isVisible]);
+
   return (
     <Modal visible={isVisible} animationType="fade">
       <SafeAreaView style={styles.safearea}>
-        {!permission ? (
+        {loading ? (
           <View className="flex-1 items-center justify-center">
             <ActivityIndicator size="large" color={colors.brand.green} />
           </View>
-        ) : !permission?.granted || !microphonePermission?.granted ? (
+        ) : !hasCameraPermission || !hasMicrophonePermission ? (
           <View className="flex-1 items-center justify-center">
             <Text className="text-base font-medium text-white text-center">
               Precisamos de acesso à sua câmera e microfone para capturar fotos
@@ -278,11 +490,25 @@ export default function ModalCamera() {
             <Button
               handlePress={handlePermissionRequest}
               containerStyles="mt-4 w-50"
-              title={
-                permission?.canAskAgain
-                  ? "Conceder permissão"
-                  : "Abrir configurações"
-              }
+              title="Conceder permissão"
+            />
+          </View>
+        ) : !currentDevice || isSimulator ? (
+          <View className="flex-1 items-center justify-center px-6">
+            <Text className="text-base font-medium text-white text-center mb-4">
+              {isSimulator
+                ? "O simulador iOS não suporta câmera física."
+                : "Nenhum dispositivo de câmera encontrado."}
+            </Text>
+            <Text className="text-sm font-regular text-neutral-400 text-center mb-4">
+              {isSimulator
+                ? "Por favor, teste em um dispositivo iPhone físico para usar a câmera."
+                : "Verifique se as permissões de câmera foram concedidas e tente novamente."}
+            </Text>
+            <Button
+              handlePress={handleClose}
+              containerStyles="mt-4 w-50"
+              title="Fechar"
             />
           </View>
         ) : (
@@ -295,10 +521,6 @@ export default function ModalCamera() {
                       source={{ uri: capturedPhoto }}
                       className="w-full h-full"
                       resizeMode="cover"
-                      style={{
-                        transform:
-                          facing === "front" ? [{ scaleX: scale }] : undefined,
-                      }}
                     />
                   ) : capturedVideo ? (
                     <>
@@ -314,10 +536,6 @@ export default function ModalCamera() {
                         style={{
                           width,
                           height,
-                          transform:
-                            facing === "front"
-                              ? [{ scaleX: scale }]
-                              : undefined,
                         }}
                         resizeMode={ResizeMode.COVER}
                         useNativeControls={false}
@@ -343,13 +561,17 @@ export default function ModalCamera() {
                   >
                     <Ionicons name="close" size={28} color="white" />
                   </TouchableOpacity>
-                  <CameraView
+                  <Camera
                     ref={cameraRef}
-                    facing={facing}
+                    device={currentDevice}
                     style={styles.camera}
-                    mode={isRecording ? "video" : "picture"}
-                    ratio="16:9"
-                    pictureSize="1080x1920"
+                    //videoBitRate="low"
+                    isActive={true}
+                    video={true}
+                    audio={true}
+                    photo={true}
+                    //format={format}
+                    resizeMode="cover"
                   />
                 </>
               )}
@@ -380,9 +602,10 @@ export default function ModalCamera() {
                   style={{ paddingBottom: insets.bottom || 16 }}
                 >
                   <View className="flex-row items-center justify-around w-full">
-                    <TouchableOpacity onPress={handleClose} activeOpacity={0.8}>
+                    {/* <TouchableOpacity onPress={handleClose} activeOpacity={0.8}>
                       <GalleryIcon />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
+                    <View style={{ width: 30 }} />
                     <View>
                       <TouchableWithoutFeedback
                         onPressIn={handlePressIn}
@@ -426,49 +649,74 @@ export default function ModalCamera() {
             )}
           </>
         )}
-        <BottomSheet
-          ref={bottomSheetRef}
-          index={-1}
-          snapPoints={[height * 0.3]}
-          onClose={handleCloseModal}
-          enablePanDownToClose={true}
-          enableHandlePanningGesture={false}
-          handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
-          backgroundStyle={{ backgroundColor: colors.black[100] }}
-        >
-          <BottomSheetView className="flex flex-col flex-1 gap-5 p-6 bg-black-100">
-            <View className="flex-column justify-start border-b-[2px] border-black-80 p-3">
-              <Text className="text-base font-semibold text-white">
-                Compartilhar
-              </Text>
-            </View>
-            <View className="flex-row items-center justify-between w-full gap-3">
-              <View className="flex-row items-center gap-3">
-                <TouchableOpacity
-                  onPress={handleClosePreview}
-                  className="w-12 h-12 rounded-full bg-black-70 items-center justify-center"
-                >
-                  <WeestoryCircleIcon />
-                </TouchableOpacity>
+        {showBottomSheet && (
+          <BottomSheet
+            ref={bottomSheetRef}
+            index={bottomSheetIndex}
+            snapPoints={[height * (showProgress ? 0.28 : 0.32)]}
+            onClose={handleCloseModal}
+            enablePanDownToClose={true}
+            enableHandlePanningGesture={false}
+            handleIndicatorStyle={{ backgroundColor: colors.black[80] }}
+            backgroundStyle={{ backgroundColor: colors.black[100] }}
+          >
+            <BottomSheetView className="flex flex-col flex-1 gap-5 p-6 bg-black-100">
+              <View className="flex-column justify-start border-b-[2px] border-black-80 p-3">
                 <Text className="text-base font-semibold text-white">
-                  Weestory
+                  Compartilhar
                 </Text>
               </View>
-              <TouchableOpacity
-                onPress={handleClosePreview}
-                className="w-8 h-8 rounded-full bg-primary items-center justify-center"
-              >
-                <Entypo name="check" size={15} color="black" />
-              </TouchableOpacity>
-            </View>
-            <Button
-              isLoading={isLoading}
-              handlePress={handleSubmit}
-              containerStyles="mt-4 w-full"
-              title="Compartilhar"
-            />
-          </BottomSheetView>
-        </BottomSheet>
+              <View className="flex-row items-center justify-between w-full gap-3">
+                <View className="flex-row items-center gap-3">
+                  <TouchableOpacity
+                    onPress={handleClosePreview}
+                    className="w-12 h-12 rounded-full bg-black-70 items-center justify-center"
+                  >
+                    <WeestoryCircleIcon />
+                  </TouchableOpacity>
+                  <Text className="text-base font-semibold text-white">
+                    Weestory
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={handleClosePreview}
+                  className="w-8 h-8 rounded-full bg-primary items-center justify-center"
+                >
+                  <Entypo name="check" size={15} color="black" />
+                </TouchableOpacity>
+              </View>
+
+              {showProgress ? (
+                <View
+                  className="h-1"
+                  style={{
+                    backgroundColor: "#0B2F08",
+                    overflow: "hidden",
+                  }}
+                >
+                  <Animated.View
+                    style={{
+                      flex: 1,
+                      height: 1,
+                      backgroundColor: "#2CC420",
+                      width: progress.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ["0%", "100%"],
+                      }),
+                    }}
+                  />
+                </View>
+              ) : (
+                <Button
+                  isLoading={isLoading}
+                  handlePress={handleSubmit}
+                  containerStyles="mt-4 w-full"
+                  title="Compartilhar"
+                />
+              )}
+            </BottomSheetView>
+          </BottomSheet>
+        )}
       </SafeAreaView>
     </Modal>
   );

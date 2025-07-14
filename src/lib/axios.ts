@@ -40,6 +40,15 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
         }
 
         if (
+          requestError?.response?.status === 404 &&
+          requestError?.response?.data?.detail ===
+            "The user with this identifier does not exist in the system"
+        ) {
+          await signOut();
+          return Promise.reject(requestError);
+        }
+
+        if (
           requestError?.response?.status === 401 &&
           requestError?.response?.data?.detail === "Inactive user"
         ) {
