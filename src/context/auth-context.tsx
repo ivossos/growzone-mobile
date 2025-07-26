@@ -23,6 +23,8 @@ type AuthContextProps = {
   signIn: (email: string, password: string) => Promise<User>;
   signOut: () => Promise<void>;
   updateUserData: () => Promise<void>;
+  setUserAndToken: (user: User, token: string) => void;
+  setUserAndTokenFully: (user: User, token: string, refreshToken?: string) => Promise<void>;
 };
 
 type AuthContextProviderProps = {
@@ -156,6 +158,20 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     }
   }
 
+  function setUserAndToken(user: User, token: string) {
+    setToken(token);
+    setUser(user);
+  }
+
+  async function setUserAndTokenFully(user: UserSocial, token: string, refreshToken?: string) {
+  try {
+    await storageSaveUserAndToken(user, token, refreshToken ?? "");
+    updateUserAndToken(user, token);
+  } catch (error) {
+    throw error;
+  }
+}
+
   useEffect(() => {
     loadUserData();
   }, []);
@@ -180,6 +196,8 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         setToken,
         isLoadingUserStorage,
         updateUserData,
+        setUserAndToken,
+        setUserAndTokenFully,
       }}
     >
       {children}

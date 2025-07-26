@@ -1,18 +1,24 @@
 import { useState } from "react";
-import { Redirect, router } from "expo-router";
+import { View, Text, Image, TouchableOpacity, Linking  } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import Toast from "react-native-toast-message";
+import axios from "axios";
+
+import { ArrowRight, Mail } from "lucide-react-native";
+
+import { Redirect, router } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { FontAwesome } from "@expo/vector-icons";
+
 import images from "@/constants/images";
+import { useAuth } from "@/hooks/use-auth";
+import { showSuccess, showError } from "@/utils/toast";
 
 import Button from "@/components/ui/button";
-import { ArrowRight, Mail } from "lucide-react-native";
 import Divider from "@/components/ui/divider";
-import { colors } from "@/styles/colors";
-import { useAuth } from "@/hooks/use-auth";
 import Loader from "@/components/ui/loader";
-import { StatusBar } from "expo-status-bar";
-import Toast from "react-native-toast-message";
-import { FontAwesome } from "@expo/vector-icons";
+
+import { colors } from "@/styles/colors";
 
 const Welcome = () => {
   const { user, signIn, isLoadingUserStorage } = useAuth();
@@ -36,6 +42,22 @@ const Welcome = () => {
     }
 
     router.replace("/home");
+  }
+
+  async function handleFacebookLogin() {
+    try {
+      setIsLoading(true);
+
+      const response = await axios.get("https://dev1.auth.growzone.co/api/v1/instagram/oauth-url-public");
+      const { authorization_url } = response.data;
+
+      showSuccess("Redirecting to Facebook...");
+      Linking.openURL(authorization_url);
+    } catch (error) {
+      showError("Failed to initiate Facebook login.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -74,7 +96,7 @@ const Welcome = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.push("/sign-in")}
+            onPress={handleFacebookLogin}
             activeOpacity={0.7}
             className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4 mt-6"
             disabled={isLoading}
