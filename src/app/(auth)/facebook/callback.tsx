@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { useRouter, useLocalSearchParams  } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, ActivityIndicator } from "react-native";
-import axios from "axios";
 import Toast from "react-native-toast-message";
 import { useAuth } from "@/hooks/use-auth";
+import { authDevApi } from "@/lib/axios";
 
 const FacebookCallback = () => {
   const { setUserAndTokenFully } = useAuth();
@@ -17,7 +17,6 @@ const FacebookCallback = () => {
       const code = params.code as string | undefined;
       const state = params.state as string | undefined;
 
-
       if (!code || !state) {
         Toast.show({
           type: "error",
@@ -29,17 +28,16 @@ const FacebookCallback = () => {
       }
 
       try {
-        const callbackRes = await axios.get(
-          `https://dev1.auth.growzone.co/api/v1/instagram/oauth-callback?code=${code}&state=${state}`
+        const callbackRes = await authDevApi.get(
+          `/instagram/oauth-callback?code=${code}&state=${state}`
         );
 
         const { email, name } = callbackRes.data;
+        if (!email) {
+          throw new Error("Email not returned from OAuth callback");
+        }
 
-        const loginRes = await axios.post(
-          "https://dev1.auth.growzone.co/api/v1/instagram/facebook-login",
-          { email }
-        );
-
+        const loginRes = await authDevApi.post("/instagram/facebook-login", { email });
         const { token, user } = loginRes.data;
 
         await setUserAndTokenFully(user, token);
@@ -53,7 +51,7 @@ const FacebookCallback = () => {
         replace("/home");
       } catch (error: any) {
         const message =
-          error?.response?.data?.message || "Login failed. Try again.";
+          error?.response?.data?.message || error?.message || "Login failed. Try again.";
 
         if (message.includes("not a business account")) {
           Toast.show({
@@ -82,6 +80,7 @@ const FacebookCallback = () => {
     };
 
     handleCallback();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
   return (
