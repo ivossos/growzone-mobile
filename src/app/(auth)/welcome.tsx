@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, Text, Image, TouchableOpacity, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as AppleAuthentication from 'expo-apple-authentication';
 import axios from "axios";
 
 import { ArrowRight, Mail } from "lucide-react-native";
@@ -25,6 +26,26 @@ const Welcome = () => {
 
   function handleEmailLogin() {
     router.push("/sign-in");
+  }
+
+  async function handleAppleLogin() {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+      console.log(credential);
+      // signed in
+    } catch (e: any) {
+      if (e?.code === 'ERR_REQUEST_CANCELED') {
+        // user canceled sign-in
+        return;
+      }
+      // handle other errors
+      console.error(e);
+    }
   }
 
   async function handleFacebookLogin() {
@@ -86,6 +107,18 @@ const Welcome = () => {
             <FontAwesome name="facebook" size={24} color={colors.primary} />
             <Text className="text-white text-lg font-medium text-center">
               Continue with Facebook
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={handleAppleLogin}
+            activeOpacity={0.7}
+            className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4 mt-6"
+            disabled={isLoading || isLoadingUserStorage}
+          >
+            <FontAwesome name="facebook" size={24} color={colors.primary} />
+            <Text className="text-white text-lg font-medium text-center">
+              Continue with Apple
             </Text>
           </TouchableOpacity>
 

@@ -16,6 +16,7 @@
       "backgroundColor": "#000000"
     },
     "ios": {
+      "usesAppleSignIn": true,
       "supportsTablet": true,
       "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
@@ -24,7 +25,10 @@
         "NSPhotoLibraryAddUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
         "NSMicrophoneUsageDescription": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
         "NSUserNotificationUsageDescription": "Enviamos notificações para avisar sobre curtidas, comentários, seguidores e outras atualizações importantes.",
-        "UIBackgroundModes": ["fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       },
       "locales": {
         "pt-BR": {
@@ -70,6 +74,7 @@
       "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
+      "expo-apple-authentication",
       "expo-router",
       [
         "expo-video",

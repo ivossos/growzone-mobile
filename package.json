@@ -89,7 +89,8 @@
     "react-native-toast-message": "^2.3.3",
     "react-native-web": "^0.19.13",
     "tailwind-merge": "^2.6.0",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "expo-apple-authentication": "~7.1.3"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
