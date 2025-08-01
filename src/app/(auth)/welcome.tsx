@@ -12,6 +12,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import images from "@/constants/images";
 import { useAuth } from "@/hooks/use-auth";
 import { showSuccess, showError } from "@/utils/toast";
+import { appleLogin } from "@/api/auth/apple-login";
 
 import Button from "@/components/ui/button";
 import Divider from "@/components/ui/divider";
@@ -19,7 +20,7 @@ import Loader from "@/components/ui/loader";
 import { colors } from "@/styles/colors";
 
 const Welcome = () => {
-  const { user, isLoadingUserStorage } = useAuth();
+  const { user, isLoadingUserStorage, setUserAndTokenFully } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   if (user?.id && !isLoadingUserStorage) return <Redirect href="/home" />;
@@ -30,21 +31,69 @@ const Welcome = () => {
 
   async function handleAppleLogin() {
     try {
+      setIsLoading(true);
+
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
       });
-      console.log(credential);
-      // signed in
+
+      if (!credential.identityToken) {
+        throw new Error("No identity token received from Apple");
+      }
+
+      // Preparar dados para envio conforme documentação
+      const loginData = {
+        identity_token: credential.identityToken,
+        user_id: credential.user,
+        name: credential.fullName?.givenName && credential.fullName?.familyName
+          ? `${credential.fullName.givenName} ${credential.fullName.familyName}`
+          : undefined,
+        email: credential.email || undefined
+      };
+
+      // Chamar API de login conforme documento
+      const response = await appleLogin(loginData);
+
+      if (!response.user_id) {
+        throw new Error("No user ID received from Apple");
+      }
+
+      const userData = {
+        id: response.user_id,
+        email: response.email || "",
+        username: "",
+        is_active: true,
+        is_verified: true,
+        hashed_password: "",
+        created_at: new Date().toISOString(),
+        updated_at: "2019-08-24T14:15:22Z" as const,
+      };
+
+      // Armazenar usuário e tokens
+      await setUserAndTokenFully(userData, response.access_token, response.refresh_token);
+
+      showSuccess(`Welcome! Logged in as ${response.name || response.email}`);
+
+      if (response.has_username) {
+        router.replace("/home");
+      } else {
+        router.replace("/set-username");
+      }
     } catch (e: any) {
+      console.log("Handle Apple Login Error: ", e);
       if (e?.code === 'ERR_REQUEST_CANCELED') {
-        // user canceled sign-in
+        // Usuário cancelou - não mostrar erro
         return;
       }
-      // handle other errors
-      console.error(e);
+
+      const message = e?.message || "Apple login failed. Try again.";
+      showError(`Login failed: ${message}`);
+      console.error("Apple login error:", e);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -116,7 +165,7 @@ const Welcome = () => {
             className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4 mt-6"
             disabled={isLoading || isLoadingUserStorage}
           >
-            <FontAwesome name="facebook" size={24} color={colors.primary} />
+            <FontAwesome name="apple" size={24} color={colors.primary} />
             <Text className="text-white text-lg font-medium text-center">
               Continue with Apple
             </Text>

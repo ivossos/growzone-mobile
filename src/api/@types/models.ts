@@ -27,6 +27,7 @@ export interface AuthTokenResponse {
 export interface UserSocial {
   id: number;
   name?: string;
+  has_username?: boolean;
   username: string;
   biography?: string;
   document?: string;
@@ -382,11 +383,11 @@ export interface Sender {
 export interface NotificationType {
   id: number;
   name:
-    | "Review Profile"
-    | "Report Post"
-    | "Comment Post"
-    | "Like Post"
-    | "Follow Profile";
+  | "Review Profile"
+  | "Report Post"
+  | "Comment Post"
+  | "Like Post"
+  | "Follow Profile";
   description: string;
   created_at: string;
 }

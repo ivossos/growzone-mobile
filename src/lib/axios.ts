@@ -29,6 +29,15 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
   let failedQueued: Array<PromiseType> = [];
   let isRefreshing = false;
 
+  api.interceptors.request.use((config) => {
+    /** In dev, intercepts request and logs it into console for dev */
+    console.info("✉️ ", JSON.stringify(config, null, 2));
+    return config;
+  }, (error) => {
+    console.error("✉️ ", error);
+    return Promise.reject(error);
+  });
+
   api.registerInterceptTokenManager = (signOut) => {
     const interceptTokenManager = api.interceptors.response.use(
       (res) => res,

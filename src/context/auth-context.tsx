@@ -2,7 +2,7 @@ import { User, UserSocial } from "@/api/@types/models";
 import { accessToken } from "@/api/auth/access-token";
 import { getCurrentAuthUser } from "@/api/auth/get-current-user";
 import { getCurrentUser } from "@/api/social/user/get-current-user";
-import { authApi, socialApi } from "@/lib/axios";
+import { authApi, authDevApi, socialApi, socialDevApi } from "@/lib/axios";
 import {
   storageGetAuthToken,
   storageRemoveAuthToken,
@@ -151,6 +151,9 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       authApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       socialApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
+      authDevApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      socialDevApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
       setUser(user);
       setToken(token);
     } catch (error) {
@@ -164,13 +167,13 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   }
 
   async function setUserAndTokenFully(user: UserSocial, token: string, refreshToken?: string) {
-  try {
-    await storageSaveUserAndToken(user, token, refreshToken ?? "");
-    updateUserAndToken(user, token);
-  } catch (error) {
-    throw error;
+    try {
+      await storageSaveUserAndToken(user, token, refreshToken ?? "");
+      updateUserAndToken(user, token);
+    } catch (error) {
+      throw error;
+    }
   }
-}
 
   useEffect(() => {
     loadUserData();

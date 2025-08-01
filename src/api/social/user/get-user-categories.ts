@@ -1,4 +1,4 @@
-import { socialApi } from '@/lib/axios';
+import { socialApi, socialDevApi } from '@/lib/axios';
 import { UserCategory } from '@/api/@types/models';
 
 interface GetUserCategoriesProps {
