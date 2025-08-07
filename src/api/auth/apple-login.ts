@@ -1,4 +1,4 @@
-import { authDevApi } from "@/lib/axios";
+import { authApi, authDevApi } from "@/lib/axios";
 import { AppError } from "@/api/@types/AppError";
 
 export interface AppleLoginRequest {
@@ -16,6 +16,7 @@ export interface AppleLoginResponse {
   has_username: boolean;
   email?: string;
   name?: string;
+  category_id?: number;
 }
 
 export interface SetUsernameRequest {
@@ -30,7 +31,7 @@ export interface SetUsernameResponse {
 
 export const appleLogin = async (data: AppleLoginRequest): Promise<AppleLoginResponse> => {
   try {
-    const response = await authDevApi.post<AppleLoginResponse>("/apple/login", data);
+    const response = await authApi.post<AppleLoginResponse>("/apple/login", data);
     return response.data;
   } catch (error: any) {
     console.log('Apple login failed', error);
@@ -40,7 +41,7 @@ export const appleLogin = async (data: AppleLoginRequest): Promise<AppleLoginRes
 
 export const setAppleUsername = async (data: SetUsernameRequest): Promise<SetUsernameResponse> => {
   try {
-    const response = await authDevApi.post<SetUsernameResponse>("/apple/set-username", data);
+    const response = await authApi.post<SetUsernameResponse>("/apple/set-username", data);
     return response.data;
   } catch (error: any) {
     console.log('Apple Login - Failed to set username', error);

@@ -24,11 +24,8 @@ import UpdateAppModal from "@/components/ui/update-app";
 import { useIsFocused } from "@react-navigation/native";
 
 import WeestorySlider from "@/components/weestory/Slider";
-import { useAuth } from '@/hooks/use-auth';
 
 export default function HomeScreen() {
-  const { user, signOut, isLoadingUserStorage } = useAuth();
-  signOut();
   const [data, setData] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>("");

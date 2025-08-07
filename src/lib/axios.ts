@@ -17,8 +17,8 @@ type APIInstanceProps = AxiosInstance & {
   registerInterceptTokenManager: (signOut: SignOut) => () => void;
 };
 
-const authBaseURL = "https://dev.auth.growzone.co/api/v1";
-const socialBaseURL = "https://dev.social.growzone.co/api/v1";
+const authBaseURL = "https://dev1.auth.growzone.co/api/v1";
+const socialBaseURL = "https://dev1.social.growzone.co/api/v1";
 
 const authDevURL = "https://dev1.auth.growzone.co/api/v1";
 const socialDevURL = "https://dev1.social.growzone.co/api/v1";
@@ -31,10 +31,10 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 
   api.interceptors.request.use((config) => {
     /** In dev, intercepts request and logs it into console for dev */
-    console.info("✉️ ", JSON.stringify(config, null, 2));
+    // console.info("✉️ ", JSON.stringify(config, null, 2));
     return config;
   }, (error) => {
-    console.error("✉️ ", error);
+    // console.error("✉️ ", error);
     return Promise.reject(error);
   });
 

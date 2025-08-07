@@ -141,8 +141,8 @@ const SignIn = () => {
               name="username"
               render={({ fieldState, field: { onChange, onBlur, value } }) => (
                 <FormField
-                  title="Nome de usuário"
-                  placeholder="Digite seu nome de usuário"
+                  title="Nome de usuário ou email"
+                  placeholder="Digite seu nome de usuário ou email"
                   otherStyles="mt-5 w-full"
                   leftIcon={AtSign}
                   onBlur={onBlur}
@@ -158,7 +158,7 @@ const SignIn = () => {
               name="password"
               render={({ fieldState, field: { onChange, onBlur, value } }) => (
                 <FormField
-                  title="Password"
+                  title="Senha"
                   type="password"
                   placeholder="•••••••••"
                   otherStyles="mt-6 w-full"
@@ -201,7 +201,7 @@ const SignIn = () => {
                 Ainda não possui uma conta?
               </Text>
               <Button
-                handlePress={() => router.push("/welcome")}
+                handlePress={() => router.push("/sign-up")}
                 containerStyles="mt-4"
                 title='Crie agora'
                 rightIcon={ArrowRight}

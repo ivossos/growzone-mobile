@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as AppleAuthentication from 'expo-apple-authentication';
 import axios from "axios";
 
-import { ArrowRight, Mail } from "lucide-react-native";
+import { Mail } from "lucide-react-native";
 import { Redirect, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { FontAwesome } from "@expo/vector-icons";
@@ -14,10 +14,9 @@ import { useAuth } from "@/hooks/use-auth";
 import { showSuccess, showError } from "@/utils/toast";
 import { appleLogin } from "@/api/auth/apple-login";
 
-import Button from "@/components/ui/button";
-import Divider from "@/components/ui/divider";
 import Loader from "@/components/ui/loader";
 import { colors } from "@/styles/colors";
+import { getCurrentUser } from '@/api/social/user/get-current-user';
 
 const Welcome = () => {
   const { user, isLoadingUserStorage, setUserAndTokenFully } = useAuth();
@@ -44,7 +43,6 @@ const Welcome = () => {
         throw new Error("No identity token received from Apple");
       }
 
-      // Preparar dados para envio conforme documentação
       const loginData = {
         identity_token: credential.identityToken,
         user_id: credential.user,
@@ -54,25 +52,26 @@ const Welcome = () => {
         email: credential.email || undefined
       };
 
-      // Chamar API de login conforme documento
       const response = await appleLogin(loginData);
+
 
       if (!response.user_id) {
         throw new Error("No user ID received from Apple");
       }
 
+      const authUser = await getCurrentUser({
+        Authorization: `Bearer ${response.access_token}`,
+      });
+
       const userData = {
         id: response.user_id,
         email: response.email || "",
-        username: "",
+        category_id: authUser.category_id,
+        has_username: response.has_username,
         is_active: true,
         is_verified: true,
-        hashed_password: "",
-        created_at: new Date().toISOString(),
-        updated_at: "2019-08-24T14:15:22Z" as const,
       };
 
-      // Armazenar usuário e tokens
       await setUserAndTokenFully(userData, response.access_token, response.refresh_token);
 
       showSuccess(`Welcome! Logged in as ${response.name || response.email}`);
@@ -127,10 +126,10 @@ const Welcome = () => {
 
             <View className="flex gap-2">
               <Text className="text-3xl font-semibold text-white text-center">
-                Join the Growzone community
+                Junte-se à comunidade Growzone
               </Text>
               <Text className="text-lg font-regular text-black-30 text-center">
-                Connect, learn, and grow in the cannabis culture!
+                Conecte-se, aprenda e cresça na cultura do cannabis!
               </Text>
             </View>
           </View>
@@ -143,7 +142,7 @@ const Welcome = () => {
           >
             <Mail width={24} height={24} color={colors.primary} />
             <Text className="text-white text-lg font-medium text-center">
-              Continue with Email
+              Continuar com Usuário ou Email
             </Text>
           </TouchableOpacity>
 
@@ -155,7 +154,7 @@ const Welcome = () => {
           >
             <FontAwesome name="facebook" size={24} color={colors.primary} />
             <Text className="text-white text-lg font-medium text-center">
-              Continue with Facebook
+              Continuar com Facebook
             </Text>
           </TouchableOpacity>
 
@@ -167,25 +166,9 @@ const Welcome = () => {
           >
             <FontAwesome name="apple" size={24} color={colors.primary} />
             <Text className="text-white text-lg font-medium text-center">
-              Continue with Apple
+              Continuar com Apple
             </Text>
           </TouchableOpacity>
-
-          <Divider text="Or" />
-
-          <View className="flex flex-col justify-center w-full gap-2">
-            <Text className="text-center text-lg text-gray-100 font-medium">
-              Don’t have an account?
-            </Text>
-            <Button
-              variant="outline"
-              handlePress={() => router.push("/sign-up")}
-              containerStyles="mt-6"
-              title="Create now"
-              rightIcon={ArrowRight}
-              isDisabled={isLoading || isLoadingUserStorage}
-            />
-          </View>
         </View>
       </SafeAreaView>
       <StatusBar style="light" />

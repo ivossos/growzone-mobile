@@ -14,9 +14,9 @@ export default function AuthLayout() {
     if (user?.id && !isLoadingUserStorage) {
       if (!user.is_verified) {
         router.replace('/verify-user');
-      } else if (!user.username || user.username === '') {
+      } else if (!user.has_username) {
         router.replace('/set-username');
-      } else if (!user.category_id || user.category_id === 0) {
+      } else if (user.username && (!user.category_id || user.category_id === 0)) {
         router.replace('/user-category');
       } else {
         router.replace('/home');
@@ -77,6 +77,12 @@ export default function AuthLayout() {
         />
         <Stack.Screen
           name="verify-user"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="set-username"
           options={{
             headerShown: false,
           }}

@@ -107,8 +107,14 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
       const user = await getCurrentUser();
 
-      await storageSaveUser(user);
-      setUser(user);
+      let userData = user;
+      if (user.username) {
+        userData = { ...user, has_username: true };
+      } else {
+        userData = { ...user, has_username: false };
+      }
+      await storageSaveUser(userData);
+      setUser(userData);
     } catch (err) {
       throw err;
     } finally {

@@ -95,20 +95,24 @@ export default function DrawerLayout() {
   useEffect(() => {
     if (user?.id && !isLoadingUserStorage) {
       if (!user.is_verified) {
-        router.replace("/verify-user");
-      } else if (!user.category_id || user.category_id === 0) {
-        router.replace("/user-category");
+        router.replace('/verify-user');
+      } else if (!user.has_username) {
+        router.replace('/set-username');
+      } else if (user.has_username && (!user.category_id || user.category_id === 0)) {
+        router.replace('/user-category');
+      } else {
+        router.replace('/home');
       }
     }
   }, [user, isLoadingUserStorage, router]);
 
   const logout = async () => {
     await signOut();
-    router.replace("/sign-in");
+    router.replace("/welcome");
   };
 
   if (!user?.id && !isLoadingUserStorage) {
-    return <Redirect href="/sign-in" />;
+    return <Redirect href="/welcome" />;
   }
 
   return (

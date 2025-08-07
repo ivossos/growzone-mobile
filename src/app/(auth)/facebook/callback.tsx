@@ -23,7 +23,7 @@ const FacebookCallback = () => {
           text1: "Invalid redirect",
           text2: "Missing authorization parameters",
         });
-        replace("/sign-in");
+        replace("/welcome");
         return;
       }
 
@@ -73,7 +73,7 @@ const FacebookCallback = () => {
           });
         }
 
-        replace("/sign-in");
+        replace("/welcome");
       } finally {
         setIsProcessing(false);
       }

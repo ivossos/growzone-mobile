@@ -4,12 +4,14 @@ import { GlobalSearchType, PostType, TimelineType } from "./enums";
 export interface User {
   id: number;
   email: string;
-  username: string;
-  is_active: boolean;
-  is_verified: boolean;
-  hashed_password: string;
-  created_at: string;
-  updated_at: "2019-08-24T14:15:22Z";
+  username?: string;
+  is_active?: boolean;
+  is_verified?: boolean;
+  hashed_password?: string;
+  category_id?: number;
+  date_of_birth?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface DefaultResponse {
@@ -28,7 +30,7 @@ export interface UserSocial {
   id: number;
   name?: string;
   has_username?: boolean;
-  username: string;
+  username?: string;
   biography?: string;
   document?: string;
   date_of_birth?: string;
@@ -36,13 +38,13 @@ export interface UserSocial {
   phone?: string;
   image?: UserImage;
   cover?: UserCover;
-  hashed_password: string;
+  hashed_password?: string;
   category_id?: number;
   indicated_by_id?: number;
-  is_verified: boolean;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  is_verified?: boolean;
+  is_active?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface UserInfo {
