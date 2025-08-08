@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { socialDevApi } from "@/lib/axios";
+import { socialApi } from "@/lib/axios";
 
 export interface InstagramMediaItem {
   id: string;
@@ -26,7 +26,7 @@ export function useInstagramMedia() {
     setLoading(true);
     setError(null);
     try {
-      const res = await socialDevApi.get<{ posts: InstagramMediaItem[] }>(
+      const res = await socialApi.get<{ posts: InstagramMediaItem[] }>(
         `/instagram/posts?skip=${page * 20}&limit=20`,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -39,8 +39,8 @@ export function useInstagramMedia() {
     } catch (err: any) {
       setError(
         err?.response?.data?.detail ||
-          err?.message ||
-          "Erro ao buscar mídias do Instagram."
+        err?.message ||
+        "Erro ao buscar mídias do Instagram."
       );
     } finally {
       setLoading(false);

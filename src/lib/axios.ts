@@ -23,9 +23,6 @@ const extra = (Constants.expoConfig?.extra ?? (Constants as any).manifestExtra ?
 const authBaseURL = extra.AUTH_API_URL || "https://dev.auth.growzone.co/api/v1";
 const socialBaseURL = extra.SOCIAL_API_URL || "https://dev.social.growzone.co/api/v1";
 
-const authDevURL = authBaseURL;
-const socialDevURL = socialBaseURL;
-
 const createAPIInstance = (baseURL: string): APIInstanceProps => {
   const api = axios.create({ baseURL }) as APIInstanceProps;
 
