@@ -11,19 +11,26 @@ import { showSuccess, showError } from "@/utils/toast";
 import Button from "@/components/ui/button";
 import { colors } from "@/styles/colors";
 import { useAuth } from "@/hooks/use-auth";
+import { Checkbox } from '@/components/Checkbox';
 
 const SetUsername = () => {
+  const [isAccepted, setIsAccepted] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { user, updateUserData } = useAuth();
 
-
-  console.log('user', user)
-
   const handleSetUsername = async () => {
+
+    setIsError(false);
 
     if (user?.has_username) {
       router.replace("/home");
+      return;
+    }
+
+    if (!isAccepted) {
+      setIsError(true);
       return;
     }
 
@@ -33,19 +40,18 @@ const SetUsername = () => {
     }
 
     if (username.length < 3) {
-      showError("Username must be at least 3 characters");
+      showError("O nome de usuário deve ter pelo menos 3 caracteres");
       return;
     }
 
     if (username.length > 20) {
-      showError("Username must be less than 20 characters");
+      showError("O nome de usuário deve ter menos de 20 caracteres");
       return;
     }
 
-    // Validação básica para formato do username
     const usernameRegex = /^[a-zA-Z0-9_]+$/;
     if (!usernameRegex.test(username)) {
-      showError("Username can only contain letters, numbers, and underscores");
+      showError("O nome de usuário só pode conter letras, números e underscores");
       return;
     }
 
@@ -55,13 +61,13 @@ const SetUsername = () => {
 
       setIsLoading(true);
       await setAppleUsername({ username: username.trim() });
-      showSuccess("Username set successfully!");
+      showSuccess("Nome de usuário definido com sucesso!");
 
       await updateUserData()
 
       router.replace("/home");
     } catch (error: any) {
-      const message = error?.message || "Failed to set username. Try again.";
+      const message = error?.message || "Falha ao definir o nome de usuário. Tente novamente.";
       if (message === "Username already exists") {
         showError("Este nome de usuário já está em uso. Por favor, escolha outro.");
       } else if (message === "Usuário já possui username definido") {
@@ -85,7 +91,7 @@ const SetUsername = () => {
             <LogoIcon width={150} height={30} />
           </View>
           <View className="flex items-center justify-center gap-6 my-10">
-            <Text className="text-3xl font-semibold text-white text-center">
+            <Text className="text-2xl font-semibold text-white text-center">
               Escolha o seu nome de usuário
             </Text>
             <Text className="text-lg font-regular text-black-30 text-center">
@@ -113,14 +119,36 @@ const SetUsername = () => {
               <Text className="text-black-30 text-sm">
                 • 3-20 caracteres
               </Text>
-              <Text className="text-black-30 text-sm">
-                • Letras, números e underscores apenas
-              </Text>
-              <Text className="text-black-30 text-sm">
-                • Deve ser único
-              </Text>
             </View>
           </View>
+
+          <View className="flex flex-row items-center gap-2 mt-2 w-full">
+            <Checkbox
+              labelClasses="text-base font-medium text-black-30"
+              checkboxClasses={`${isError && !isAccepted && "border-red-500"}`}
+              isChecked={isAccepted}
+              toggleCheckbox={() => setIsAccepted((prevState) => !prevState)}
+            />
+            <Text className="text-lg font-regular text-black-30 flex-1 flex-wrap">
+              Ao se cadastrar você concorda com os nossos{" "}
+              <Text
+                className="text-brand-green"
+                onPress={() => router.push("/terms")}
+              >
+                termos de uso, políticas de privacidade, uso de dados e normas da
+                comunidade
+              </Text>
+              .
+            </Text>
+          </View>
+
+          {isError && !isAccepted && (
+            <View className="flex flex-row items-start mt-2 w-full">
+              <Text className="text-start text-red-500 text-base font-medium">
+                Você precisa aceitar os termos para continuar
+              </Text>
+            </View>
+          )}
 
           <View className="w-full mt-8">
             <Button
@@ -129,6 +157,7 @@ const SetUsername = () => {
               title="Continue"
               rightIcon={ArrowRight}
               isDisabled={isLoading || !username.trim()}
+              isLoading={isLoading}
             />
           </View>
         </SafeAreaView>
