@@ -1,8 +1,9 @@
-import { useState, useCallback, useRef, useEffect  } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { View, Text, TouchableOpacity, Switch, Image, Modal, Animated, Linking } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import axios from "axios";
+import Constants from "expo-constants";
 
 import { router } from "expo-router";
 import { useNavigation } from "expo-router";
@@ -33,23 +34,23 @@ export default function GrowsyncDisconnect() {
   const translateY = useRef(new Animated.Value(20)).current;
 
   useFocusEffect(
-  useCallback(() => {
-    refetch();
-    setIsConnected(true);
-  }, [])
-);
+    useCallback(() => {
+      refetch();
+      setIsConnected(true);
+    }, [])
+  );
 
   useEffect(() => {
-  if (showModal) {
-    Animated.timing(translateY, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }
-}, [showModal]);
+    if (showModal) {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showModal]);
 
-function handleBack() {
+  function handleBack() {
     navigation.goBack();
   }
 
@@ -57,21 +58,23 @@ function handleBack() {
     router.push("/growsync/import-post");
   }
 
- function toggleSwitch() {
-  const newValue = !isConnected;
+  function toggleSwitch() {
+    const newValue = !isConnected;
 
-  if (!newValue) {
-    setPendingDisconnect(true);
-    setShowModal(true);
-  } else {
-    setIsConnected(true);
+    if (!newValue) {
+      setPendingDisconnect(true);
+      setShowModal(true);
+    } else {
+      setIsConnected(true);
+    }
   }
-}
 
-async function handleConnectInstagram() {
-  try {
+  async function handleConnectInstagram() {
+    try {
+      const extra = Constants.expoConfig?.extra ?? (Constants as any).manifestExtra ?? {};
+      const AUTH_API_URL = extra.AUTH_API_URL || "https://dev.auth.growzone.co/api/v1";
       const res = await axios.get(
-        `https://dev1.auth.growzone.co/api/v1/instagram/oauth-url?user_id=${user.id}`,
+        `${AUTH_API_URL}/instagram/oauth-url?user_id=${user.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -86,7 +89,7 @@ async function handleConnectInstagram() {
       showError('Failed to start Instagram connection');
     }
   }
-  
+
 
   return (
     <SafeAreaView className="flex-1 bg-black-100 px-6">
@@ -177,9 +180,8 @@ async function handleConnectInstagram() {
               <TouchableOpacity
                 onPress={handleConnectInstagram}
                 disabled={loading}
-                className={`mt-3 py-3 px-6 rounded-lg self-center ${
-                  loading ? 'bg-black-60' : 'bg-primary'
-                }`}
+                className={`mt-3 py-3 px-6 rounded-lg self-center ${loading ? 'bg-black-60' : 'bg-primary'
+                  }`}
               >
                 <Text className="text-black font-bold text-base">
                   {loading ? 'Loading...' : 'Connect with Instagram'}

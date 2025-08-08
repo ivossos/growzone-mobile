@@ -1,4 +1,4 @@
-import { authApi, authDevApi } from "@/lib/axios";
+import { authApi } from "@/lib/axios";
 import { AppError } from "@/api/@types/AppError";
 
 export interface AppleLoginRequest {

@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import Constants from "expo-constants";
 import { useAuth } from "@/hooks/use-auth";
 
-const API_URL = "https://dev1.auth.growzone.co/api/v1/instagram/integration-status";
+const extra: any = Constants.expoConfig?.extra ?? (Constants as any).manifestExtra ?? {};
+const AUTH_API_URL = extra.AUTH_API_URL || "https://dev.auth.growzone.co/api/v1";
+const API_URL = `${AUTH_API_URL}/instagram/integration-status`;
 
 export interface InstagramIntegrationData {
   is_connected: boolean;

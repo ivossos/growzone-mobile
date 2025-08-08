@@ -2,7 +2,7 @@ import { User, UserSocial } from "@/api/@types/models";
 import { accessToken } from "@/api/auth/access-token";
 import { getCurrentAuthUser } from "@/api/auth/get-current-user";
 import { getCurrentUser } from "@/api/social/user/get-current-user";
-import { authApi, authDevApi, socialApi, socialDevApi } from "@/lib/axios";
+import { authApi, socialApi } from "@/lib/axios";
 import {
   storageGetAuthToken,
   storageRemoveAuthToken,
@@ -156,9 +156,6 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     try {
       authApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       socialApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-      authDevApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      socialDevApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       setUser(user);
       setToken(token);

@@ -26,3 +26,5 @@ android/
 .cursor/
 docs/
 .cursorrules
+
+.env.local

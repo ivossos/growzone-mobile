@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, ActivityIndicator } from "react-native";
 import Toast from "react-native-toast-message";
 import { useAuth } from "@/hooks/use-auth";
-import { authDevApi } from "@/lib/axios";
+import { authApi } from "@/lib/axios";
 
 const FacebookCallback = () => {
   const { setUserAndTokenFully } = useAuth();
@@ -28,7 +28,7 @@ const FacebookCallback = () => {
       }
 
       try {
-        const callbackRes = await authDevApi.get(
+        const callbackRes = await authApi.get(
           `/instagram/oauth-callback?code=${code}&state=${state}`
         );
 
@@ -37,7 +37,7 @@ const FacebookCallback = () => {
           throw new Error("Email not returned from OAuth callback");
         }
 
-        const loginRes = await authDevApi.post("/instagram/facebook-login", { email });
+        const loginRes = await authApi.post("/instagram/facebook-login", { email });
         const { token, user } = loginRes.data;
 
         await setUserAndTokenFully(user, token);

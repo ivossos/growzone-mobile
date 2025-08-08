@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as AppleAuthentication from 'expo-apple-authentication';
 import axios from "axios";
+import Constants from "expo-constants";
 
 import { Mail } from "lucide-react-native";
 import { Redirect, router } from "expo-router";
@@ -99,8 +100,10 @@ const Welcome = () => {
   async function handleFacebookLogin() {
     try {
       setIsLoading(true);
+      const extra = Constants.expoConfig?.extra ?? (Constants as any).manifestExtra ?? {};
+      const AUTH_API_URL = extra.AUTH_API_URL || "https://dev.auth.growzone.co/api/v1";
       const response = await axios.get(
-        "https://dev1.auth.growzone.co/api/v1/instagram/oauth-url-public"
+        `${AUTH_API_URL}/instagram/oauth-url-public`
       );
       const { authorization_url } = response.data;
       showSuccess("Redirecting to Facebook...");

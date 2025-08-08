@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance } from "axios";
+import Constants from "expo-constants";
 import {
   storageGetAuthToken,
   storageSaveAuthToken,
@@ -17,11 +18,13 @@ type APIInstanceProps = AxiosInstance & {
   registerInterceptTokenManager: (signOut: SignOut) => () => void;
 };
 
-const authBaseURL = "https://dev1.auth.growzone.co/api/v1";
-const socialBaseURL = "https://dev1.social.growzone.co/api/v1";
+const extra = (Constants.expoConfig?.extra ?? (Constants as any).manifestExtra ?? {}) as any;
 
-const authDevURL = "https://dev1.auth.growzone.co/api/v1";
-const socialDevURL = "https://dev1.social.growzone.co/api/v1";
+const authBaseURL = extra.AUTH_API_URL || "https://dev.auth.growzone.co/api/v1";
+const socialBaseURL = extra.SOCIAL_API_URL || "https://dev.social.growzone.co/api/v1";
+
+const authDevURL = authBaseURL;
+const socialDevURL = socialBaseURL;
 
 const createAPIInstance = (baseURL: string): APIInstanceProps => {
   const api = axios.create({ baseURL }) as APIInstanceProps;
@@ -161,7 +164,5 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 const authApi = createAPIInstance(authBaseURL);
 const socialApi = createAPIInstance(socialBaseURL);
 
-const authDevApi = createAPIInstance(authDevURL);
-const socialDevApi = createAPIInstance(socialDevURL);
 
-export { authApi, socialApi, authDevApi, socialDevApi };
+export { authApi, socialApi };
