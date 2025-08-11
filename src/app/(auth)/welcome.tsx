@@ -1,15 +1,14 @@
 import { useState } from "react";
-import { View, Text, Image, TouchableOpacity, Linking } from "react-native";
+import { View, Text, Image, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import axios from "axios";
-
-import { ArrowRight, Mail } from "lucide-react-native";
 import { Redirect, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { ArrowRight, Mail } from "lucide-react-native";
 import { FontAwesome } from "@expo/vector-icons";
 
 import images from "@/constants/images";
 import { useAuth } from "@/hooks/use-auth";
+import { socialDevApi, authDevApi } from "@/lib/axios";
 import { showSuccess, showError } from "@/utils/toast";
 
 import Button from "@/components/ui/button";
@@ -17,36 +16,47 @@ import Divider from "@/components/ui/divider";
 import Loader from "@/components/ui/loader";
 import { colors } from "@/styles/colors";
 
-const Welcome = () => {
-  const { user, isLoadingUserStorage } = useAuth();
+export default function Welcome() {
+  const { user, isLoadingUserStorage, signIn } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  if (user?.id && !isLoadingUserStorage) return <Redirect href="/home" />;
+  if (user?.id && !isLoadingUserStorage) {
+    return <Redirect href="/home" />;
+  }
 
-  function handleEmailLogin() {
+  const handleEmailLogin = () => {
     router.push("/sign-in");
-  }
+  };
 
-  async function handleFacebookLogin() {
-    try {
-      setIsLoading(true);
-      const response = await axios.get(
-        "https://dev1.auth.growzone.co/api/v1/instagram/oauth-url-public"
-      );
-      const { authorization_url } = response.data;
-      showSuccess("Redirecting to Facebook...");
-      Linking.openURL(authorization_url);
-    } catch (error) {
-      showError("Failed to initiate Facebook login.");
-    } finally {
-      setIsLoading(false);
-    }
+const handleFacebookLogin = async () => {
+  setIsLoading(true);
+
+  try {
+    await signIn("growzone", "Jesiel021@");
+
+    const postsUrl = `${authDevApi.defaults.baseURL}/instagram/posts?limit=20`;
+
+    const listRes = await authDevApi.get("/instagram/posts?limit=20");
+
+    showSuccess(`${(listRes.data.posts ?? []).length} Instagram posts fetched`);
+    router.replace("/home");
+  } catch (err: any) {
+    console.warn("handleFacebookLogin failed:", err.toJSON?.() || err);
+    showError(
+      err?.response?.data?.detail ||
+      err?.message ||
+      "Failed to log in with Facebook."
+    );
+  } finally {
+    setIsLoading(false);
   }
+};
+
 
   return (
     <>
       <SafeAreaView className="bg-black-100 h-full" edges={["top"]}>
-        <Loader isLoading={isLoadingUserStorage} />
+        <Loader isLoading={isLoadingUserStorage || isLoading} />
         <View className="bg-black-100 w-full flex items-center justify-center h-full px-6">
           <View className="flex items-center justify-center gap-6 my-10">
             <Image
@@ -54,7 +64,6 @@ const Welcome = () => {
               className="w-[250px] h-10"
               resizeMode="contain"
             />
-
             <View className="flex gap-2">
               <Text className="text-3xl font-semibold text-white text-center">
                 Join the Growzone community
@@ -72,7 +81,7 @@ const Welcome = () => {
             disabled={isLoading || isLoadingUserStorage}
           >
             <Mail width={24} height={24} color={colors.primary} />
-            <Text className="text-white text-lg font-medium text-center">
+            <Text className="text-white text-lg font-medium">
               Continue with Email
             </Text>
           </TouchableOpacity>
@@ -84,7 +93,7 @@ const Welcome = () => {
             disabled={isLoading || isLoadingUserStorage}
           >
             <FontAwesome name="facebook" size={24} color={colors.primary} />
-            <Text className="text-white text-lg font-medium text-center">
+            <Text className="text-white text-lg font-medium">
               Continue with Facebook
             </Text>
           </TouchableOpacity>
@@ -109,6 +118,4 @@ const Welcome = () => {
       <StatusBar style="light" />
     </>
   );
-};
-
-export default Welcome;
+}

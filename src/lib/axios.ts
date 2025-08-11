@@ -67,9 +67,7 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
             return new Promise((resolve, reject) => {
               failedQueued.push({
                 onSuccess: (token: string) => {
-                  originalRequestConfig.headers[
-                    "Authorization"
-                  ] = `Bearer ${token}`;
+                  originalRequestConfig.headers["Authorization"] = `Bearer ${token}`;
                   resolve(api(originalRequestConfig));
                 },
                 onFailure: (error: AxiosError) => {
@@ -87,15 +85,11 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
                 `${authBaseURL}/login/refresh-token/?refresh_token=${refresh_token}`,
                 {
                   method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
+                  headers: { "Content-Type": "application/json" },
                 }
               );
 
-              if (!response.ok) {
-                throw new Error("Erro na requisição");
-              }
+              if (!response.ok) throw new Error("Erro na requisição");
 
               const data = (await response.json()) as AuthTokenResponse;
 
@@ -104,22 +98,14 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
                 refresh_token: data.refresh_token,
               });
 
-              originalRequestConfig.headers[
-                "Authorization"
-              ] = `Bearer ${data.access_token}`;
-              api.defaults.headers.common[
-                "Authorization"
-              ] = `Bearer ${data.access_token}`;
+              originalRequestConfig.headers["Authorization"] = `Bearer ${data.access_token}`;
+              api.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
 
-              failedQueued.forEach((request) => {
-                request.onSuccess(data.access_token);
-              });
+              failedQueued.forEach((request) => request.onSuccess(data.access_token));
 
               resolve(api(originalRequestConfig));
             } catch (error: any) {
-              failedQueued.forEach((request) => {
-                request.onFailure(error);
-              });
+              failedQueued.forEach((request) => request.onFailure(error));
               await signOut();
               reject(error);
             } finally {
@@ -129,14 +115,6 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
           });
         }
 
-        console.log(
-          "----> error",
-          JSON.stringify(requestError?.response?.status)
-        );
-        console.log(
-          "----> error",
-          JSON.stringify(requestError?.response?.data)
-        );
         return Promise.reject(requestError);
       }
     );
@@ -149,10 +127,49 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
   return api;
 };
 
+function addLogging(api: APIInstanceProps, name: string) {
+  api.interceptors.request.use((config) => {
+    const method = (config.method || "get").toUpperCase();
+    const base = config.baseURL || "";
+    const url = typeof config.url === "string" ? config.url : "";
+    return config;
+  });
+
+  api.interceptors.response.use(
+    (res) => {
+      return res;
+    },
+    (err) => {
+      const status = err.response?.status ?? "NO_STATUS";
+      const url = err.config?.url ?? "NO_URL";
+      const detail = err.response?.data?.detail || err.message;
+
+      return Promise.reject(err);
+    }
+  );
+}
+
 const authApi = createAPIInstance(authBaseURL);
 const socialApi = createAPIInstance(socialBaseURL);
 
 const authDevApi = createAPIInstance(authDevURL);
 const socialDevApi = createAPIInstance(socialDevURL);
+
+addLogging(authApi, "authApi");
+addLogging(socialApi, "socialApi");
+addLogging(authDevApi, "authDevApi");
+addLogging(socialDevApi, "socialDevApi");
+
+(async () => {
+  try {
+    const { access_token } = await storageGetAuthToken();
+    if (access_token) {
+      authDevApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+      socialDevApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+    }
+  } catch (e) {
+    console.error("Falha ao injetar token nas instâncias DEV de Axios", e);
+  }
+})();
 
 export { authApi, socialApi, authDevApi, socialDevApi };
