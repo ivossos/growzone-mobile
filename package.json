@@ -10,9 +10,10 @@
     "prebuild": "npx expo prebuild --clean",
     "build:dev:ios": "eas build --profile development --platform ios",
     "build:dev:android": "eas build --profile development --platform android",
+    "build:android": "eas build --profile production --platform android",
     "build:preview:android": "eas build --profile preview --platform android",
     "build:ios": "eas build --profile production --platform ios",
-    "build:android": "eas build --profile production --platform android",
+    "build:preview:ios": "eas build --profile preview --platform ios",
     "web": "expo start --web",
     "test": "jest --watchAll",
     "lint": "expo lint"
