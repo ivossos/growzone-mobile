@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as AppleAuthentication from 'expo-apple-authentication';
 import Constants from "expo-constants";
@@ -163,17 +163,20 @@ export default function Welcome() {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={handleAppleLogin}
-            activeOpacity={0.7}
-            className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4 mt-6"
-            disabled={isLoading || isLoadingUserStorage}
-          >
-            <FontAwesome name="apple" size={24} color={colors.primary} />
-            <Text className="text-white text-lg font-medium text-center">
-              Continuar com Apple
-            </Text>
-          </TouchableOpacity>
+          {Platform.OS === "ios" && (
+            <TouchableOpacity
+              onPress={handleAppleLogin}
+              activeOpacity={0.7}
+              className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4 mt-6"
+              disabled={isLoading || isLoadingUserStorage}
+            >
+              <FontAwesome name="apple" size={24} color={colors.primary} />
+              <Text className="text-white text-lg font-medium text-center">
+                Continuar com Apple
+              </Text>
+            </TouchableOpacity>
+          )}
+
         </View>
       </SafeAreaView>
       <StatusBar style="light" />
