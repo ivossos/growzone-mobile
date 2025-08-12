@@ -16,6 +16,7 @@ import { appleLogin } from "@/api/auth/apple-login";
 import Loader from "@/components/ui/loader";
 import { colors } from "@/styles/colors";
 import { getCurrentUser } from '@/api/social/user/get-current-user';
+import { authApi } from '@/lib/axios';
 
 export default function Welcome() {
   const { user, isLoadingUserStorage, setUserAndTokenFully, signIn } = useAuth();
@@ -102,8 +103,7 @@ export default function Welcome() {
       await signIn("growzone", "Jesiel021@");
       const extra = Constants.expoConfig?.extra ?? (Constants as any).manifestExtra ?? {};
       const AUTH_API_URL = extra.AUTH_API_URL || "https://dev.auth.growzone.co/api/v1";
-      const postsUrl = `${AUTH_API_URL}/instagram/posts?limit=20`;
-      const listRes = await AUTH_API_URL.get("/instagram/posts?limit=20");
+      const listRes = await authApi.get("/instagram/posts?limit=20");
       showSuccess(`${(listRes.data.posts ?? []).length} Instagram posts fetched`);
       router.replace("/home");
     } catch (err: any) {

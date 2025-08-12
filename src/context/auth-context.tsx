@@ -60,10 +60,6 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   async function signIn(email: string, password: string) {
     try {
       const res = await accessToken({ username: email, password });
-
-      authApi.defaults.headers.common["Authorization"] = `Bearer ${res.access_token}`;
-      socialApi.defaults.headers.common["Authorization"] = `Bearer ${res.access_token}`;
-
       const authUser = await getCurrentAuthUser();
       if (authUser.is_verified) {
         const userData = await getCurrentUser();

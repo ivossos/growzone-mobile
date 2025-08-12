@@ -1,4 +1,5 @@
-import { authDevApi } from '@/lib/axios';
+import Constants from "expo-constants";
+import { authApi } from '@/lib/axios';
 import { AuthTokenResponse } from '../@types/models';
 
 export interface AccessTokenBody {
@@ -9,7 +10,9 @@ export interface AccessTokenBody {
 export async function accessToken(
   { username, password }: AccessTokenBody
 ): Promise<AuthTokenResponse> {
-  const url = `${authDevApi.defaults.baseURL}/login/access-token`;
+  const extra = Constants.expoConfig?.extra ?? (Constants as any).manifestExtra ?? {};
+  const AUTH_API_URL = extra.AUTH_API_URL || "https://dev.auth.growzone.co/api/v1";
+  const url = `${AUTH_API_URL}/login/access-token`;
 
   const data = new URLSearchParams();
   data.append('grant_type', 'password');
@@ -17,7 +20,7 @@ export async function accessToken(
   data.append('password', password);
 
   try {
-    const res = await authDevApi.post<AuthTokenResponse>(
+    const res = await authApi.post<AuthTokenResponse>(
       '/login/access-token',
       data,
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
