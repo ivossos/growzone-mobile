@@ -60,9 +60,13 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   async function signIn(email: string, password: string) {
     try {
       const res = await accessToken({ username: email, password });
-      const authUser = await getCurrentAuthUser();
+      const authUser = await getCurrentUser({
+        Authorization: `Bearer ${res.access_token}`
+      });
       if (authUser.is_verified) {
-        const userData = await getCurrentUser();
+        const userData = await getCurrentUser({
+          Authorization: `Bearer ${res.access_token}`
+        });
         await storageSaveUserAndToken(userData, res.access_token, res.refresh_token);
         updateUserAndToken(userData, res.access_token);
       } else {
@@ -118,7 +122,18 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   ) {
     try {
       setIsLoadingUserStorage(true);
-      await storageSaveUser(user);
+
+      authApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+      socialApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+
+      let userData = user;
+      if (user.username) {
+        userData = { ...user, has_username: true };
+      } else {
+        userData = { ...user, has_username: false };
+      }
+
+      await storageSaveUser(userData);
       await storageSaveAuthToken({ access_token, refresh_token });
     } finally {
       setIsLoadingUserStorage(false);
@@ -129,7 +144,13 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     authApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     socialApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-    setUser(user);
+    let userData = user;
+    if (user.username) {
+      userData = { ...user, has_username: true };
+    } else {
+      userData = { ...user, has_username: false };
+    }
+    setUser(userData);
     setToken(token);
   }
 
@@ -140,8 +161,15 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
 
   async function setUserAndTokenFully(user: UserSocial, token: string, refreshToken?: string) {
     try {
-      await storageSaveUserAndToken(user, token, refreshToken ?? "");
-      updateUserAndToken(user, token);
+      let userData = user;
+      if (user.username) {
+        userData = { ...user, has_username: true };
+      } else {
+        userData = { ...user, has_username: false };
+      }
+
+      await storageSaveUserAndToken(userData, token, refreshToken ?? "");
+      updateUserAndToken(userData, token);
     } catch (error) {
       throw error;
     }

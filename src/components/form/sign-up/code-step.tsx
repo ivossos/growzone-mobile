@@ -62,7 +62,7 @@ export default function CodeStep({ control, onSubmit = () => { } }: StepProps) {
       await signIn(username, password);
     } catch (err) {
       console.log("error automatic login", err);
-      router.replace("/welcome");
+      router.replace("/sign-in");
     }
   }
 
