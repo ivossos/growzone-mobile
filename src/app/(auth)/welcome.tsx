@@ -151,7 +151,7 @@ export default function Welcome() {
             </Text>
           </TouchableOpacity>
 
-          {/* <TouchableOpacity
+          <TouchableOpacity
             onPress={handleFacebookLogin}
             activeOpacity={0.7}
             className="bg-black-90 rounded-lg min-h-[56px] px-4 flex flex-row justify-start items-center w-full gap-4 mt-6"
@@ -161,7 +161,7 @@ export default function Welcome() {
             <Text className="text-white text-lg font-medium">
               Continuar com Facebook
             </Text>
-          </TouchableOpacity> */}
+          </TouchableOpacity>
 
           {Platform.OS === "ios" && (
             <TouchableOpacity
