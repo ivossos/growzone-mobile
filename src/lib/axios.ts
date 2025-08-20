@@ -20,9 +20,6 @@ type APIInstanceProps = AxiosInstance & {
 const authBaseURL = "https://dev.auth.growzone.co/api/v1";
 const socialBaseURL = "https://dev.social.growzone.co/api/v1";
 
-const authDevURL = "https://dev1.auth.growzone.co/api/v1";
-const socialDevURL = "https://dev1.social.growzone.co/api/v1";
-
 const createAPIInstance = (baseURL: string): APIInstanceProps => {
   const api = axios.create({ baseURL }) as APIInstanceProps;
 
@@ -102,7 +99,6 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
               api.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
 
               failedQueued.forEach((request) => request.onSuccess(data.access_token));
-
               resolve(api(originalRequestConfig));
             } catch (error: any) {
               failedQueued.forEach((request) => request.onFailure(error));
@@ -129,9 +125,6 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 
 function addLogging(api: APIInstanceProps, name: string) {
   api.interceptors.request.use((config) => {
-    const method = (config.method || "get").toUpperCase();
-    const base = config.baseURL || "";
-    const url = typeof config.url === "string" ? config.url : "";
     return config;
   });
 
@@ -140,10 +133,6 @@ function addLogging(api: APIInstanceProps, name: string) {
       return res;
     },
     (err) => {
-      const status = err.response?.status ?? "NO_STATUS";
-      const url = err.config?.url ?? "NO_URL";
-      const detail = err.response?.data?.detail || err.message;
-
       return Promise.reject(err);
     }
   );
@@ -152,24 +141,19 @@ function addLogging(api: APIInstanceProps, name: string) {
 const authApi = createAPIInstance(authBaseURL);
 const socialApi = createAPIInstance(socialBaseURL);
 
-const authDevApi = createAPIInstance(authDevURL);
-const socialDevApi = createAPIInstance(socialDevURL);
-
 addLogging(authApi, "authApi");
 addLogging(socialApi, "socialApi");
-addLogging(authDevApi, "authDevApi");
-addLogging(socialDevApi, "socialDevApi");
 
 (async () => {
   try {
     const { access_token } = await storageGetAuthToken();
     if (access_token) {
-      authDevApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
-      socialDevApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+      authApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+      socialApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
     }
   } catch (e) {
-    console.error("Falha ao injetar token nas instâncias DEV de Axios", e);
+    console.error("Falha ao injetar token nas instâncias de Axios", e);
   }
 })();
 
-export { authApi, socialApi, authDevApi, socialDevApi };
+export { authApi, socialApi };

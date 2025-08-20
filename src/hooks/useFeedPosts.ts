@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { socialDevApi } from "@/lib/axios";
+import { socialApi } from "@/lib/axios";
 
 export interface FeedPost {
   id: string;
@@ -27,7 +27,7 @@ export function useFeedPosts(limit = 20) {
 
       try {
         const skip = reset ? 0 : page * limit;
-        const response = await socialDevApi.get(
+        const response = await socialApi.get(
           `/feed-posts?skip=${skip}&limit=${limit}&types=grow,social`,
           {
             headers: { Authorization: `Bearer ${token}` },
@@ -35,9 +35,9 @@ export function useFeedPosts(limit = 20) {
         );
 
         const newPosts: FeedPost[] = response.data.posts ?? [];
-        setPosts(prev => (reset ? newPosts : [...prev, ...newPosts]));
+        setPosts((prev) => (reset ? newPosts : [...prev, ...newPosts]));
         setHasMore(newPosts.length === limit);
-        setPage(prev => (reset ? 1 : prev + 1));
+        setPage((prev) => (reset ? 1 : prev + 1));
       } catch (err: any) {
         setError(err.response?.data?.detail || err.message || "Erro ao carregar feed.");
       } finally {

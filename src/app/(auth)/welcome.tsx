@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, Image, TouchableOpacity, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Redirect, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -8,7 +8,7 @@ import { FontAwesome } from "@expo/vector-icons";
 
 import images from "@/constants/images";
 import { useAuth } from "@/hooks/use-auth";
-import { socialDevApi, authDevApi } from "@/lib/axios";
+import { authApi } from "@/lib/axios";
 import { showSuccess, showError } from "@/utils/toast";
 
 import Button from "@/components/ui/button";
@@ -17,7 +17,7 @@ import Loader from "@/components/ui/loader";
 import { colors } from "@/styles/colors";
 
 export default function Welcome() {
-  const { user, isLoadingUserStorage, signIn } = useAuth();
+  const { user, isLoadingUserStorage } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   if (user?.id && !isLoadingUserStorage) {
@@ -28,30 +28,30 @@ export default function Welcome() {
     router.push("/sign-in");
   };
 
-const handleFacebookLogin = async () => {
-  setIsLoading(true);
+  const handleFacebookLogin = async () => {
+    setIsLoading(true);
+    try {
+    
+      const res = await authApi.get("/instagram/oauth-url");
+      const { authorization_url } = res.data || {};
 
-  try {
-    await signIn("growzone", "Jesiel021@");
+      if (!authorization_url) {
+        throw new Error("Authorization URL not returned by backend");
+      }
 
-    const postsUrl = `${authDevApi.defaults.baseURL}/instagram/posts?limit=20`;
+      showSuccess("Redirecting to Facebook…");
+      await Linking.openURL(authorization_url);
 
-    const listRes = await authDevApi.get("/instagram/posts?limit=20");
-
-    showSuccess(`${(listRes.data.posts ?? []).length} Instagram posts fetched`);
-    router.replace("/home");
-  } catch (err: any) {
-    console.warn("handleFacebookLogin failed:", err.toJSON?.() || err);
-    showError(
-      err?.response?.data?.detail ||
-      err?.message ||
-      "Failed to log in with Facebook."
-    );
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+    } catch (err: any) {
+      showError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          "Failed to start Facebook login."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>

@@ -1,7 +1,5 @@
-import axios from "axios";
+import { authApi } from "@/lib/axios";
 import { useAuth } from "@/hooks/use-auth";
-
-const API_URL = "https://dev1.auth.growzone.co/api/v1/instagram/disconnect";
 
 export function useInstagramDisconnect() {
   const { token } = useAuth();
@@ -9,11 +7,19 @@ export function useInstagramDisconnect() {
   async function disconnectInstagram() {
     if (!token) throw new Error("No token available");
 
-    await axios.delete(API_URL, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    try {
+      await authApi.delete("/instagram/disconnect", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (err: any) {
+      const detail =
+        err?.response?.data?.detail ||
+        err?.message ||
+        "Failed to disconnect Instagram";
+      const e = new Error(detail);
+      (e as any).cause = err;
+      throw e;
+    }
   }
 
   return { disconnectInstagram };

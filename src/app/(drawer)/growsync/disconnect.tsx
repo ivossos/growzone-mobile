@@ -1,25 +1,28 @@
-import { useState, useCallback, useRef, useEffect  } from "react";
-import { View, Text, TouchableOpacity, Switch, Image, Modal, Animated, Linking } from "react-native";
+import { useState, useCallback, useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Switch,
+  Image,
+  Modal,
+  Animated,
+  Linking,
+} from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import axios from "axios";
-
-import { router } from "expo-router";
-import { useNavigation } from "expo-router";
+import { router, useNavigation } from "expo-router";
 import { BlurView } from "expo-blur";
-
 import { ArrowLeft, Copy, ChevronRight } from "lucide-react-native";
 
 import { screens } from "@/constants/screens";
 import ReportModal from "@/components/ui/report-modal";
-
 import { useInstagramStatus } from "@/hooks/useInstagramStatus";
 import { useInstagramDisconnect } from "@/hooks/useInstagramDisconnect";
 import { useAuth } from "@/hooks/use-auth";
-import { showSuccess, showError } from '@/utils/toast';
-
+import { showSuccess, showError } from "@/utils/toast";
 import { colors } from "@/styles/colors";
-
+import { authApi } from "@/lib/axios";
 
 export default function GrowsyncDisconnect() {
   const navigation = useNavigation();
@@ -27,29 +30,32 @@ export default function GrowsyncDisconnect() {
   const { data, loading, error, refetch } = useInstagramStatus();
   const { user, token } = useAuth();
   const { title, Icon } = screens["growsync"];
-  const [isConnected, setIsConnected] = useState(true);
+
+  const [isConnected, setIsConnected] = useState<boolean>(false);
   const [showModal, setShowModal] = useState(false);
-  const [pendingDisconnect, setPendingDisconnect] = useState(false);
   const translateY = useRef(new Animated.Value(20)).current;
 
   useFocusEffect(
-  useCallback(() => {
-    refetch();
-    setIsConnected(true);
-  }, [])
-);
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   useEffect(() => {
-  if (showModal) {
-    Animated.timing(translateY, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: true,
-    }).start();
-  }
-}, [showModal]);
+    setIsConnected(!!data?.is_connected);
+  }, [data]);
 
-function handleBack() {
+  useEffect(() => {
+    if (showModal) {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showModal, translateY]);
+
+  function handleBack() {
     navigation.goBack();
   }
 
@@ -57,36 +63,35 @@ function handleBack() {
     router.push("/growsync/import-post");
   }
 
- function toggleSwitch() {
-  const newValue = !isConnected;
-
-  if (!newValue) {
-    setPendingDisconnect(true);
-    setShowModal(true);
-  } else {
-    setIsConnected(true);
-  }
-}
-
-async function handleConnectInstagram() {
-  try {
-      const res = await axios.get(
-        `https://dev1.auth.growzone.co/api/v1/instagram/oauth-url?user_id=${user.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const { authorization_url } = res.data;
-      showSuccess('Redirecting to Instagram...');
-      Linking.openURL(authorization_url);
-    } catch (err) {
-      showError('Failed to start Instagram connection');
+  function toggleSwitch() {
+    const next = !isConnected;
+    if (!next) {
+      setShowModal(true);
+    } else {
+      setIsConnected(true);
     }
   }
-  
+
+  async function handleConnectInstagram() {
+    try {
+      const res = await authApi.get("/instagram/oauth-url", {
+        params: { user_id: user.id },
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      const { authorization_url } = res.data || {};
+      if (!authorization_url) throw new Error("authorization_url not provided");
+
+      showSuccess("Redirecting to Instagram...");
+      Linking.openURL(authorization_url);
+    } catch (err: any) {
+      showError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          "Failed to start Instagram connection"
+      );
+    }
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-black-100 px-6">
@@ -115,7 +120,6 @@ async function handleConnectInstagram() {
               secondaryLabel="Disconnect"
               onPrimary={() => {
                 setShowModal(false);
-                setPendingDisconnect(false);
                 setIsConnected(true);
               }}
               onSecondary={async () => {
@@ -123,19 +127,17 @@ async function handleConnectInstagram() {
                   await disconnectInstagram();
                   await refetch();
                   setIsConnected(false);
-                  showSuccess('Instagram account disconnected successfully');
-                } catch (error) {
-                  showError('Failed to disconnect. Please try again.');
+                  showSuccess("Instagram account disconnected successfully");
+                } catch (e) {
+                  showError("Failed to disconnect. Please try again.");
                 } finally {
                   setShowModal(false);
-                  setPendingDisconnect(false);
                 }
               }}
             />
           </Animated.View>
         </BlurView>
       </Modal>
-
 
       <View className="flex flex-row items-center gap-4 h-[72px] border-b-[1px] border-black-80">
         <TouchableOpacity onPress={handleBack}>
@@ -158,8 +160,11 @@ async function handleConnectInstagram() {
               />
             </View>
           </View>
+
           {loading ? (
-            <Text className="text-white text-center font-medium">Checking connection...</Text>
+            <Text className="text-white text-center font-medium">
+              Checking connection...
+            </Text>
           ) : data?.is_connected ? (
             <>
               <Text className="text-white text-center font-bold mb-3">
@@ -178,26 +183,31 @@ async function handleConnectInstagram() {
                 onPress={handleConnectInstagram}
                 disabled={loading}
                 className={`mt-3 py-3 px-6 rounded-lg self-center ${
-                  loading ? 'bg-black-60' : 'bg-primary'
+                  loading ? "bg-black-60" : "bg-primary"
                 }`}
               >
                 <Text className="text-black font-bold text-base">
-                  {loading ? 'Loading...' : 'Connect with Instagram'}
+                  {loading ? "Loading..." : "Connect with Instagram"}
                 </Text>
               </TouchableOpacity>
+              {error ? (
+                <Text className="text-center text-red-400 mt-2">{error}</Text>
+              ) : null}
             </>
           )}
         </View>
-        <TouchableOpacity
-          className="mt-9"
-          onPress={handleImport}
-        >
+
+        <TouchableOpacity className="mt-9" onPress={handleImport}>
           <View className="flex flex-row items-center justify-between px-4 py-4 bg-black rounded-lg">
             <View className="flex flex-row items-center gap-4">
               <Copy size={24} color="white" />
               <Text className="text-white text-base font-medium">Post</Text>
             </View>
-            <ChevronRight className="rotate-180" color={colors.black[60]} size={16} />
+            <ChevronRight
+              className="rotate-180"
+              color={colors.black[60]}
+              size={16}
+            />
           </View>
         </TouchableOpacity>
 

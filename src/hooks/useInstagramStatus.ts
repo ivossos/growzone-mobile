@@ -1,8 +1,6 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
-
-const API_URL = "https://dev1.auth.growzone.co/api/v1/instagram/integration-status";
+import { authApi } from "@/lib/axios";
 
 export interface InstagramIntegrationData {
   is_connected: boolean;
@@ -15,17 +13,15 @@ export function useInstagramStatus() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchStatus() {
+  const fetchStatus = useCallback(async () => {
+    if (!token) return;
     setLoading(true);
     setError(null);
 
     try {
-      const response = await axios.get(API_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await authApi.get("/instagram/integration-status", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       setData(response.data);
     } catch (err: any) {
       setError(err?.response?.data?.detail || "Failed to fetch status.");
@@ -33,13 +29,13 @@ export function useInstagramStatus() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [token]);
 
   useEffect(() => {
     if (!isLoadingUserStorage && token) {
       fetchStatus();
     }
-  }, [token, isLoadingUserStorage]);
+  }, [token, isLoadingUserStorage, fetchStatus]);
 
   return { data, loading, error, refetch: fetchStatus };
 }

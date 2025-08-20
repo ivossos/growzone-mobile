@@ -2,7 +2,7 @@ import { User, UserSocial } from "@/api/@types/models";
 import { accessToken } from "@/api/auth/access-token";
 import { getCurrentAuthUser } from "@/api/auth/get-current-user";
 import { getCurrentUser } from "@/api/social/user/get-current-user";
-import { authApi, socialApi, authDevApi, socialDevApi } from "@/lib/axios";
+import { authApi, socialApi } from "@/lib/axios";
 import {
   storageGetAuthToken,
   storageRemoveAuthToken,
@@ -58,13 +58,12 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   }
 
   async function signIn(email: string, password: string) {
+    setIsLoadingUserStorage(true);
     try {
       const res = await accessToken({ username: email, password });
 
       authApi.defaults.headers.common["Authorization"] = `Bearer ${res.access_token}`;
       socialApi.defaults.headers.common["Authorization"] = `Bearer ${res.access_token}`;
-      authDevApi.defaults.headers.common["Authorization"] = `Bearer ${res.access_token}`;
-      socialDevApi.defaults.headers.common["Authorization"] = `Bearer ${res.access_token}`;
 
       const authUser = await getCurrentAuthUser();
       if (authUser.is_verified) {
@@ -105,8 +104,6 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       setIsLoadingUserStorage(false);
       delete authApi.defaults.headers.common["Authorization"];
       delete socialApi.defaults.headers.common["Authorization"];
-      delete authDevApi.defaults.headers.common["Authorization"];
-      delete socialDevApi.defaults.headers.common["Authorization"];
     }
   }
 
@@ -127,9 +124,6 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   function updateUserAndToken(user: UserSocial, token: string) {
     authApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     socialApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    authDevApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    socialDevApi.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
     setUser(user);
     setToken(token);
   }
@@ -151,14 +145,10 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   useEffect(() => {
     const authSub = authApi.registerInterceptTokenManager(signOut);
     const socialSub = socialApi.registerInterceptTokenManager(signOut);
-    const authDevSub = authDevApi.registerInterceptTokenManager(signOut);
-    const socialDevSub = socialDevApi.registerInterceptTokenManager(signOut);
 
     return () => {
       authSub();
       socialSub();
-      authDevSub();
-      socialDevSub();
     };
   }, [signOut]);
 

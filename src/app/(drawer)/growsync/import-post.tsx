@@ -19,7 +19,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { useInstagramMedia, InstagramMediaItem } from "@/hooks/useInstagramMedia";
 import { useAuth } from "@/hooks/use-auth";
-import { socialDevApi, socialApi } from "@/lib/axios";
+import { socialApi } from "@/lib/axios";
 import { screens } from "@/constants/screens";
 import ImportItemCard from "@/components/ui/import-item-card";
 import ReportModal from "@/components/ui/report-modal";
@@ -36,7 +36,7 @@ function groupByMonthAndYear(
   const months = [
     "January", "February", "March", "April",
     "May", "June", "July", "August",
-    "September", "October", "November", "December"
+    "September", "October", "November", "December",
   ];
 
   const filtered = data.filter(
@@ -70,8 +70,9 @@ export default function ImportPost() {
   const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState<"reels" | "posts">("posts");
-  const [itemStatus, setItemStatus] = useState<Record<string, "idle" | "importing" | "imported" | "failed">>({});
-  const publishedIdsRef = useRef<string[]>([]);
+  const [itemStatus, setItemStatus] = useState<
+    Record<string, "idle" | "importing" | "imported" | "failed">
+  >({});
   const [selectedReelsIds, setSelectedReelsIds] = useState<string[]>([]);
   const [selectedPostsIds, setSelectedPostsIds] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -81,12 +82,8 @@ export default function ImportPost() {
   const [refreshing, setRefreshing] = useState(false);
   const translateY = useRef(new Animated.Value(300)).current;
 
-  const { items, loading, fetchMore, hasMore, error, refresh, importedInstagramIds } = useInstagramMedia();
+  const { items, loading, fetchMore, hasMore, error, refresh } = useInstagramMedia();
   const { token } = useAuth();
-
-  useEffect(() => {
-    publishedIdsRef.current = importedInstagramIds;
-  }, [importedInstagramIds]);
 
   useFocusEffect(
     useCallback(() => {
@@ -156,33 +153,15 @@ export default function ImportPost() {
       return updated;
     });
 
-    const headers = { Authorization: `Bearer ${token}` };
-    const payload = {
-      instagram_media_ids: selectedIds,
-      add_instagram_label: true,
-    };
-
-    async function tryPost() {
-      const attempts = [
-        { api: socialDevApi, path: "/instagram/save-posts" },
-        { api: socialApi,    path: "/instagram/save-posts" },
-      ];
-      let lastErr: any;
-      for (const { api, path } of attempts) {
-        try {
-          const res = await api.post(path, payload, { headers });
-          return res;
-        } catch (e: any) {
-          lastErr = e;
-          const status = e?.response?.status;
-          if (status !== 404 && status !== 405) throw e;
-        }
-      }
-      throw lastErr;
-    }
-
     try {
-      const res = await tryPost();
+      const res = await socialApi.post(
+        "/instagram/save-posts",
+        {
+          instagram_media_ids: selectedIds,
+          add_instagram_label: true,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
       const importedIds = Array.isArray(res.data?.imported_ids)
         ? (res.data.imported_ids as string[])
@@ -197,7 +176,6 @@ export default function ImportPost() {
         return updated;
       });
 
-      // Após importar, manter visível apenas o que foi selecionado e importado com sucesso
       if (activeTab === "reels") {
         setSelectedReelsIds((prev) => prev.filter((id) => importedIds.includes(id)));
       } else {
@@ -253,10 +231,7 @@ export default function ImportPost() {
         Toast.show({
           type: "error",
           text1: "Erro ao importar posts",
-          text2:
-            error?.response?.data?.detail ||
-            error?.message ||
-            "Tente novamente.",
+          text2: error?.response?.data?.detail || error?.message || "Tente novamente.",
         });
       }
     }
@@ -323,12 +298,10 @@ export default function ImportPost() {
 
       <View className="flex-1">
         <View className="mt-6 items-start px-6">
-          <Text className="text-white text-xl font-semibold mb-2">
-            Imported content
-          </Text>
+          <Text className="text-white text-xl font-semibold mb-2">Imported content</Text>
           <Text className="text-white text-sm">
             {phase === "importing"
-              ? "Wait for your import to be completed before publishing it on growzone"
+              ? "Wait for your import to be completed before publishing it on Growzone"
               : phase === "ready"
               ? "Review your imported items and publish them to your Growzone"
               : "Select your Instagram posts or reels to share on Growzone"}
@@ -340,7 +313,7 @@ export default function ImportPost() {
             {["posts", "reels"].map((tab) => {
               const isActive = activeTab === tab;
               const isBlocked =
-                !canSwitchTabs ||
+                !(phase === "selecting" && !hasSelection) ||
                 (selectedReelsIds.length > 0 && tab === "posts") ||
                 (selectedPostsIds.length > 0 && tab === "reels");
               return (
@@ -396,7 +369,10 @@ export default function ImportPost() {
                 date={item.timestamp}
                 thumbnail={item.media_url}
                 mediaType={
-                  item.media_type?.toUpperCase?.() as "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM"
+                  item.media_type?.toUpperCase?.() as
+                    | "IMAGE"
+                    | "VIDEO"
+                    | "CAROUSEL_ALBUM"
                 }
                 selected={selectedIds.includes(item.id)}
                 status={itemStatus[item.id] || "idle"}
@@ -431,11 +407,7 @@ export default function ImportPost() {
               primaryDisabled ? "bg-[#B6B6B6]" : "bg-[#32CD32]"
             }`}
           >
-            <Text
-              className={`text-base font-semibold ${
-                primaryDisabled ? "text-black" : "text-black"
-              }`}
-            >
+            <Text className={`text-base font-semibold ${"text-black"}`}>
               {primaryLabel}
             </Text>
           </TouchableOpacity>
@@ -443,8 +415,14 @@ export default function ImportPost() {
       </View>
 
       {showModal && (
-        <BlurView intensity={80} tint="dark" className="flex-1 justify-center items-center px-6 absolute inset-0">
-          <Animated.View style={{ transform: [{ translateY }], width: "100%", maxWidth: 360 }}>
+        <BlurView
+          intensity={80}
+          tint="dark"
+          className="flex-1 justify-center items-center px-6 absolute inset-0"
+        >
+          <Animated.View
+            style={{ transform: [{ translateY }], width: "100%", maxWidth: 360 }}
+          >
             <ReportModal
               title="Tab switch not allowed"
               description={
