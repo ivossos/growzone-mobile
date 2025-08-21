@@ -3,6 +3,7 @@ import { accessToken } from "@/api/auth/access-token";
 import { getCurrentAuthUser } from "@/api/auth/get-current-user";
 import { getCurrentUser } from "@/api/social/user/get-current-user";
 import { authApi, socialApi } from "@/lib/axios";
+import { authApi, socialApi } from "@/lib/axios";
 import {
   storageGetAuthToken,
   storageRemoveAuthToken,
@@ -58,8 +59,12 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   }
 
   async function signIn(email: string, password: string) {
+    setIsLoadingUserStorage(true);
     try {
       const res = await accessToken({ username: email, password });
+      authApi.defaults.headers.common["Authorization"] = `Bearer ${res.access_token}`;
+      socialApi.defaults.headers.common["Authorization"] = `Bearer ${res.access_token}`;
+
       const authUser = await getCurrentUser({
         Authorization: `Bearer ${res.access_token}`
       });

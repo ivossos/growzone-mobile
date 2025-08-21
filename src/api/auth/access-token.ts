@@ -15,9 +15,9 @@ export async function accessToken(
   const url = `${AUTH_API_URL}/login/access-token`;
 
   const data = new URLSearchParams();
-  data.append('grant_type', 'password');
-  data.append('username', username);
-  data.append('password', password);
+  data.append("grant_type", "password");
+  data.append("username", username);
+  data.append("password", password);
 
   try {
     const res = await authApi.post<AuthTokenResponse>(

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, Image, TouchableOpacity, Platform } from "react-native";
+import { View, Text, Image, TouchableOpacity, Platform, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as AppleAuthentication from 'expo-apple-authentication';
 import Constants from "expo-constants";
@@ -98,20 +98,23 @@ export default function Welcome() {
 
   const handleFacebookLogin = async () => {
     setIsLoading(true);
-
     try {
-      await signIn("growzone", "Jesiel021@");
-      const extra = Constants.expoConfig?.extra ?? (Constants as any).manifestExtra ?? {};
-      const AUTH_API_URL = extra.AUTH_API_URL || "https://dev.auth.growzone.co/api/v1";
-      const listRes = await authApi.get("/instagram/posts?limit=20");
-      showSuccess(`${(listRes.data.posts ?? []).length} Instagram posts fetched`);
-      router.replace("/home");
+
+      const res = await authApi.get("/instagram/oauth-url");
+      const { authorization_url } = res.data || {};
+
+      if (!authorization_url) {
+        throw new Error("Authorization URL not returned by backend");
+      }
+
+      showSuccess("Redirecting to Facebook…");
+      await Linking.openURL(authorization_url);
+
     } catch (err: any) {
-      console.warn("handleFacebookLogin failed:", err.toJSON?.() || err);
       showError(
         err?.response?.data?.detail ||
         err?.message ||
-        "Failed to log in with Facebook."
+        "Failed to start Facebook login."
       );
     } finally {
       setIsLoading(false);

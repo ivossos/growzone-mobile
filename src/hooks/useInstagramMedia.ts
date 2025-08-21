@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { socialApi } from "@/lib/axios";
+import { authApi, socialApi } from "@/lib/axios";
 
 export interface InstagramMediaItem {
   id: string;
@@ -29,25 +29,24 @@ export function useInstagramMedia() {
       let ids: string[] = [];
 
       try {
-        const r = await socialApi.get(`/listed-social-posts/${user.id}?skip=0&limit=200`, { headers });
+        const r = await socialApi.get(
+          `/listed-social-posts/${user.id}?skip=0&limit=200`,
+          { headers }
+        );
         ids = (Array.isArray(r.data) ? r.data : [])
           .filter((post: any) => post.instagram_id)
           .map((post: any) => post.instagram_id);
       } catch {
         try {
-          const r = await socialApi.get(`/listed-social-post/${user.id}?skip=0&limit=200`, { headers });
+          const r = await socialApi.get(
+            `/listed-social-post/${user.id}?skip=0&limit=200`,
+            { headers }
+          );
           ids = (Array.isArray(r.data) ? r.data : [])
             .filter((post: any) => post.instagram_id)
             .map((post: any) => post.instagram_id);
-        } catch {
-          try {
-            const r = await socialApi.get(`/listed-social-posts/${user.id}?skip=0&limit=200`, { headers });
-            ids = (Array.isArray(r.data) ? r.data : [])
-              .filter((post: any) => post.instagram_id)
-              .map((post: any) => post.instagram_id);
-          } catch (err: any) {
-            setError(err?.response?.data?.detail || "Erro ao buscar posts importados.");
-          }
+        } catch (err: any) {
+          setError(err?.response?.data?.detail || "Erro ao buscar posts importados.");
         }
       } finally {
         setImportedInstagramIds(ids);
@@ -61,7 +60,6 @@ export function useInstagramMedia() {
   const fetchMore = useCallback(async () => {
     if (loading || !hasMore || !initialized || !token) return;
 
-    // /instagram/posts em AUTH não pagina (no dev atual). Após a primeira chamada, encerre.
     if (page > 0) {
       setHasMore(false);
       return;
@@ -71,7 +69,7 @@ export function useInstagramMedia() {
     setError(null);
 
     try {
-      const res = await socialApi.get(`/instagram/posts?limit=20`, {
+      const res = await authApi.get(`/instagram/posts?limit=20`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -97,7 +95,7 @@ export function useInstagramMedia() {
     setHasMore(true);
 
     try {
-      const res = await socialApi.get(`/instagram/posts?limit=20`, {
+      const res = await authApi.get(`/instagram/posts?limit=20`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
