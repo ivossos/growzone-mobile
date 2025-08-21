@@ -97,6 +97,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       } else {
         userData = { ...user, has_username: false };
       }
+
       await storageSaveUser(userData);
       setUser(userData);
     } catch (err) {

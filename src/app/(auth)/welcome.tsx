@@ -68,16 +68,17 @@ export default function Welcome() {
         id: response.user_id,
         email: response.email || "",
         category_id: authUser.category_id,
-        has_username: response.has_username,
+        username: authUser.username,
+        has_username: authUser.username !== null ? true : false,
         is_active: true,
         is_verified: true,
       };
 
       await setUserAndTokenFully(userData, response.access_token, response.refresh_token);
 
-      showSuccess(`Welcome! Logged in as ${response.name || response.email}`);
+      showSuccess(`Bem vindo! Logado como ${response.name || response.email}`);
 
-      if (response.has_username) {
+      if (userData.has_username) {
         router.replace("/home");
       } else {
         router.replace("/set-username");
@@ -111,6 +112,7 @@ export default function Welcome() {
       await Linking.openURL(authorization_url);
 
     } catch (err: any) {
+      console.log("Handle Facebook Login Error: ", err);
       showError(
         err?.response?.data?.detail ||
         err?.message ||

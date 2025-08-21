@@ -162,8 +162,6 @@ addLogging(socialApi, "socialApi");
     if (access_token) {
       authApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
       socialApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
-      authApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
-      socialApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
     }
   } catch (e) {
     console.error("Falha ao injetar token nas instâncias de Axios", e);
