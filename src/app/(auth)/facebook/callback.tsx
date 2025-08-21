@@ -5,7 +5,6 @@ import { Text, ActivityIndicator } from "react-native";
 import Toast from "react-native-toast-message";
 import { useAuth } from "@/hooks/use-auth";
 import { authApi } from "@/lib/axios";
-import { authApi } from "@/lib/axios";
 
 const FacebookCallback = () => {
   const { setUserAndTokenFully } = useAuth();
