@@ -28,7 +28,7 @@ export default function UpdateAppModal() {
         setModalVisible(true);
       }
     } catch (e) {
-      console.error("Erro ao verificar atualização:", e);
+      console.log("Erro ao verificar atualização:", e);
     }
   };
 
