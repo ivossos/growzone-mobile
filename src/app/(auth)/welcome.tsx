@@ -5,6 +5,7 @@ import { Redirect, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { ArrowRight, Mail } from "lucide-react-native";
 import { FontAwesome } from "@expo/vector-icons";
+import axios from "axios";
 
 import images from "@/constants/images";
 import { useAuth } from "@/hooks/use-auth";
@@ -31,9 +32,29 @@ export default function Welcome() {
   const handleFacebookLogin = async () => {
     setIsLoading(true);
     try {
-    
-      const res = await authApi.get("/instagram/oauth-url");
-      const { authorization_url } = res.data || {};
+      const noAuth = axios.create({ baseURL: authApi.defaults.baseURL });
+
+      const candidates = [
+        "/auth/facebook/oauth-url",
+        "/facebook/oauth-url",
+        "/instagram/facebook/oauth-url",
+        "/instagram/oauth-url",
+      ];
+
+      let authorization_url: string | undefined;
+
+      for (const path of candidates) {
+        try {
+          const r = await noAuth.get(path);
+          authorization_url = r.data?.authorization_url || r.data?.url;
+          if (authorization_url) break;
+        } catch (e: any) {
+          const s = e?.response?.status;
+          if (s !== 404 && s !== 401 && s !== 403) {
+            throw e;
+          }
+        }
+      }
 
       if (!authorization_url) {
         throw new Error("Authorization URL not returned by backend");
@@ -41,7 +62,6 @@ export default function Welcome() {
 
       showSuccess("Redirecting to Facebook…");
       await Linking.openURL(authorization_url);
-
     } catch (err: any) {
       showError(
         err?.response?.data?.detail ||

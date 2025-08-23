@@ -3,8 +3,9 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Text, ActivityIndicator } from "react-native";
 import Toast from "react-native-toast-message";
-import { useAuth } from "@/hooks/use-auth";
+import axios from "axios";
 import { authApi } from "@/lib/axios";
+import { useAuth } from "@/hooks/use-auth";
 
 const FacebookCallback = () => {
   const { setUserAndTokenFully } = useAuth();
@@ -14,8 +15,10 @@ const FacebookCallback = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const code = params.code as string | undefined;
-      const state = params.state as string | undefined;
+      const rawCode = params.code as string | string[] | undefined;
+      const rawState = params.state as string | string[] | undefined;
+      const code = Array.isArray(rawCode) ? rawCode[0] : rawCode;
+      const state = Array.isArray(rawState) ? rawState[0] : rawState;
 
       if (!code || !state) {
         Toast.show({
@@ -28,61 +31,69 @@ const FacebookCallback = () => {
       }
 
       try {
-        const callbackRes = await authApi.get(
-          `/instagram/oauth-callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`
-        );
+        const noAuth = axios.create({ baseURL: authApi.defaults.baseURL });
 
-        const { email, name } = callbackRes.data || {};
-        if (!email) {
-          throw new Error("Email not returned from OAuth callback");
+        const callbackCandidates = [
+          `/instagram/oauth-callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
+          `/auth/facebook/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`,
+          `/facebook/callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`
+        ];
+
+        let cbData: any | null = null;
+        let lastErr: any;
+
+        for (const path of callbackCandidates) {
+          try {
+            const r = await noAuth.get(path);
+            cbData = r.data;
+            break;
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+        if (!cbData) throw lastErr || new Error("Callback failed");
+
+        if (cbData?.access_token && cbData?.user) {
+          await setUserAndTokenFully(cbData.user, cbData.access_token, cbData.refresh_token);
+          Toast.show({
+            type: "success",
+            text1: "Welcome!",
+            text2: `Logged in as ${cbData.user?.name || ""}`,
+          });
+          replace("/home");
+          return;
         }
 
-        const loginRes = await authApi.post("/instagram/facebook-login", { email });
-        const {
-          token,
-          access_token,
-          refresh_token,
-          user,
-        } = loginRes.data || {};
+        const email = cbData?.email;
+        if (!email) throw new Error("Email not returned from OAuth callback");
 
-        const finalToken = token || access_token;
-        if (!finalToken || !user) {
-          throw new Error("Invalid login response");
+        const loginCandidates = [
+          { method: "post", path: "/instagram/facebook-login" },
+          { method: "post", path: "/auth/facebook/login" },
+        ] as const;
+
+        let loginRes: any | null = null;
+        for (const c of loginCandidates) {
+          try {
+            const r = await noAuth.post(c.path, { email });
+            loginRes = r.data;
+            break;
+          } catch {}
+        }
+        if (!loginRes?.token || !loginRes?.user) {
+          throw new Error("Login exchange failed");
         }
 
-        await setUserAndTokenFully(user, finalToken, refresh_token);
-
+        await setUserAndTokenFully(loginRes.user, loginRes.token, loginRes.refresh_token);
         Toast.show({
           type: "success",
           text1: "Welcome!",
-          text2: `Logged in as ${user.name || name || email}`,
+          text2: `Logged in as ${loginRes.user?.name || ""}`,
         });
-
         replace("/home");
       } catch (error: any) {
-        const message =
-          error?.response?.data?.message || error?.message || "Login failed. Try again.";
-
-        if (typeof message === "string" && message.includes("not a business account")) {
-          Toast.show({
-            type: "error",
-            text1: "Facebook account invalid",
-            text2: "Only Facebook Business accounts are supported.",
-          });
-        } else if (typeof message === "string" && message.includes("already in use")) {
-          Toast.show({
-            type: "error",
-            text1: "Account already exists",
-            text2: "Try logging in instead.",
-          });
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "Something went wrong",
-            text2: message,
-          });
-        }
-
+        const message = error?.response?.data?.message || error?.message || "Login failed. Try again.";
+        Toast.show({ type: "error", text1: "Something went wrong", text2: message });
         replace("/sign-in");
       } finally {
         setIsProcessing(false);

@@ -30,27 +30,30 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
     const interceptTokenManager = api.interceptors.response.use(
       (res) => res,
       async (requestError) => {
-        if (requestError?.response?.status === 409) {
+        const status = requestError?.response?.status;
+        const detail = requestError?.response?.data?.detail as string | undefined;
+        const originalRequestConfig = requestError.config;
+
+        const urlPath = (originalRequestConfig?.url ?? "").toString();
+        if (urlPath.includes("/login/refresh-token")) {
+          return Promise.reject(requestError);
+        }
+
+        if (status === 409) {
           return Promise.reject(new AppError(requestError?.response?.data));
         }
 
-        if (requestError?.response?.status === 502) {
+        if (status === 502) {
           await signOut();
           return Promise.reject(requestError);
         }
 
-        if (
-          requestError?.response?.status === 401 &&
-          requestError?.response?.data?.detail === "Inactive user"
-        ) {
+        if (status === 401 && detail === "Inactive user") {
           await signOut();
           return Promise.reject(requestError?.response?.data?.detail);
         }
 
-        if (
-          requestError?.response?.status === 401 &&
-          requestError?.response?.data?.detail === "Invalid token"
-        ) {
+        if (status === 401 && detail === "Invalid token") {
           const { refresh_token } = await storageGetAuthToken();
 
           if (!refresh_token) {
@@ -58,18 +61,17 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
             return Promise.reject(requestError);
           }
 
-          const originalRequestConfig = requestError.config;
-
           if (isRefreshing) {
             return new Promise((resolve, reject) => {
               failedQueued.push({
                 onSuccess: (token: string) => {
-                  originalRequestConfig.headers["Authorization"] = `Bearer ${token}`;
+                  originalRequestConfig.headers = {
+                    ...(originalRequestConfig.headers || {}),
+                    Authorization: `Bearer ${token}`,
+                  };
                   resolve(api(originalRequestConfig));
                 },
-                onFailure: (error: AxiosError) => {
-                  reject(error);
-                },
+                onFailure: (error: AxiosError) => reject(error),
               });
             });
           }
@@ -95,7 +97,11 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
                 refresh_token: data.refresh_token,
               });
 
-              originalRequestConfig.headers["Authorization"] = `Bearer ${data.access_token}`;
+              originalRequestConfig.headers = {
+                ...(originalRequestConfig.headers || {}),
+                Authorization: `Bearer ${data.access_token}`,
+              };
+
               api.defaults.headers.common["Authorization"] = `Bearer ${data.access_token}`;
 
               failedQueued.forEach((request) => request.onSuccess(data.access_token));
@@ -124,17 +130,10 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
 };
 
 function addLogging(api: APIInstanceProps, name: string) {
-  api.interceptors.request.use((config) => {
-    return config;
-  });
-
+  api.interceptors.request.use((config) => config);
   api.interceptors.response.use(
-    (res) => {
-      return res;
-    },
-    (err) => {
-      return Promise.reject(err);
-    }
+    (res) => res,
+    (err) => Promise.reject(err)
   );
 }
 

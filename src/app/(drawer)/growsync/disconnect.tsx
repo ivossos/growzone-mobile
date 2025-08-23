@@ -7,13 +7,14 @@ import {
   Image,
   Modal,
   Animated,
-  Linking,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useNavigation } from "expo-router";
 import { BlurView } from "expo-blur";
 import { ArrowLeft, Copy, ChevronRight } from "lucide-react-native";
+import * as WebBrowser from "expo-web-browser";
+import * as ExpoLinking from "expo-linking";
 
 import { screens } from "@/constants/screens";
 import ReportModal from "@/components/ui/report-modal";
@@ -23,6 +24,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { showSuccess, showError } from "@/utils/toast";
 import { colors } from "@/styles/colors";
 import { authApi } from "@/lib/axios";
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function GrowsyncDisconnect() {
   const navigation = useNavigation();
@@ -73,22 +76,46 @@ export default function GrowsyncDisconnect() {
   }
 
   async function handleConnectInstagram() {
+    if (!token) {
+      showError("Você precisa estar autenticado.");
+      return;
+    }
+
     try {
       const res = await authApi.get("/instagram/oauth-url", {
-        params: { user_id: user.id },
-        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        params: { user_id: user?.id },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const { authorization_url } = res.data || {};
       if (!authorization_url) throw new Error("authorization_url not provided");
 
-      showSuccess("Redirecting to Instagram...");
-      Linking.openURL(authorization_url);
+      showSuccess("Redirecionando para o Facebook...");
+
+      const returnUrl = ExpoLinking.createURL("/(auth)/facebook/callback");
+
+      const result = await WebBrowser.openAuthSessionAsync(
+        authorization_url,
+        returnUrl
+      );
+
+      if (result.type === "success" && result.url) {
+        const parsed = ExpoLinking.parse(result.url);
+        const code = String(parsed.queryParams?.code ?? "");
+        const state = String(parsed.queryParams?.state ?? "");
+
+        if (code && state) {
+          router.replace({
+            pathname: "/(auth)/facebook/callback",
+            params: { code, state },
+          });
+        }
+      }
     } catch (err: any) {
       showError(
         err?.response?.data?.detail ||
           err?.message ||
-          "Failed to start Instagram connection"
+          "Não foi possível iniciar a conexão com o Instagram."
       );
     }
   }
