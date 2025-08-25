@@ -1,57 +1,29 @@
 import { Text, TouchableOpacity, View } from "react-native";
 import { ArrowLeft } from "lucide-react-native";
 import { colors } from "@/styles/colors";
-import { router, useNavigation } from "expo-router";
+import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { screens } from "@/constants/screens";
 import Button from "@/components/ui/button";
 import GrowzoneIcon from "@/assets/icons/app.svg";
 import InstagramIcon from "@/assets/icons/instagram.svg";
-import { Linking } from "react-native";
-import { useAuth } from "@/hooks/use-auth";
-import { authApi } from "@/lib/axios";
-import { showSuccess, showError } from "@/utils/toast";
 
 export default function Growsync() {
-  const navigation = useNavigation();
   const { title, Icon } = screens["growsync"];
-  const { token } = useAuth();
 
-  function handleNavigation() {
-    navigation.goBack();
+  function handleBack() {
+    router.back();
   }
 
-  async function handleConnect() {
-    if (!token) {
-      showError("Você precisa estar autenticado.");
-      router.push("/sign-in");
-      return;
-    }
-
-    try {
-      const { data } = await authApi.get("/instagram/oauth-url", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      const url: string | undefined = data?.authorization_url;
-      if (!url) throw new Error("authorization_url não retornada pela API.");
-
-      showSuccess("Redirecionando para o Facebook…");
-      Linking.openURL(url);
-    } catch (err: any) {
-      showError(
-        err?.response?.data?.detail ||
-          err?.message ||
-          "Não foi possível iniciar a conexão com o Instagram."
-      );
-    }
+  function handleConnect() {
+    router.push("/growsync/disconnect");
   }
 
   return (
     <View className="flex-1 bg-black-100">
       <SafeAreaView className="flex-1">
         <View className="flex flex-row items-center gap-4 px-6 h-[72px] border-b-[1px] border-black-80">
-          <TouchableOpacity onPress={handleNavigation}>
+          <TouchableOpacity onPress={handleBack}>
             <ArrowLeft className="w-6 h-6" color={colors.brand.white} />
           </TouchableOpacity>
           <View className="flex flex-row items-center gap-2">
