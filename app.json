@@ -67,7 +67,9 @@
         "NOTIFICATIONS"
       ],
       "softwareKeyboardLayoutMode": "pan",
-      "package": "com.growzone.app"
+      "package": "com.growzone.app",
+      "requestLargeHeap": true,
+      "allowBackup": true
     },
     "web": {
       "bundler": "metro",
@@ -127,7 +129,8 @@
           "microphonePermission": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
           "recordAudioAndroid": true
         }
-      ]
+      ],
+      "./withAndroidMemoryOptimizations"
     ],
     "experiments": {
       "typedRoutes": true
