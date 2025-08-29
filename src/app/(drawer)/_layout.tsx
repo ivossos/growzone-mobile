@@ -137,7 +137,7 @@ export default function DrawerLayout() {
                   >
                     <Drawer.Screen name="(tabs)" />
 
-                    <Drawer.Screen
+                    {/* <Drawer.Screen
                       name="growsync/index"
                       options={{
                         title: "Growsync",
@@ -145,7 +145,7 @@ export default function DrawerLayout() {
                         isDivider: true,
                         animationEnabled: true,
                       } as CustomOptions}
-                    />
+                    /> */}
 
                     <Drawer.Screen
                       name="edit-profile"
