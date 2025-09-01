@@ -73,7 +73,9 @@
       "softwareKeyboardLayoutMode": "pan",
       "package": "com.growzone.app",
       "requestLargeHeap": true,
+      "compileSdkVersion": 35,
       "targetSdkVersion": 35,
+      "buildToolsVersion": "35.0.0",
       "allowBackup": true
     },
     "web": {
