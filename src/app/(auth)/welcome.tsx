@@ -65,8 +65,11 @@ export default function Welcome() {
         Authorization: `Bearer ${response.access_token}`,
       });
 
+
       const userData = {
         id: response.user_id,
+        cover: authUser.cover,
+        image: authUser.image,
         email: response.email || "",
         category_id: authUser.category_id,
         username: authUser.username,
