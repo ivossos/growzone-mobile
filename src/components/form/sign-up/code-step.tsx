@@ -14,7 +14,7 @@ import { resendEmailCode } from "@/api/user/resend-email-code";
 import { useAuth } from "@/hooks/use-auth";
 import { router } from "expo-router";
 
-export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
+export default function CodeStep({ control, onSubmit = () => { } }: StepProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isResendDisabled, setIsResendDisabled] = useState(false);
   const [timer, setTimer] = useState<number>(60);
@@ -68,11 +68,11 @@ export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
 
   async function resendCodeEmail() {
     if (isResendDisabled) return;
-    
+
     const { email } = getValues();
 
     try {
-      await resendEmailCode({email});
+      await resendEmailCode({ email });
       Toast.show({
         type: "success",
         text1: "Código reenviado com sucesso",
@@ -117,42 +117,42 @@ export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
             Esse código expira em 10 minutos.
           </Text>
         </View>
-        
+
       </View>
       <View className="flex flex-col w-full">
-        {Platform.OS === 'ios' ?  
-        <Controller
-          control={control}
-          name="code"
-          render={({ fieldState, field: { onChange, value } }) => (
-            <OtpInput
-              title="Código"
-              onComplete={onChange}
-              defaultValue={value}
-              otpLength={6}
-              errorMessage={fieldState.error?.message}
-            />
-          )}
-        />
+        {Platform.OS === 'ios' ?
+          <Controller
+            control={control}
+            name="code"
+            render={({ fieldState, field: { onChange, value } }) => (
+              <OtpInput
+                title="Código"
+                onComplete={onChange}
+                defaultValue={value}
+                otpLength={6}
+                errorMessage={fieldState.error?.message}
+              />
+            )}
+          />
 
-        :
+          :
 
-        <Controller
-          control={control}
-          name="code"
-          render={({ fieldState, field: { onChange, onBlur, value} }) => (
-            <FormField
-              title="Código"
-              placeholder="Digite seu código"
-              otherStyles="mt-6"
-              onBlur={onBlur}
-              value={value || ''}
-              keyboardType="decimal-pad"
-              handleChangeText={onChange}
-              error={fieldState.error?.message}
-            />
-          )}
-        />}
+          <Controller
+            control={control}
+            name="code"
+            render={({ fieldState, field: { onChange, onBlur, value } }) => (
+              <FormField
+                title="Código"
+                placeholder="Digite seu código"
+                otherStyles="mt-6"
+                onBlur={onBlur}
+                value={value || ''}
+                keyboardType="decimal-pad"
+                handleChangeText={onChange}
+                error={fieldState.error?.message}
+              />
+            )}
+          />}
 
         <TouchableOpacity
           className="flex flex-row items-center gap-2 mt-2"
@@ -165,9 +165,8 @@ export default function CodeStep({ control, onSubmit = () => {} }: StepProps) {
             color={isResendDisabled ? colors.black[70] : colors.brand.white}
           />
           <Text
-            className={`text-lg font-medium ${
-              isResendDisabled ? "text-black-70" : "text-brand-grey"
-            }`}
+            className={`text-lg font-medium ${isResendDisabled ? "text-black-70" : "text-brand-grey"
+              }`}
           >
             {isResendDisabled
               ? `Reenviar código em ${timer}s`

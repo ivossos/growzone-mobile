@@ -28,4 +28,10 @@ expo-env.d.ts
 ios/
 android/
 
+.cursor/
+docs/
+.cursorrules
+
+.env.local
+
 .vscode

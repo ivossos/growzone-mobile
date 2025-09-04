@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import {
   ActivityIndicator,
   RefreshControl,
@@ -8,7 +8,7 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
+import { FlashList } from "@shopify/flash-list";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { colors } from "@/styles/colors";
@@ -103,9 +103,9 @@ export default function Reels() {
   }
 
   return (
-    <View>
+    <View style={styles.container}>
       <StatusBar translucent backgroundColor={"transparent"} />
-      <FlatList
+      <FlashList
         data={reelsData?.pages.flat() || []}
         renderItem={renderItem}
         keyExtractor={(item, index) => `${item.id}-${index}`}
@@ -126,8 +126,10 @@ export default function Reels() {
             tintColor={colors.brand.green}
           />
         }
-        initialNumToRender={5}
-        windowSize={5}
+        estimatedItemSize={ScreenHeight}
+        removeClippedSubviews={true}
+        drawDistance={ScreenHeight * 2}
+        disableAutoLayout={false}
         ListFooterComponent={isFetchingNextPage ? <Loader isLoading /> : null}
       />
     </View>
@@ -135,6 +137,9 @@ export default function Reels() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   fullscreenItem: {
     height: ScreenHeight,
     justifyContent: "center",

@@ -7,17 +7,15 @@ export interface CreateUsertBody {
   password: string;
 }
 
-export async function createUser({ 
+export async function createUser({
   email,
   username,
   password,
 }: CreateUsertBody) {
-  const response = await authApi.post<User>('/user/', { 
+  const response = await authApi.post<User>('/user/', {
     email,
     username,
     password
   });
-
-  console.log('response', response)
   return response.data;
 }

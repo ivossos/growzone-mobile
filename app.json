@@ -3,7 +3,7 @@
     "owner": "growzone.inc",
     "name": "Growzone",
     "slug": "growzone",
-    "version": "1.0.18",
+    "version": "1.0.20",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "growzone",
@@ -16,6 +16,7 @@
       "backgroundColor": "#000000"
     },
     "ios": {
+      "usesAppleSignIn": true,
       "supportsTablet": true,
       "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
@@ -25,7 +26,10 @@
         "NSMicrophoneUsageDescription": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
         "NSLocationWhenInUseUsageDescription": "Este app não usa localização, mas algumas bibliotecas podem referenciar essas APIs.",
         "NSUserNotificationUsageDescription": "Enviamos notificações para avisar sobre curtidas, comentários, seguidores e outras atualizações importantes.",
-        "UIBackgroundModes": ["fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       },
       "locales": {
         "pt-BR": {
@@ -67,7 +71,12 @@
         "NOTIFICATIONS"
       ],
       "softwareKeyboardLayoutMode": "pan",
-      "package": "com.growzone.app"
+      "package": "com.growzone.app",
+      "requestLargeHeap": true,
+      "compileSdkVersion": 35,
+      "targetSdkVersion": 35,
+      "buildToolsVersion": "35.0.0",
+      "allowBackup": true
     },
     "web": {
       "bundler": "metro",
@@ -75,6 +84,20 @@
       "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0"
+          },
+          "ios": {
+            "deploymentTarget": "15.1"
+          }
+        }
+      ],
+      "expo-apple-authentication",
       "expo-router",
       [
         "expo-video",
@@ -127,7 +150,8 @@
           "microphonePermission": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
           "recordAudioAndroid": true
         }
-      ]
+      ],
+      "./withAndroidMemoryOptimizations"
     ],
     "experiments": {
       "typedRoutes": true

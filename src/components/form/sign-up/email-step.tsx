@@ -7,9 +7,9 @@ import Toast from 'react-native-toast-message';
 import { findEmail } from '@/api/user/find-email';
 import { Text, View } from 'react-native';
 
-export default function EmailStep({ control, onNext = () => {} }: StepProps) {
+export default function EmailStep({ control, onNext = () => { } }: StepProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { trigger, getValues, setError} = useFormContext()
+  const { trigger, getValues, setError } = useFormContext()
 
   async function handleNextStep() {
     const isValid = await trigger(['email']);
@@ -20,7 +20,7 @@ export default function EmailStep({ control, onNext = () => {} }: StepProps) {
     try {
       setIsLoading(true);
       const res = await findEmail(email);
-      if(res.status) {
+      if (res.status) {
         setError("email", {
           type: "manual",
           message: "Esse e-mail já está cadastrado",
@@ -30,7 +30,6 @@ export default function EmailStep({ control, onNext = () => {} }: StepProps) {
       onNext();
     } catch (error) {
       console.log('error on search email', error)
-
       Toast.show({
         type: 'error',
         text1: 'Opss',
@@ -54,7 +53,7 @@ export default function EmailStep({ control, onNext = () => {} }: StepProps) {
       <Controller
         control={control}
         name="email"
-        render={({ fieldState, field: { onChange, onBlur, value} }) => (
+        render={({ fieldState, field: { onChange, onBlur, value } }) => (
           <FormField
             title="E-mail"
             placeholder="Digite seu email"
@@ -68,13 +67,13 @@ export default function EmailStep({ control, onNext = () => {} }: StepProps) {
         )}
       />
 
-        <Button
-          handlePress={handleNextStep}
-          containerStyles="w-full mt-6"
-          title="Continuar"
-          isLoading={isLoading}
-        />
-      
+      <Button
+        handlePress={handleNextStep}
+        containerStyles="w-full mt-6"
+        title="Continuar"
+        isLoading={isLoading}
+      />
+
     </>
   );
 }

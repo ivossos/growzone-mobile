@@ -2,6 +2,7 @@ import { CustomOptions } from "@/@types/navigation";
 import { DrawerContent } from "@/components/ui/drawer-content";
 import { Drawer } from "expo-router/drawer";
 import ProfileIcon from "@/assets/icons/profile.svg";
+import GrowsyncIcon from "@/assets/icons/sync.svg";
 import PadlockIcon from "@/assets/icons/padlock.svg";
 import FileIcon from "@/assets/icons/file.svg";
 import QuestionIcon from "@/assets/icons/question.svg";
@@ -9,6 +10,7 @@ import CloseIcon from "@/assets/icons/close.svg";
 import { useAuth } from "@/hooks/use-auth";
 import { Redirect, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
+import Toast from 'react-native-toast-message';
 import { BottomSheetProvider } from "@/context/bottom-sheet-context";
 import BottomSheet from "@gorhom/bottom-sheet";
 import CommentBottomSheet from "@/components/ui/comment-bottom-sheet";
@@ -93,20 +95,24 @@ export default function DrawerLayout() {
   useEffect(() => {
     if (user?.id && !isLoadingUserStorage) {
       if (!user.is_verified) {
-        router.replace("/verify-user");
-      } else if (!user.category_id || user.category_id === 0) {
-        router.replace("/user-category");
+        router.replace('/verify-user');
+      } else if (!user.has_username) {
+        router.replace('/set-username');
+      } else if (user.has_username && (!user.category_id || user.category_id === 0)) {
+        router.replace('/user-category');
+      } else {
+        router.replace('/home');
       }
     }
   }, [user, isLoadingUserStorage, router]);
 
   const logout = async () => {
     await signOut();
-    router.replace("/sign-in");
+    router.replace("/welcome");
   };
 
   if (!user?.id && !isLoadingUserStorage) {
-    return <Redirect href="/sign-in" />;
+    return <Redirect href="/welcome" />;
   }
 
   return (
@@ -131,6 +137,16 @@ export default function DrawerLayout() {
                   >
                     <Drawer.Screen name="(tabs)" />
 
+                    {/* <Drawer.Screen
+                      name="growsync/index"
+                      options={{
+                        title: "Growsync",
+                        iconName: GrowsyncIcon,
+                        isDivider: true,
+                        animationEnabled: true,
+                      } as CustomOptions}
+                    /> */}
+
                     <Drawer.Screen
                       name="edit-profile"
                       options={
@@ -143,17 +159,6 @@ export default function DrawerLayout() {
                       }
                     />
 
-                    {/* <Drawer.Screen
-                  name="event"
-                  options={
-                    {
-                      title: 'Eventos',
-                      iconName: CalenderIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
-
                     <Drawer.Screen
                       name="security"
                       options={
@@ -164,17 +169,6 @@ export default function DrawerLayout() {
                         } as CustomOptions
                       }
                     />
-
-                    {/* <Drawer.Screen
-                  name="preference-center"
-                  options={
-                    {
-                      title: 'Central de preferências',
-                      iconName: SettingsIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
 
                     <Drawer.Screen
                       name="terms-conditions"
@@ -219,28 +213,6 @@ export default function DrawerLayout() {
                         } as CustomOptions
                       }
                     />
-
-                    {/* <Drawer.Screen
-                  name="user-category"
-                  options={
-                    {
-                      title: 'Perfil Grower',
-                      iconName: FileIcon,
-                      isDivider: true,
-                    } as CustomOptions
-                  }
-                /> */}
-
-                    {/* <Drawer.Screen
-                  name="privacy-policy"
-                  options={
-                    {
-                      title: 'Política de privacidade',
-                      iconName: SecurityIcon,
-                      isDivider: true
-                    } as CustomOptions
-                  }
-                /> */}
 
                     <Drawer.Screen
                       listeners={{
@@ -304,6 +276,7 @@ export default function DrawerLayout() {
                     backgroundColor={colors.black[100]}
                     style="light"
                   />
+                  <Toast />
                 </ScrollToTopProvider>
               </BottomSheetProvider>
             </PlayerProvider>

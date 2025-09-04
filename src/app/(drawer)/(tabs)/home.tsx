@@ -156,6 +156,7 @@ export default function HomeScreen() {
       });
       return data;
     } catch (err) {
+      console.log("err", err);
       setError("Erro ao carregar dados");
     }
   };

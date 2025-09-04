@@ -20,15 +20,15 @@ import { StatusBar } from "expo-status-bar";
 export const SigninValidation = z.object({
   username: z.string(),
   password: z.string()
-  .min(6, "Senha fraca demais")
-  .max(30, "Máximo é 30 caracteres"),
+    .min(6, "Senha fraca demais")
+    .max(30, "Máximo é 30 caracteres"),
 })
 
 
 const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  
+
   const { signIn, user } = useAuth();
 
   const form = useForm({
@@ -44,18 +44,18 @@ const SignIn = () => {
     try {
       setIsLoading(true);
       handleRememberMe(
-        values.username, 
+        values.username,
         values.password
       );
       userLogged = await signIn(
-        values.username, 
+        values.username,
         values.password
       );
-      
-    } catch(err) {
+
+    } catch (err) {
       console.log('error login', err)
 
-      if(err === 'Inactive user') {
+      if (err === 'Inactive user') {
         Toast.show({
           type: 'error',
           text1: 'Opss',
@@ -73,10 +73,10 @@ const SignIn = () => {
     } finally {
       setIsLoading(false);
     }
-    
-    if(!userLogged.is_verified) {
+
+    if (!userLogged.is_verified) {
       return router.replace("/verify-user");
-    } 
+    }
 
     router.replace("/home");
   };
@@ -84,8 +84,8 @@ const SignIn = () => {
   async function handleRememberMe(username: string, password: string) {
     try {
       if (rememberMe) {
-        await storageSaveLogin({ username, password, remember: true});
-        
+        await storageSaveLogin({ username, password, remember: true });
+
       } else {
         await storageRemoveLogin()
       }
@@ -115,34 +115,34 @@ const SignIn = () => {
 
   return (
     <>
-    <SafeAreaView className="bg-black-100 h-full" edges={['top']}>
-      <ScrollView className="bg-black-100 pb-10">
-        <View
-          className="w-full flex items-center h-full px-6"
-          style={{
-            minHeight: Dimensions.get("window").height - 100,
-          }}
-        >
-           <View className="flex items-center justify-center gap-6 my-8">
-            <Image source={images.logoGreen} className='w-[250px] h-10'  resizeMode='contain'/>
+      <SafeAreaView className="bg-black-100 h-full" edges={['top']}>
+        <ScrollView className="bg-black-100 pb-10">
+          <View
+            className="w-full flex items-center h-full px-6"
+            style={{
+              minHeight: Dimensions.get("window").height - 100,
+            }}
+          >
+            <View className="flex items-center justify-center gap-6 my-8">
+              <Image source={images.logoGreen} className='w-[250px] h-10' resizeMode='contain' />
 
-            <View className="flex gap-2">
-              <Text className="text-3xl font-semibold text-white text-center">
-                Seja bem-vindo ao Growzone!
-              </Text>
-              
-              <Text className="text-lg font-regular text-black-30 text-center mt-">
-                Já é um membro? Digite seu e-mail e senha para conectar-se com a comunidade
-              </Text>
+              <View className="flex gap-2">
+                <Text className="text-3xl font-semibold text-white text-center">
+                  Seja bem-vindo ao Growzone!
+                </Text>
+
+                <Text className="text-lg font-regular text-black-30 text-center mt-">
+                  Já é um membro? Digite seu e-mail e senha para conectar-se com a comunidade
+                </Text>
+              </View>
             </View>
-           </View>
-           <Controller
-            control={form.control}
-            name="username"
-            render={({  fieldState, field: { onChange, onBlur, value } }) => (
+            <Controller
+              control={form.control}
+              name="username"
+              render={({ fieldState, field: { onChange, onBlur, value } }) => (
                 <FormField
-                  title="Nome de usuário"
-                  placeholder="Digite seu nome de usuário"
+                  title="Nome de usuário ou email"
+                  placeholder="Digite seu nome de usuário ou email"
                   otherStyles="mt-5 w-full"
                   leftIcon={AtSign}
                   onBlur={onBlur}
@@ -153,12 +153,12 @@ const SignIn = () => {
               )}
             />
 
-          <Controller
-            control={form.control}
-            name="password"
-            render={({  fieldState, field: { onChange, onBlur, value } }) => (
+            <Controller
+              control={form.control}
+              name="password"
+              render={({ fieldState, field: { onChange, onBlur, value } }) => (
                 <FormField
-                  title="Password"
+                  title="Senha"
                   type="password"
                   placeholder="•••••••••"
                   otherStyles="mt-6 w-full"
@@ -172,14 +172,14 @@ const SignIn = () => {
             />
 
             <View className="flex flex-row justify-between mt-2 w-full">
-              <Checkbox 
-                label="Lembrar-me" 
-                labelClasses="text-lg font-medium text-black-30" 
+              <Checkbox
+                label="Lembrar-me"
+                labelClasses="text-lg font-medium text-black-30"
                 isChecked={rememberMe}
                 toggleCheckbox={() => setRememberMe((prevState) => !prevState)}
               />
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 className='flex flex-row items-center gap-2 mt-2'
                 onPress={() => router.push('/forgot-password')}>
                 <Text className="text-lg font-regular text-black-30">Esqueceu sua senha?</Text>
@@ -194,23 +194,23 @@ const SignIn = () => {
               isLoading={isLoading}
             />
 
-            <Divider text="Ou" className="!my-4"/>
+            <Divider text="Ou" className="!my-4" />
 
-          <View className="flex flex-col justify-center w-full gap-2">
-            <Text className="text-center text-lg text-gray-100 font-medium">
-              Ainda não possui uma conta?
-            </Text>
-            <Button
-              handlePress={() => router.push("/sign-up")}
-              containerStyles="mt-4"
-              title='Crie agora'
-              rightIcon={ArrowRight}
-            />
+            <View className="flex flex-col justify-center w-full gap-2">
+              <Text className="text-center text-lg text-gray-100 font-medium">
+                Ainda não possui uma conta?
+              </Text>
+              <Button
+                handlePress={() => router.push("/sign-up")}
+                containerStyles="mt-4"
+                title='Crie agora'
+                rightIcon={ArrowRight}
+              />
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-    <StatusBar backgroundColor="#000000" style="light" />
+        </ScrollView>
+      </SafeAreaView>
+      <StatusBar backgroundColor="#000000" style="light" />
     </>
   );
 };
