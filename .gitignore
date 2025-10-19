@@ -35,3 +35,12 @@ docs/
 .env.local
 
 .vscode
+
+# Development & Mock files
+db.json
+routes.json
+app/
+lib/
+mock/
+*.swp
+*.swo
