@@ -3,10 +3,12 @@ import Logo from "@/assets/icons/logo.svg";
 import Coin from "@/assets/icons/coin.svg";
 import Bell from "@/assets/icons/bell.svg";
 import MenuBurger from "@/assets/icons/menu-burger.svg";
+import { MessageCircle } from "lucide-react-native";
 import { useNavigation, useRouter } from "expo-router";
 import { DrawerActions } from "@react-navigation/native";
 import { useState } from "react";
 import { useNotificationContext } from "@/hooks/use-notification";
+import { colors } from "@/styles/colors";
 
 interface Props {
   scrollToTop?: () => void;
@@ -25,6 +27,10 @@ export function Header({ scrollToTop = () => {} }: Props) {
     router.push("/notifications");
   };
 
+  const goToChat = () => {
+    router.push("/chat");
+  };
+
   return (
     <View className="flex flex-row justify-between items-center h-[72px] px-6 border-b-[1px] border-black-80">
       <TouchableOpacity onPress={scrollToTop}>
@@ -35,6 +41,9 @@ export function Header({ scrollToTop = () => {} }: Props) {
           <Coin width={24} height={24} />
           <Text className="text-white font-bold text-lg">582</Text>
         </TouchableOpacity> */}
+        <TouchableOpacity activeOpacity={0.7} onPress={goToChat}>
+          <MessageCircle size={24} color={colors.brand.white} />
+        </TouchableOpacity>
         <TouchableOpacity activeOpacity={0.7} onPress={goToNotifications}>
           {notificationCount > 0 && (
             <View className="flex items-center justify-center absolute z-10 -top-2 -right-2 bg-brand-green rounded-full w-5 h-5">

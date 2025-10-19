@@ -14,6 +14,8 @@ interface ModalHeaderProps {
   createdAt: string;
   onPress: VoidFunction;
   handlePressReport: VoidFunction;
+  viewsCount?: number;
+  onViewsPress?: VoidFunction;
 }
 
 export default function ModalHeader({
@@ -22,6 +24,8 @@ export default function ModalHeader({
   onPress,
   createdAt,
   handlePressReport,
+  viewsCount = 0,
+  onViewsPress,
 }: ModalHeaderProps) {
   const insets = useSafeAreaInsets();
   const userTop = Platform.OS === "ios" ? insets.top + 30 : insets.top - 10;
@@ -76,7 +80,23 @@ export default function ModalHeader({
 
         <View>
           <Text style={styles.title}>{name}</Text>
-          <Text style={styles.subTitle}>{formatTimeAgo(createdAt)}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Text style={styles.subTitle}>{formatTimeAgo(createdAt)}</Text>
+            {viewsCount > 0 && onViewsPress && (
+              <>
+                <Text style={{ color: "rgba(255, 255, 255, 0.6)", fontSize: 12 }}>•</Text>
+                <TouchableOpacity
+                  onPress={onViewsPress}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 4 }}
+                >
+                  <Ionicons name="eye-outline" size={14} color="rgba(255, 255, 255, 0.8)" />
+                  <Text style={{ color: "rgba(255, 255, 255, 0.8)", fontSize: 12, fontWeight: "500" }}>
+                    {viewsCount}
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
+          </View>
         </View>
       </View>
 

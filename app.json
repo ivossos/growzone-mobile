@@ -1,6 +1,6 @@
 {
   "expo": {
-    "owner": "growzone.inc",
+    "owner": "jvoz00001",
     "name": "Growzone",
     "slug": "growzone",
     "version": "1.0.20",
@@ -18,7 +18,7 @@
     "ios": {
       "usesAppleSignIn": true,
       "supportsTablet": true,
-      "bundleIdentifier": "com.growzone.growzonesocial",
+      "bundleIdentifier": "com.ivossos.growzone",
       "infoPlist": {
         "NSCameraUsageDescription": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
         "NSPhotoLibraryUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
@@ -26,10 +26,7 @@
         "NSMicrophoneUsageDescription": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
         "NSLocationWhenInUseUsageDescription": "Este app não usa localização, mas algumas bibliotecas podem referenciar essas APIs.",
         "NSUserNotificationUsageDescription": "Enviamos notificações para avisar sobre curtidas, comentários, seguidores e outras atualizações importantes.",
-        "UIBackgroundModes": [
-          "fetch",
-          "remote-notification"
-        ]
+        "UIBackgroundModes": ["fetch", "remote-notification"]
       },
       "locales": {
         "pt-BR": {
@@ -38,25 +35,9 @@
           "NSPhotoLibraryUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
           "NSCameraUsageDescription": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
           "NSLocationWhenInUseUsageDescription": "Este app não usa localização, mas algumas bibliotecas podem referenciar essas APIs."
-        },
-        "es": {
-          "NSMicrophoneUsageDescription": "Se necesita el micrófono para grabar audio en los videos que creas y publicas en la plataforma.",
-          "NSPhotoLibraryAddUsageDescription": "Usamos tu galería para que puedas seleccionar imágenes y videos para publicar o compartir en la app.",
-          "NSPhotoLibraryUsageDescription": "Usamos tu galería para que puedas seleccionar imágenes y videos para publicar o compartir en la app.",
-          "NSCameraUsageDescription": "Necesitamos usar la cámara de tu dispositivo para que puedas tomar fotos y grabar videos dentro de la app, como en publicaciones o registros de cultivo.",
-          "NSLocationWhenInUseUsageDescription": "Esta aplicación no utiliza ubicación, pero algunas bibliotecas pueden referenciar estas APIs."
-        },
-        "en": {
-          "NSMicrophoneUsageDescription": "The microphone is required to record audio in the videos you create and publish on the platform.",
-          "NSPhotoLibraryAddUsageDescription": "We use your photo library so you can select images and videos to post or share within the app.",
-          "NSPhotoLibraryUsageDescription": "We use your photo library so you can select images and videos to post or share within the app.",
-          "NSCameraUsageDescription": "We need to use your device’s camera so you can take photos and record videos within the app, such as for posts or cultivation logs.",
-          "NSLocationWhenInUseUsageDescription": "This app does not use location, but some libraries may reference these APIs."
         }
       },
-      "config": {
-        "usesNonExemptEncryption": false
-      }
+      "config": { "usesNonExemptEncryption": false }
     },
     "android": {
       "adaptiveIcon": {
@@ -71,7 +52,7 @@
         "NOTIFICATIONS"
       ],
       "softwareKeyboardLayoutMode": "pan",
-      "package": "com.growzone.app",
+      "package": "com.ivossos.growzone",
       "requestLargeHeap": true,
       "compileSdkVersion": 35,
       "targetSdkVersion": 35,
@@ -84,85 +65,55 @@
       "favicon": "./src/assets/images/favicon.png"
     },
     "plugins": [
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35,
-            "buildToolsVersion": "35.0.0"
-          },
-          "ios": {
-            "deploymentTarget": "15.1"
-          }
-        }
-      ],
+      ["expo-build-properties", {
+        "android": { "compileSdkVersion": 35, "targetSdkVersion": 35, "buildToolsVersion": "35.0.0" },
+        "ios": { "deploymentTarget": "15.1" }
+      }],
       "expo-apple-authentication",
       "expo-router",
-      [
-        "expo-video",
-        {
-          "supportsBackgroundPlayback": false,
-          "supportsPictureInPicture": false
-        }
-      ],
-      [
-        "expo-font",
-        {
-          "fonts": [
-            "./src/assets/fonts/Inter-Bold.ttf",
-            "./src/assets/fonts/Inter-Medium.ttf",
-            "./src/assets/fonts/Inter-Regular.ttf",
-            "./src/assets/fonts/Inter-SemiBold.ttf"
-          ]
-        }
-      ],
-      [
-        "expo-splash-screen",
-        {
-          "image": "./src/assets/images/splash.png",
-          "resizeMode": "contain",
-          "backgroundColor": "#000000"
-        }
-      ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./src/assets/images/icon.png",
-          "color": "#ffffff",
-          "defaultChannel": "default",
-          "enableBackgroundRemoteNotifications": true
-        }
-      ],
-      [
-        "react-native-vision-camera",
-        {
-          "cameraPermissionText": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
-          "enableMicrophonePermission": true,
-          "microphonePermissionText": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
-          "enableLocationPermission": false
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
-          "microphonePermission": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
-          "recordAudioAndroid": true
-        }
-      ],
+      ["expo-video", { "supportsBackgroundPlayback": false, "supportsPictureInPicture": false }],
+      ["expo-font", {
+        "fonts": [
+          "./src/assets/fonts/Inter-Bold.ttf",
+          "./src/assets/fonts/Inter-Medium.ttf",
+          "./src/assets/fonts/Inter-Regular.ttf",
+          "./src/assets/fonts/Inter-SemiBold.ttf"
+        ]
+      }],
+      ["expo-splash-screen", {
+        "image": "./src/assets/images/splash.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#000000"
+      }],
+      ["expo-notifications", {
+        "icon": "./src/assets/images/icon.png",
+        "color": "#ffffff",
+        "defaultChannel": "default",
+        "enableBackgroundRemoteNotifications": true
+      }],
+      ["react-native-vision-camera", {
+        "cameraPermissionText": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app",
+        "enableMicrophonePermission": true,
+        "microphonePermissionText": "O microfone é necessário para gravar áudio",
+        "enableLocationPermission": false
+      }],
+      ["expo-camera", {
+        "cameraPermission": "Precisamos utilizar a câmera do aparelho...",
+        "microphonePermission": "O microfone é necessário para gravar áudio nos vídeos",
+        "recordAudioAndroid": true
+      }],
       "./withAndroidMemoryOptimizations"
     ],
-    "experiments": {
-      "typedRoutes": true
-    },
+    "experiments": { "typedRoutes": true },
     "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "4d859901-20e9-4392-abbf-6b712137f7a7"
-      }
+      "router": { "origin": false },
+      "eas": { "projectId": "4d859901-20e9-4392-abbf-6b712137f7a7" },
+      
+      "CHAT_ENABLED": true,
+      "EXPO_PUBLIC_API": "http://localhost:3333",
+      "EXPO_PUBLIC_RT": "ws://localhost:3333",
+      "AUTH_API_URL": "http://localhost:3333"
+      
     }
   }
 }

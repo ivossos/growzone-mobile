@@ -6,7 +6,7 @@ import { Slot } from "expo-router";
 //import Toast from "react-native-toast-message";
 import { SafeAreaView, Text, View } from "react-native";
 
-//import ModalCamera from "@/components/weestory/ModalCamera";
+import ModalCamera from "@/components/weestory/ModalCamera";
 
 export default function Layout() {
   // return (

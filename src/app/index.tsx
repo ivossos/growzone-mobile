@@ -1,4 +1,4 @@
-import { Image, ScrollView, View, useWindowDimensions } from "react-native";
+import { Image, ScrollView, View, useWindowDimensions, TouchableOpacity, Text } from "react-native";
 
 import Animated, {
   SlideInDown,
@@ -64,6 +64,23 @@ export default function Splash() {
           source={require("@/assets/images/logo-green.png")}
           style={[logoAnimatedStyles]}
         />
+
+      {/* DEV: Test Chat Button */}
+      <TouchableOpacity
+        onPress={() => router.push("/test-chat")}
+        style={{
+          position: "absolute",
+          bottom: 50,
+          backgroundColor: "#2CC420",
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          borderRadius: 8,
+        }}
+      >
+        <Text style={{ color: "#0D0D0D", fontSize: 14, fontWeight: "600" }}>
+          🧪 Test Chat UI
+        </Text>
+      </TouchableOpacity>
     </View>
   );
 }

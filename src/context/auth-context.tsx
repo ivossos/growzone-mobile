@@ -12,7 +12,7 @@ import {
   storageRemoveUser,
   storageSaveUser,
 } from "@/storage/storage-user";
-import { createContext, ReactNode, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 type AuthContextProps = {
   token: string | null;
@@ -212,4 +212,13 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+// Custom hook to use auth context
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within AuthContextProvider");
+  }
+  return context;
 }
