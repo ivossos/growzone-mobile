@@ -32,6 +32,17 @@ const createConfig = () => {
     ...resolver,
     assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
     sourceExts: [...resolver.sourceExts, "svg"],
+    // Mock react-native-vision-camera for Web platform
+    resolveRequest: (context, moduleName, platform) => {
+      if (platform === 'web' && moduleName === 'react-native-vision-camera') {
+        return {
+          filePath: __dirname + '/src/__mocks__/react-native-vision-camera.js',
+          type: 'sourceFile',
+        };
+      }
+      // Default resolution
+      return context.resolveRequest(context, moduleName, platform);
+    },
   };
   
   // Android-specific optimizations
