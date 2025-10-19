@@ -1,300 +1,121 @@
-import { MediaUpload } from "@/api/@types/models";
-import { colors } from "@/styles/colors";
-import { useActionSheet } from "@expo/react-native-action-sheet";
+import React, { useCallback, useState } from "react";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { createVideoPlayer, VideoPlayer as VideoPlayerType } from "expo-video";
-import { Camera, ImageIcon, XIcon } from "lucide-react-native"; // Usando ícone de exclusão XCircleIcon
-import React, { useCallback, useMemo, useState } from "react";
-import {
-  Image,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import ImageCropPicker from "react-native-image-crop-picker";
+import { Camera, ImageIcon, XIcon } from "lucide-react-native";
 import Toast from "react-native-toast-message";
-import { Modal } from "../Modal";
-import VideoPlayer from "../VideoPlayer";
-import Button from "./button";
-const isAndroid = Platform.OS === "android";
 
-interface MediaPickerProps {
-  onMediaSelected: (media: MediaUpload) => void;
-}
+type MediaUpload = { uri: string; fileName?: string; type?: string };
 
-const MediaPicker = ({ onMediaSelected }: MediaPickerProps) => {
-  const { showActionSheetWithOptions } = useActionSheet();
-  const [isOpenMedia, setIsOpenMedia] = useState(false);
-  const [mediaUris, setMediaUris] = useState<
-    Array<MediaUpload & { player?: VideoPlayerType }>
-  >([]);
+const colors = {
+  primary: "#00A86B",
+  brand: { white: "#fff" },
+  black: { 70: "#666" }
+};
 
-  const handleMedia = useCallback(() => {
-    setIsOpenMedia(!isOpenMedia);
-  }, [isOpenMedia]);
+export default function MediaPicker({ onMediaSelected }: { onMediaSelected: (m: MediaUpload) => void }) {
+  const [mediaUris, setMediaUris] = useState<Array<MediaUpload & { player?: VideoPlayerType }>>([]);
 
-  const selectPhotoWithCrop = async () => {
-    const image = await ImageCropPicker.openPicker({
-      cropping: true,
-      width: 1080,
-      height: 1350,
-      mediaType: "photo",
-      compressImageQuality: 1,
-      forceJpg: true,
-      cropperToolbarTitle: "Edite sua imagem",
-      cropperChooseText: "Cortar",
-      cropperCancelText: "Cancelar",
-    });
+  const pickFromLibrary = async (videos = false) => {
+    const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!perm.granted) return Toast.show({ type: "info", text1: "Permissão necessária", text2: "Permita acesso à galeria." });
 
-    const newMedia: MediaUpload = {
-      uri: image.path,
-      fileName: `image-${Date.now()}.jpg`,
-      type: image.mime || "image/jpeg",
-    };
-
-    setMediaUris((prev) => [...prev, newMedia]);
-    onMediaSelected(newMedia);
-    handleMedia();
-  };
-
-  const selectVideoFromGallery = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permissionResult.granted) {
-      Toast.show({
-        type: "info",
-        text1: "Permissão necessária",
-        text2: "Você precisa permitir acesso à galeria!",
-      });
-      return;
-    }
-
-    const pickerResult = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: "videos",
+    const res = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: videos ? ImagePicker.MediaTypeOptions.Videos : ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      quality: 1,
+      quality: 1
     });
 
-    if (!pickerResult.canceled && pickerResult.assets.length > 0) {
-      handleMediaResult(pickerResult);
-      handleMedia();
-    }
-  };
-
-  const handleChooseMediaType = () => {
-    showActionSheetWithOptions(
-      {
-        options: ["Selecionar Foto", "Selecionar Vídeo", "Cancelar"],
-        cancelButtonIndex: 2,
-        title: "Escolher tipo de mídia",
-      },
-      (buttonIndex) => {
-        if (buttonIndex === 0) selectPhotoWithCrop();
-        else if (buttonIndex === 1) selectVideoFromGallery();
-      }
-    );
+    if (!res.canceled && res.assets?.length) handleResult(res);
   };
 
   const captureWithCamera = async () => {
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    const perm = await ImagePicker.requestCameraPermissionsAsync();
+    if (!perm.granted) return Toast.show({ type: "info", text1: "Permissão necessária", text2: "Permita acesso à câmera." });
 
-    if (!permissionResult.granted) {
-      Toast.show({
-        type: "info",
-        text1: "Permissão necessária",
-        text2: "Você precisa permitir acesso à câmera!",
-      });
-      return;
-    }
-
-    const cameraResult = await ImagePicker.launchCameraAsync({
-      mediaTypes: ["images", "videos"],
+    const res = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+      quality: 1
     });
 
-    handleMediaResult(cameraResult);
+    if (!res.canceled) handleResult(res);
   };
 
-  const handleMediaResult = (result: ImagePicker.ImagePickerResult) => {
-    if (result.canceled || !result.assets || !result.assets.length) return;
+  const handleResult = (result: ImagePicker.ImagePickerResult) => {
+    if (result.canceled || !result.assets) return;
 
-    result.assets.forEach((asset, index) => {
-      const extension = asset.type === "video" ? "MP4" : "JPEG";
+    result.assets.forEach((a, i) => {
+      const isVideo = a.type?.startsWith("video");
+      const ext = isVideo ? "mp4" : "jpg";
 
-      const newMedia: MediaUpload = {
-        uri: asset.uri,
-        fileName: asset.fileName || `media-${Date.now()}.${extension}`,
-        type: (isAndroid ? asset.mimeType : asset.type) || "image/jpeg",
+      const m: MediaUpload = {
+        uri: a.uri,
+        fileName: a.fileName || `media-${Date.now()}-${i}.${ext}`,
+        type: a.mimeType || (isVideo ? "video/mp4" : "image/jpeg")
       };
 
       let player: VideoPlayerType | undefined = undefined;
-
-      if (asset.type === "video") {
-        player = createVideoPlayer({
-          uri: newMedia.uri,
-          metadata: {
-            title: `title-post-${index}`,
-            artist: `artist-post-${index}`,
-          },
-        });
-
+      if (isVideo) {
+        player = createVideoPlayer({ uri: m.uri });
         player.loop = true;
-        player.muted = false;
-        player.timeUpdateEventInterval = 2;
         player.volume = 1.0;
       }
 
-      setMediaUris((prevMediaUris) => [
-        ...prevMediaUris,
-        { ...newMedia, player },
-      ]);
-      onMediaSelected(newMedia);
+      setMediaUris(prev => [...prev, { ...m, player }]);
+      onMediaSelected(m);
     });
-
-    handleMedia();
   };
 
   const removeMedia = (index: number) => {
-    const updatedMedia = [...mediaUris];
-    updatedMedia.splice(index, 1);
-    setMediaUris(updatedMedia);
+    setMediaUris(prev => prev.filter((_, i) => i !== index));
   };
-
-  const actionModalMedia = useMemo(() => {
-    return (
-      <View className="gap-8">
-        <View className="gap-2">
-          <Text className="text-lg font-medium text-brand-white">
-            Adicione um momento
-          </Text>
-          <Text className="text-medium font-medium text-brand-grey">
-            Campartilhe fotos ou vídeos
-          </Text>
-        </View>
-        <View className="gap-4">
-          <Button
-            title="Usar a Câmera"
-            handlePress={captureWithCamera}
-            variant="secondary"
-            leftIcon={Camera}
-            textStyles="text-base font-medium text-brand-white"
-            leftIconProps={{ color: colors.primary }}
-            containerStyles="gap-2"
-          />
-
-          <Button
-            title="Escolher Foto ou Vídeo"
-            handlePress={handleChooseMediaType}
-            variant="secondary"
-            leftIcon={ImageIcon}
-            textStyles="text-base font-medium text-brand-white"
-            leftIconProps={{ color: colors.primary }}
-            containerStyles="gap-2"
-          />
-        </View>
-      </View>
-    );
-  }, []);
-
-  const modalSelectedMedia = useMemo(() => {
-    return (
-      <Modal
-        transparent
-        animationType="fade"
-        visible={isOpenMedia}
-        closeModal={handleMedia}
-        onRequestClose={handleMedia}
-      >
-        {actionModalMedia}
-      </Modal>
-    );
-  }, [isOpenMedia, actionModalMedia, handleMedia]);
 
   return (
     <View style={styles.container}>
-      {isOpenMedia && modalSelectedMedia}
+      <View style={{ gap: 8 }}>
+        <TouchableOpacity style={styles.btn} onPress={captureWithCamera}>
+          <Camera color={colors.primary} size={20} />
+          <Text style={styles.btnTxt}>Usar a Câmera</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.btn} onPress={() => pickFromLibrary(false)}>
+          <ImageIcon color={colors.primary} size={20} />
+          <Text style={styles.btnTxt}>Escolher Foto</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.btn} onPress={() => pickFromLibrary(true)}>
+          <ImageIcon color={colors.primary} size={20} />
+          <Text style={styles.btnTxt}>Escolher Vídeo</Text>
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.mediaContainer}>
         {mediaUris.map((media, index) => (
-          <TouchableOpacity
-            key={index}
-            onPress={() => removeMedia(index)}
-            style={styles.mediaWrapper}
-          >
-            {media.type === "video" ? (
-              <VideoPlayer
-                player={media.player as VideoPlayerType}
-                styleContainer={styles.media}
-                autoplay={false}
-                controls={{
-                  showButtonPlay: false,
-                  showProgressBar: false,
-                }}
-                loop
-              />
+          <TouchableOpacity key={index} style={styles.mediaWrapper} onPress={() => removeMedia(index)}>
+            {media.type?.startsWith("video") ? (
+              <View style={[styles.media, { backgroundColor: "#111", justifyContent: "center", alignItems: "center" }]}>
+                <Text style={{ color: "#fff", fontSize: 12 }}>Vídeo</Text>
+              </View>
             ) : (
-              <Image
-                source={{ uri: media.uri }}
-                style={styles.media}
-                resizeMode="cover"
-              />
+              <Image source={{ uri: media.uri }} style={styles.media} />
             )}
             <View style={styles.deleteButton}>
-              <XIcon color={colors.brand.white} size={16} />
+              <XIcon size={16} color="#fff" />
             </View>
           </TouchableOpacity>
         ))}
       </View>
-      <TouchableOpacity
-        className="flex flex-row items-center gap-2 bottom-0 py-2 px-4 border border-black-80 rounded-lg"
-        onPress={handleMedia}
-      >
-        <ImageIcon color={colors.black[70]} size={24} />
-        <Text className="text-black-30 text-base font-medium">
-          Foto ou Vídeo
-        </Text>
-      </TouchableOpacity>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
-  container: {
-    alignItems: "flex-start",
-    gap: 24,
-  },
-  mediaContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    gap: 8,
-    marginTop: 10,
-  },
-  mediaWrapper: {
-    position: "relative",
-    width: 56,
-    height: 56,
-    maxWidth: 56,
-    maxHeight: 56,
-  },
-  media: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 8,
-  },
-  deleteButton: {
-    position: "absolute",
-    top: "25%",
-    right: "25%",
-    padding: 4,
-    backgroundColor: "red",
-    borderRadius: 50,
-  },
+  container: { gap: 16, alignItems: "flex-start" },
+  btn: { flexDirection: "row", alignItems: "center", gap: 8, padding: 10, borderWidth: 1, borderColor: "#333", borderRadius: 8 },
+  btnTxt: { color: "#ddd", fontSize: 14 },
+  mediaContainer: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
+  mediaWrapper: { width: 72, height: 72, position: "relative" },
+  media: { width: "100%", height: "100%", borderRadius: 8 },
+  deleteButton: { position: "absolute", top: 4, right: 4, backgroundColor: "red", borderRadius: 50, padding: 4 }
 });
-
-export default MediaPicker;
