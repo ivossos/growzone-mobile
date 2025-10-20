@@ -4,12 +4,24 @@
 
 ---
 
-## 🚀 Quick Start (Mock User)
+## 🌐 Access the App
 
-### 1. Open the App
+### Option 1: Public URL (Share with anyone)
+```
+https://3b052a6cc8e1.ngrok-free.app
+```
+
+### Option 2: Local Development
 ```
 http://localhost:8081
 ```
+
+---
+
+## 🚀 Quick Start (Mock User)
+
+### 1. Open the App
+Use either the public ngrok URL or localhost URL above
 
 ### 2. Click "Conectar-se" (Sign In)
 
@@ -23,6 +35,7 @@ Senha: Test123!
 - ✅ Instant login
 - ✅ No backend required
 - ✅ Full app access
+- ✅ Mock feed with sample posts
 
 ---
 
@@ -63,6 +76,13 @@ Name: premiumuser
 ---
 
 ## 🎯 What to Test with Mock Users
+
+### ✅ Home Feed
+1. View 2 sample posts
+2. See user avatars and names
+3. Check like counts and comments
+4. Test post interactions
+5. Verify timestamps display
 
 ### ✅ Chat Features
 1. Go to Chat tab
@@ -128,10 +148,14 @@ http://localhost:8081/sign-up
 - ✅ Login instantly
 - ✅ Navigate the app
 - ✅ See UI components
+- ✅ View mock feed posts
 - ✅ Test offline features
+- ✅ Access all screens and menus
 
 ### Mock Users CANNOT:
 - ❌ Make real API calls (data won't persist)
+- ❌ Create new posts (will fail to save)
+- ❌ Like/comment on posts (won't persist)
 - ❌ Receive real push notifications
 - ❌ Upload files to server (files are mocked)
 - ❌ Interact with real users
@@ -157,6 +181,8 @@ http://localhost:8081/sign-up
 
 ### Mock User Testing (Offline)
 - [ ] Login with mock credentials
+- [ ] View home feed (2 sample posts)
+- [ ] Check post UI (avatars, likes, comments)
 - [ ] Navigate all tabs
 - [ ] Open chat conversations
 - [ ] Send messages
@@ -166,6 +192,8 @@ http://localhost:8081/sign-up
 - [ ] View stories
 - [ ] Create story (web camera)
 - [ ] Test reactions
+- [ ] Open drawer menu
+- [ ] Test profile screen
 - [ ] Logout
 
 ### Real User Testing (Backend)
@@ -240,9 +268,15 @@ Create real account - tests full backend integration
 ## 🚀 Ready to Test!
 
 **Quick Path:**
-1. Open http://localhost:8081
+1. Open https://3b052a6cc8e1.ngrok-free.app (or http://localhost:8081)
 2. Login: test@growzone.co / Test123!
 3. Explore the app!
+
+**What's New:**
+- ✅ Mock feed with 2 sample posts
+- ✅ No more "Erro ao carregar dados"
+- ✅ All safety checks in place
+- ✅ Public ngrok URL for sharing
 
 **Questions?**
 - See TEST_CREDENTIALS.md for more details
