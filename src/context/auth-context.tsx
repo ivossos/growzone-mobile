@@ -60,42 +60,47 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
   async function signIn(email: string, password: string) {
     setIsLoadingUserStorage(true);
     try {
-      // 🧪 DEVELOPMENT MODE: Mock Authentication
-      // Check if using test credentials
-      const MOCK_USERS = [
-        { email: "test@growzone.co", password: "Test123!", username: "testuser" },
-        { email: "dev@growzone.co", password: "Test123!", username: "devuser" },
-        { email: "user@growzone.co", password: "Test123!", username: "regularuser" },
-        { email: "premium@growzone.co", password: "Test123!", username: "premiumuser" },
-      ];
+      // 🧪 DEVELOPMENT MODE ONLY: Mock Authentication
+      // SECURITY: Only enabled in development to prevent production security issues
+      const __DEV_MODE__ = process.env.NODE_ENV === 'development' || __DEV__;
 
-      const mockUser = MOCK_USERS.find(
-        (u) => (u.email === email || u.username === email) && u.password === password
-      );
+      if (__DEV_MODE__) {
+        // Check if using test credentials
+        const MOCK_USERS = [
+          { email: "test@growzone.co", password: "Test123!", username: "testuser" },
+          { email: "dev@growzone.co", password: "Test123!", username: "devuser" },
+          { email: "user@growzone.co", password: "Test123!", username: "regularuser" },
+          { email: "premium@growzone.co", password: "Test123!", username: "premiumuser" },
+        ];
 
-      if (mockUser) {
-        // Mock authentication successful
-        const mockToken = "mock-token-" + Date.now();
-        const mockUserData: UserSocial = {
-          id: "mock-" + mockUser.username,
-          username: mockUser.username,
-          name: mockUser.username === "testuser" ? "Você" : mockUser.username,
-          email: mockUser.email,
-          avatar: "https://i.pravatar.cc/150?img=10",
-          bio: `Usuário de teste (${mockUser.username})`,
-          is_verified: true,
-          has_username: true,
-          category_id: 1, // Set default category to avoid redirect loops
-        } as UserSocial;
+        const mockUser = MOCK_USERS.find(
+          (u) => (u.email === email || u.username === email) && u.password === password
+        );
 
-        authApi.defaults.headers.common["Authorization"] = `Bearer ${mockToken}`;
-        socialApi.defaults.headers.common["Authorization"] = `Bearer ${mockToken}`;
+        if (mockUser) {
+          // Mock authentication successful
+          const mockToken = "mock-token-" + Date.now();
+          const mockUserData: UserSocial = {
+            id: "mock-" + mockUser.username,
+            username: mockUser.username,
+            name: mockUser.username === "testuser" ? "Você" : mockUser.username,
+            email: mockUser.email,
+            avatar: "https://i.pravatar.cc/150?img=10",
+            bio: `Usuário de teste (${mockUser.username})`,
+            is_verified: true,
+            has_username: true,
+            category_id: 1, // Set default category to avoid redirect loops
+          } as UserSocial;
 
-        await storageSaveUserAndToken(mockUserData, mockToken, "mock-refresh-token");
-        updateUserAndToken(mockUserData, mockToken);
+          authApi.defaults.headers.common["Authorization"] = `Bearer ${mockToken}`;
+          socialApi.defaults.headers.common["Authorization"] = `Bearer ${mockToken}`;
 
-        console.log("✅ Mock authentication successful:", mockUser.username);
-        return mockUserData as any;
+          await storageSaveUserAndToken(mockUserData, mockToken, "mock-refresh-token");
+          updateUserAndToken(mockUserData, mockToken);
+
+          console.warn("⚠️ DEV MODE: Mock authentication successful -", mockUser.username);
+          return mockUserData;
+        }
       }
 
       // Real backend authentication
@@ -130,10 +135,12 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     try {
       setIsLoadingUserStorage(true);
 
-      // 🧪 Check if current user is mock (skip backend call)
+      // 🧪 DEV MODE: Check if current user is mock (skip backend call)
       const { access_token } = await storageGetAuthToken();
-      if (access_token && access_token.startsWith("mock-token-")) {
-        console.log("✅ Mock user detected, skipping backend user fetch");
+      const __DEV_MODE__ = process.env.NODE_ENV === 'development' || __DEV__;
+
+      if (__DEV_MODE__ && access_token && access_token.startsWith("mock-token-")) {
+        console.warn("⚠️ DEV MODE: Mock user detected, skipping backend user fetch");
         const storedUser = await storageGetUser();
         if (storedUser) {
           setUser(storedUser);

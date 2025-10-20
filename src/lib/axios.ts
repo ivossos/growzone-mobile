@@ -75,7 +75,13 @@ const createAPIInstance = (baseURL: string): APIInstanceProps => {
         }
 
         if (status === 401 && detail === "Invalid token") {
-          const { refresh_token } = await storageGetAuthToken();
+          const { access_token, refresh_token } = await storageGetAuthToken();
+
+          // 🧪 DEV MODE: Skip token refresh for mock tokens
+          if (access_token?.startsWith("mock-token-")) {
+            console.warn("⚠️ DEV MODE: Mock token received 401 - skipping refresh");
+            return Promise.reject(requestError);
+          }
 
           if (!refresh_token) {
             await signOut();
