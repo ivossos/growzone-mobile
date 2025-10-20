@@ -5,6 +5,27 @@
 
 import { Conversation, Message } from "../@types/chat";
 
+/**
+ * Default Mock User for Testing
+ * Use this in development/testing
+ */
+export const MOCK_CURRENT_USER = {
+  id: "currentUser",
+  username: "testuser",
+  name: "Você",
+  email: "test@growzone.co",
+  avatar: "https://i.pravatar.cc/150?img=10",
+  bio: "Usuário de teste do Growzone",
+  verified: true,
+  createdAt: new Date("2024-01-01").toISOString(),
+};
+
+/**
+ * Helper function to get current user
+ * In production, this would come from auth context
+ */
+export const getCurrentUser = () => MOCK_CURRENT_USER;
+
 export const mockConversations: Conversation[] = [
   {
     id: "1",
