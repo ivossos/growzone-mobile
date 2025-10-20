@@ -77,63 +77,21 @@ export default function RootLayout() {
               <GestureHandlerRootView
                 style={{ flex: 1, backgroundColor: colors.black[100] }}
               >
-                <Stack>
-                  <Stack.Screen
-                    name="(auth)"
-                    options={{ headerShown: false }}
-                  />
-                  {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> */}
-                  <Stack.Screen name="index" options={{ headerShown: false }} />
-                  <Stack.Screen
-                    name="notifications"
-                    options={{
-                      headerShown: false,
-                      contentStyle: { backgroundColor: colors.black[100] },
-                    }}
-                  />
-                  <Stack.Screen
-                    name="weestory"
-                    options={{
-                      headerShown: false,
-                      contentStyle: { backgroundColor: colors.black[100] },
-                    }}
-                  />
-                  <Stack.Screen
-                    name="profile"
-                    options={{
-                      headerShown: false,
-                      contentStyle: { backgroundColor: colors.black[100] },
-                    }}
-                  />
-                  <Stack.Screen
-                    name="followers"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="following"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen name="post" options={{ headerShown: false }} />
-                  <Stack.Screen
-                    name="edit-post"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="edit-reels-post"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="edit-grow-post"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="(drawer)"
-                    options={{
-                      headerShown: false,
-                      contentStyle: { backgroundColor: colors.black[100] },
-                    }}
-                  />
-                  <Stack.Screen name="+not-found" />
+                <Stack screenOptions={{ headerShown: false }}>
+                  <Stack.Screen name="index" />
+                  <Stack.Screen name="(auth)" />
+                  <Stack.Screen name="(drawer)" />
+                  <Stack.Screen name="test-chat" />
+                  <Stack.Screen name="test-weestory" />
+                  <Stack.Screen name="notifications" />
+                  <Stack.Screen name="weestory" />
+                  <Stack.Screen name="profile" />
+                  <Stack.Screen name="followers" />
+                  <Stack.Screen name="following" />
+                  <Stack.Screen name="post" />
+                  <Stack.Screen name="edit-post" />
+                  <Stack.Screen name="edit-reels-post" />
+                  <Stack.Screen name="edit-grow-post" />
                 </Stack>
                 <Toast />
               </GestureHandlerRootView>

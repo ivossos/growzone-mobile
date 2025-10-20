@@ -170,16 +170,19 @@ const socialApi = createAPIInstance(socialBaseURL);
 addLogging(authApi, "authApi");
 addLogging(socialApi, "socialApi");
 
-(async () => {
-  try {
-    const { access_token } = await storageGetAuthToken();
-    if (access_token) {
-      authApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
-      socialApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+// Only run on client side (not during SSR)
+if (typeof window !== 'undefined') {
+  (async () => {
+    try {
+      const { access_token } = await storageGetAuthToken();
+      if (access_token) {
+        authApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+        socialApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
+      }
+    } catch (e) {
+      console.error("Falha ao injetar token nas instâncias de Axios", e);
     }
-  } catch (e) {
-    console.error("Falha ao injetar token nas instâncias de Axios", e);
-  }
-})();
+  })();
+}
 
 export { authApi, socialApi };

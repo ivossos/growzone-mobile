@@ -8,7 +8,7 @@ import FileIcon from "@/assets/icons/file.svg";
 import QuestionIcon from "@/assets/icons/question.svg";
 import CloseIcon from "@/assets/icons/close.svg";
 import { useAuth } from "@/hooks/use-auth";
-import { Redirect, useRouter } from "expo-router";
+import { Redirect, useRouter, router } from "expo-router";
 import { useEffect, useRef } from "react";
 import Toast from 'react-native-toast-message';
 import { BottomSheetProvider } from "@/context/bottom-sheet-context";
@@ -39,7 +39,6 @@ import FloatingPostProgressBar from "@/components/ui/floating-post-progress-bar"
 
 export default function DrawerLayout() {
   const { user, signOut, isLoadingUserStorage } = useAuth();
-  const router = useRouter();
   const hasRedirectedRef = useRef(false); // 🧪 Track if we've already checked/redirected
   const searchSheetRef = useRef<BottomSheet>(null);
   const reportSheetRef = useRef<BottomSheet>(null);
@@ -119,7 +118,13 @@ export default function DrawerLayout() {
     router.replace("/welcome");
   };
 
-  if (!user?.id && !isLoadingUserStorage) {
+  // Wait for user storage to load before redirecting
+  // This prevents race conditions during login
+  if (isLoadingUserStorage) {
+    return null; // Show nothing while loading
+  }
+
+  if (!user?.id) {
     return <Redirect href="/welcome" />;
   }
 

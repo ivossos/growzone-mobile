@@ -41,17 +41,31 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
     try {
       setIsLoadingUserStorage(true);
 
+      console.log('📦 Loading user data from storage...');
       const userLogged = await storageGetUser();
       const { access_token, refresh_token } = await storageGetAuthToken();
 
+      console.log('📦 Storage data:', {
+        hasUser: !!userLogged,
+        hasToken: !!access_token,
+        userId: userLogged?.id,
+        isMockToken: access_token?.startsWith("mock-token-")
+      });
+
       if (access_token && refresh_token && userLogged) {
+        console.log('✅ Restoring session from storage');
         updateUserAndToken(userLogged, access_token);
+      } else {
+        console.log('❌ No valid session in storage');
       }
 
       // 🧪 Only update from backend if NOT a mock user
       if (userLogged && access_token && !access_token.startsWith("mock-token-")) {
+        console.log('🔄 Updating user data from backend...');
         await updateUserData();
       }
+    } catch (error) {
+      console.error('❌ Error loading user data:', error);
     } finally {
       setIsLoadingUserStorage(false);
     }
@@ -65,6 +79,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
       const __DEV_MODE__ = process.env.NODE_ENV === 'development' || __DEV__;
 
       if (__DEV_MODE__) {
+        console.log('🧪 DEV MODE: Checking for mock user credentials');
         // Check if using test credentials
         const MOCK_USERS = [
           { email: "test@growzone.co", password: "Test123!", username: "testuser" },
@@ -78,6 +93,7 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
         );
 
         if (mockUser) {
+          console.log('🧪 DEV MODE: Mock user found -', mockUser.username);
           // Mock authentication successful
           const mockToken = "mock-token-" + Date.now();
           const mockUserData: UserSocial = {
@@ -92,14 +108,18 @@ export function AuthContextProvider({ children }: AuthContextProviderProps) {
             category_id: 1, // Set default category to avoid redirect loops
           } as UserSocial;
 
+          console.log('🧪 DEV MODE: Setting up mock auth headers');
           authApi.defaults.headers.common["Authorization"] = `Bearer ${mockToken}`;
           socialApi.defaults.headers.common["Authorization"] = `Bearer ${mockToken}`;
 
+          console.log('💾 Saving mock user to storage...');
           await storageSaveUserAndToken(mockUserData, mockToken, "mock-refresh-token");
           updateUserAndToken(mockUserData, mockToken);
 
-          console.warn("⚠️ DEV MODE: Mock authentication successful -", mockUser.username);
+          console.warn("✅ DEV MODE: Mock authentication successful -", mockUser.username);
           return mockUserData;
+        } else {
+          console.log('🧪 DEV MODE: No mock user matched, trying real backend');
         }
       }
 

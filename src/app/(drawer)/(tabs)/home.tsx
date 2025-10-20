@@ -21,7 +21,6 @@ import useHome from "@/hooks/useHome";
 import { colors } from "@/styles/colors";
 import { useScrollToTop } from "@/context/scroll-top-context";
 import UpdateAppModal from "@/components/ui/update-app";
-import { useIsFocused } from "@react-navigation/native";
 
 import WeestorySlider from "@/components/weestory/Slider";
 
@@ -35,7 +34,10 @@ export default function HomeScreen() {
   const playerRef = useRef(new Map<string, any>());
   const lastActivePostId = useRef<number | any>(null);
   const lastsPostsCarrocelIndex = useRef<{ [postId: number]: number }>({});
-  const isFocused = useIsFocused();
+
+  // Fix: For web compatibility, we don't use useIsFocused
+  // Instead, track focus with component lifecycle
+  const [isFocused, setIsFocused] = useState(true);
 
   const [viewableItems, setVisibleItems] = useState(new Set<unknown>());
   const viewabilityConfig = { itemVisiblePercentThreshold: 80 };
@@ -238,31 +240,33 @@ export default function HomeScreen() {
     loadData();
   }, [loadData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!isFocused) return;
+  useEffect(() => {
+    // Component is mounted, set focused
+    setIsFocused(true);
+
+    const currentPost = lastActivePostId.current;
+    if (currentPost) {
+      const playerKey = `${currentPost.postId}-${currentPost.index}`;
+      const currentPlayer = playerRef.current.get(playerKey);
+      if (currentPlayer) {
+        currentPlayer.play();
+      }
+    }
+
+    return () => {
+      // Component unmounting, set unfocused
+      setIsFocused(false);
 
       const currentPost = lastActivePostId.current;
       if (currentPost) {
         const playerKey = `${currentPost.postId}-${currentPost.index}`;
         const currentPlayer = playerRef.current.get(playerKey);
         if (currentPlayer) {
-          currentPlayer.play();
+          currentPlayer.pause();
         }
       }
-
-      return () => {
-        const currentPost = lastActivePostId.current;
-        if (currentPost) {
-          const playerKey = `${currentPost.postId}-${currentPost.index}`;
-          const currentPlayer = playerRef.current.get(playerKey);
-          if (currentPlayer) {
-            currentPlayer.pause();
-          }
-        }
-      };
-    }, [])
-  );
+    };
+  }, []);
 
   useEffect(() => {
     return () => {

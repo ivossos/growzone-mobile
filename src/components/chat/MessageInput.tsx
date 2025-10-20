@@ -50,6 +50,8 @@ export const MessageInput: React.FC<MessageInputProps> = ({
             className="flex-1 text-white text-sm"
             style={{ fontSize: 14, maxHeight: 100 }}
             multiline
+            blurOnSubmit={false}
+            onSubmitEditing={handleSend}
           />
 
           {/* Input Icons */}
