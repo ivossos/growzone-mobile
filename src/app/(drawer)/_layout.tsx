@@ -93,14 +93,17 @@ export default function DrawerLayout() {
     searchSheetRef.current?.close();
   };
 
-  // 🧪 TEMPORARY: Completely disabled to allow testing
-  // This useEffect was causing redirect loops
-  // TODO: Re-implement with proper navigation guards
-  /*
   useEffect(() => {
     if (user?.id && !isLoadingUserStorage && !hasRedirectedRef.current) {
       hasRedirectedRef.current = true;
 
+      // 🧪 DEV MODE: Skip navigation guards for mock users
+      if (user.id.startsWith('mock-')) {
+        console.warn('⚠️ DEV MODE: Mock user - skipping navigation guards');
+        return;
+      }
+
+      // Apply navigation guards for real users only
       if (!user.is_verified) {
         router.replace('/verify-user');
       } else if (!user.has_username) {
@@ -110,7 +113,6 @@ export default function DrawerLayout() {
       }
     }
   }, [user?.id, isLoadingUserStorage]);
-  */
 
   const logout = async () => {
     await signOut();

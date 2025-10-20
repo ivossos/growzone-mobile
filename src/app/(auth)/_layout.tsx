@@ -10,11 +10,15 @@ export default function AuthLayout() {
   const { user, isLoadingUserStorage } = useAuth();
   const router = useRouter();
 
-  // 🧪 TEMPORARY: Disabled to prevent redirect loops during testing
-  // Mock users already have all required fields
-  /*
   useEffect(() => {
     if (user?.id && !isLoadingUserStorage) {
+      // 🧪 DEV MODE: Skip navigation guards for mock users
+      if (user.id.startsWith('mock-')) {
+        console.warn('⚠️ DEV MODE: Mock user - skipping navigation guards');
+        return;
+      }
+
+      // Apply navigation guards for real users only
       if (!user.is_verified) {
         router.replace('/verify-user');
       } else if (!user.has_username) {
@@ -25,8 +29,7 @@ export default function AuthLayout() {
         router.replace('/home');
       }
     }
-  }, [user, isLoadingUserStorage, router]);
-  */
+  }, [user?.id, user?.is_verified, user?.has_username, user?.category_id, isLoadingUserStorage]);
 
   return (
     <>
