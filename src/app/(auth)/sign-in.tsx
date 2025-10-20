@@ -47,13 +47,17 @@ const SignIn = () => {
         values.username,
         values.password
       );
+
+      console.log('🔐 Attempting login with:', values.username);
       userLogged = await signIn(
         values.username,
         values.password
       );
+      console.log('✅ Login successful, user:', userLogged);
 
     } catch (err) {
-      console.log('error login', err)
+      console.error('❌ Login error:', err);
+      setIsLoading(false);
 
       if (err === 'Inactive user') {
         Toast.show({
@@ -70,14 +74,27 @@ const SignIn = () => {
       }
 
       return;
-    } finally {
-      setIsLoading(false);
     }
 
+    // Give time for auth state to propagate before navigating
+    // This prevents race conditions with the drawer layout
+    console.log('⏳ Waiting for state propagation...');
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    setIsLoading(false);
+
+    console.log('🧭 Navigating based on user state...', {
+      isVerified: userLogged.is_verified,
+      hasUsername: userLogged.has_username,
+      categoryId: userLogged.category_id
+    });
+
     if (!userLogged.is_verified) {
+      console.log('➡️ Redirecting to verify-user');
       return router.replace("/verify-user");
     }
 
+    console.log('➡️ Redirecting to home');
     router.replace("/home");
   };
 

@@ -9,12 +9,18 @@ import { useEffect, useState } from 'react';
 export default function AuthLayout() {
   const { user, isLoadingUserStorage } = useAuth();
   const router = useRouter();
+  const [hasChecked, setHasChecked] = useState(false);
 
   useEffect(() => {
-    if (user?.id && !isLoadingUserStorage) {
+    // Only run this check once when the component mounts
+    // to avoid interfering with the login flow
+    if (user?.id && !isLoadingUserStorage && !hasChecked) {
+      setHasChecked(true);
+
       // 🧪 DEV MODE: Skip navigation guards for mock users
       if (user.id.startsWith('mock-')) {
-        console.warn('⚠️ DEV MODE: Mock user - skipping navigation guards');
+        console.warn('⚠️ DEV MODE: Mock user detected in auth layout - redirecting to home');
+        router.replace('/home');
         return;
       }
 
@@ -29,7 +35,7 @@ export default function AuthLayout() {
         router.replace('/home');
       }
     }
-  }, [user?.id, user?.is_verified, user?.has_username, user?.category_id, isLoadingUserStorage]);
+  }, [user?.id, isLoadingUserStorage, hasChecked]);
 
   return (
     <>
