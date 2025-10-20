@@ -1,0 +1,112 @@
+service: growzone-chat-websocket
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  memorySize: 256
+  timeout: 30
+
+  environment:
+    CONNECTIONS_TABLE: ${self:service}-connections-${self:provider.stage}
+    JWT_SECRET: ${env:JWT_SECRET}
+    POSTGRES_HOST: ${env:POSTGRES_HOST}
+    POSTGRES_DB: ${env:POSTGRES_DB}
+    POSTGRES_USER: ${env:POSTGRES_USER}
+    POSTGRES_PASSWORD: ${env:POSTGRES_PASSWORD}
+
+  iam:
+    role:
+      statements:
+        # DynamoDB permissions
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:UpdateItem
+          Resource:
+            - !GetAtt ConnectionsTable.Arn
+            - !Sub '${ConnectionsTable.Arn}/index/*'
+
+        # API Gateway permissions (for sending messages to connections)
+        - Effect: Allow
+          Action:
+            - execute-api:ManageConnections
+          Resource:
+            - !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${WebsocketsApi}/*'
+
+functions:
+  # WebSocket Connect
+  connect:
+    handler: connect.handler
+    events:
+      - websocket:
+          route: $connect
+
+  # WebSocket Disconnect
+  disconnect:
+    handler: disconnect.handler
+    events:
+      - websocket:
+          route: $disconnect
+
+  # WebSocket Default (all messages)
+  sendMessage:
+    handler: send_message.handler
+    events:
+      - websocket:
+          route: $default
+
+resources:
+  Resources:
+    # DynamoDB Table for WebSocket Connections
+    ConnectionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.CONNECTIONS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: expiresAt
+          Enabled: true
+        AttributeDefinitions:
+          - AttributeName: connectionId
+            AttributeType: S
+          - AttributeName: userId
+            AttributeType: N
+        KeySchema:
+          - AttributeName: connectionId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: UserIdIndex
+            KeySchema:
+              - AttributeName: userId
+                KeyType: HASH
+            Projection:
+              ProjectType: ALL
+
+  Outputs:
+    WebSocketURL:
+      Description: WebSocket URL
+      Value: !Sub 'wss://${WebsocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${self:provider.stage}'
+      Export:
+        Name: ${self:service}-${self:provider.stage}-websocket-url
+
+    ConnectionsTableName:
+      Description: DynamoDB Connections Table
+      Value: !Ref ConnectionsTable
+      Export:
+        Name: ${self:service}-${self:provider.stage}-connections-table
+
+plugins:
+  - serverless-python-requirements
+
+custom:
+  pythonRequirements:
+    dockerizePip: true
+    layer: true
