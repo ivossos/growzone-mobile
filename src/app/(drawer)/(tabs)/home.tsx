@@ -180,10 +180,14 @@ export default function HomeScreen() {
         }
 
         if (isRefresh) {
-          setData(result);
+          setData(Array.isArray(result) ? result : []);
           setIsLastPage(false);
         } else {
-          setData((prevData: any) => [...prevData, ...(result as any)]);
+          setData((prevData: any) => {
+            const prev = Array.isArray(prevData) ? prevData : [];
+            const newData = Array.isArray(result) ? result : [];
+            return [...prev, ...newData];
+          });
         }
       } catch (err) {
         setError("Erro ao carregar dados");
