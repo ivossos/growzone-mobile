@@ -85,6 +85,11 @@ const MediaSlider = ({
     }
   );
 
+  // Safety check: ensure items is defined and is an array
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return null;
+  }
+
   if (items.length === 1) {
     return <RenderItem item={items[0]} index={0} />;
   }
