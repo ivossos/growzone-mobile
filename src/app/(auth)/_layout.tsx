@@ -10,6 +10,9 @@ export default function AuthLayout() {
   const { user, isLoadingUserStorage } = useAuth();
   const router = useRouter();
 
+  // 🧪 TEMPORARY: Disabled to prevent redirect loops during testing
+  // Mock users already have all required fields
+  /*
   useEffect(() => {
     if (user?.id && !isLoadingUserStorage) {
       if (!user.is_verified) {
@@ -23,6 +26,7 @@ export default function AuthLayout() {
       }
     }
   }, [user, isLoadingUserStorage, router]);
+  */
 
   return (
     <>

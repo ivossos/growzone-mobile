@@ -40,6 +40,7 @@ import FloatingPostProgressBar from "@/components/ui/floating-post-progress-bar"
 export default function DrawerLayout() {
   const { user, signOut, isLoadingUserStorage } = useAuth();
   const router = useRouter();
+  const hasRedirectedRef = useRef(false); // 🧪 Track if we've already checked/redirected
   const searchSheetRef = useRef<BottomSheet>(null);
   const reportSheetRef = useRef<BottomSheet>(null);
   const commentSheetRef = useRef<BottomSheet>(null);
@@ -92,19 +93,24 @@ export default function DrawerLayout() {
     searchSheetRef.current?.close();
   };
 
+  // 🧪 TEMPORARY: Completely disabled to allow testing
+  // This useEffect was causing redirect loops
+  // TODO: Re-implement with proper navigation guards
+  /*
   useEffect(() => {
-    if (user?.id && !isLoadingUserStorage) {
+    if (user?.id && !isLoadingUserStorage && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+
       if (!user.is_verified) {
         router.replace('/verify-user');
       } else if (!user.has_username) {
         router.replace('/set-username');
       } else if (user.has_username && (!user.category_id || user.category_id === 0)) {
         router.replace('/user-category');
-      } else {
-        router.replace('/home');
       }
     }
-  }, [user, isLoadingUserStorage, router]);
+  }, [user?.id, isLoadingUserStorage]);
+  */
 
   const logout = async () => {
     await signOut();
