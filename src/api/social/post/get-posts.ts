@@ -76,6 +76,8 @@ export async function getPosts({
   if (__DEV_MODE__) {
     try {
       const { access_token } = await storageGetAuthToken();
+      console.log("🔍 DEV: Checking token:", access_token ? "exists" : "null");
+
       if (access_token?.startsWith("mock-token-")) {
         console.warn("⚠️ DEV MODE: Returning mock feed data");
         // Simulate network delay
@@ -83,7 +85,9 @@ export async function getPosts({
         return MOCK_FEED_DATA;
       }
     } catch (error) {
-      // If storage check fails, continue to real API
+      console.error("⚠️ DEV MODE: Error checking token, returning mock data anyway", error);
+      // Return mock data if there's any storage error
+      return MOCK_FEED_DATA;
     }
   }
 
