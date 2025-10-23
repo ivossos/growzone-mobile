@@ -8,6 +8,9 @@
       "developmentClient": true,
       "channel": "development",
       "distribution": "internal",
+      "env": {
+        "APP_ENV": "development"
+      },
       "ios": {
         "simulator": true
       },
@@ -17,25 +20,65 @@
         "buildType": "apk"
       }
     },
-    "preview": {
-      "android": {
-        "distribution": "internal"
+    "staging": {
+      "distribution": "internal",
+      "channel": "staging",
+      "env": {
+        "APP_ENV": "staging"
       },
       "ios": {
-        "simulator": true
+        "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "apk",
+        "autoIncrement": "versionCode"
+      }
+    },
+    "beta": {
+      "distribution": "internal",
+      "channel": "beta",
+      "env": {
+        "APP_ENV": "production"
+      },
+      "ios": {
+        "buildConfiguration": "Release",
+        "autoIncrement": "buildNumber"
+      },
+      "android": {
+        "buildType": "apk",
+        "autoIncrement": "versionCode"
       }
     },
     "production": {
       "distribution": "store",
+      "channel": "production",
       "autoIncrement": true,
+      "env": {
+        "APP_ENV": "production"
+      },
       "android": {
+        "buildType": "aab",
         "autoIncrement": "versionCode"
       },
       "ios": {
         "image": "latest",
+        "buildConfiguration": "Release",
         "autoIncrement": "buildNumber"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "contato.peedro@gmail.com",
+        "ascAppId": "6737212804",
+        "appleTeamId": "2TPM7H44X3"
       },
-      "channel": "production"
+      "android": {
+        "serviceAccountKeyPath": "./google-play-key.json",
+        "track": "production",
+        "rollout": 0.2
+      }
     }
   }
 }
