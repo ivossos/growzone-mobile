@@ -1,0 +1,202 @@
+name: Deploy Chat Backend to AWS
+
+on:
+  push:
+    branches:
+      - main
+      - feature/chat-stories-ai
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend-aws.yml'
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  deploy-lambda-websocket:
+    name: Deploy WebSocket Lambda Functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/lambda/package-lock.json
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install Serverless Framework
+        run: |
+          npm install -g serverless
+          serverless --version
+
+      - name: 📦 Install Lambda dependencies
+        working-directory: backend/lambda
+        run: |
+          npm install
+          pip install -r requirements.txt
+
+      - name: ⚙️ Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: 🚀 Deploy to AWS (Development)
+        if: github.ref == 'refs/heads/feature/chat-stories-ai'
+        working-directory: backend/lambda
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        run: |
+          echo "Deploying to DEV environment..."
+          serverless deploy --stage dev --verbose
+
+          # Get WebSocket URL
+          WS_URL=$(serverless info --stage dev | grep -o 'wss://[^[:space:]]*')
+          echo "WebSocket URL (DEV): $WS_URL"
+          echo "WS_URL_DEV=$WS_URL" >> $GITHUB_OUTPUT
+
+      - name: 🚀 Deploy to AWS (Production)
+        if: github.ref == 'refs/heads/main'
+        working-directory: backend/lambda
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET_PROD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST_PROD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB_PROD }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER_PROD }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD_PROD }}
+        run: |
+          echo "Deploying to PRODUCTION environment..."
+          serverless deploy --stage production --verbose
+
+          # Get WebSocket URL
+          WS_URL=$(serverless info --stage production | grep -o 'wss://[^[:space:]]*')
+          echo "WebSocket URL (PRODUCTION): $WS_URL"
+          echo "WS_URL_PROD=$WS_URL" >> $GITHUB_OUTPUT
+
+      - name: ✅ Verify Deployment
+        run: |
+          echo "Verifying Lambda deployment..."
+          aws lambda list-functions --query "Functions[?contains(FunctionName, 'growzone-chat-websocket')].FunctionName"
+
+          echo "Verifying DynamoDB table..."
+          aws dynamodb list-tables --query "TableNames[?contains(@, 'growzone-chat-websocket')]"
+
+      - name: 📝 Post Deployment Summary
+        if: always()
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### WebSocket Lambda Functions" >> $GITHUB_STEP_SUMMARY
+          echo "- connect: ✅ Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "- disconnect: ✅ Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "- sendMessage: ✅ Deployed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Infrastructure" >> $GITHUB_STEP_SUMMARY
+          echo "- DynamoDB Connections Table: ✅ Created" >> $GITHUB_STEP_SUMMARY
+          echo "- API Gateway WebSocket: ✅ Configured" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Environment:** Development" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: 💬 Notify on failure
+        if: failure()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "❌ Backend Deployment Failed!",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "❌ Backend Deployment Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n${{ github.ref_name }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:*\n${{ github.sha }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Check the logs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  deploy-fastapi:
+    name: Deploy FastAPI Chat Endpoints
+    runs-on: ubuntu-latest
+    needs: deploy-lambda-websocket
+    timeout-minutes: 20
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐍 Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: 📦 Install dependencies
+        working-directory: backend/api
+        run: |
+          pip install -r requirements.txt
+
+      - name: 📝 Create deployment info
+        run: |
+          echo "## 📋 FastAPI Integration" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To integrate with your existing Social API:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`python" >> $GITHUB_STEP_SUMMARY
+          echo "# In your main FastAPI app (main.py or app.py)" >> $GITHUB_STEP_SUMMARY
+          echo "from backend.api.routers import chat" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "app.include_router(" >> $GITHUB_STEP_SUMMARY
+          echo "    chat.router," >> $GITHUB_STEP_SUMMARY
+          echo "    prefix=\"/api/v1\"," >> $GITHUB_STEP_SUMMARY
+          echo "    tags=[\"chat\"]" >> $GITHUB_STEP_SUMMARY
+          echo ")" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: ℹ️  Next Steps
+        run: |
+          echo "## 🎯 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. ✅ Lambda WebSocket deployed" >> $GITHUB_STEP_SUMMARY
+          echo "2. ⏳ Add chat router to Social API backend" >> $GITHUB_STEP_SUMMARY
+          echo "3. ⏳ Run database migrations on RDS" >> $GITHUB_STEP_SUMMARY
+          echo "4. ⏳ Update mobile app with WebSocket URL" >> $GITHUB_STEP_SUMMARY
+          echo "5. ⏳ Test end-to-end messaging" >> $GITHUB_STEP_SUMMARY
