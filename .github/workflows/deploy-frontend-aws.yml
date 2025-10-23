@@ -1,0 +1,112 @@
+name: Deploy Frontend to AWS S3
+
+on:
+  push:
+    branches:
+      - main
+      - feature/chat-stories-ai
+    paths:
+      - 'src/**'
+      - 'app.json'
+      - '.github/workflows/deploy-frontend-aws.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy-web:
+    name: Build and Deploy Web App
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗️ Build web app
+        run: npx expo export:web
+        env:
+          NODE_ENV: production
+          EXPO_PUBLIC_AUTH_API_URL: ${{ secrets.EXPO_PUBLIC_AUTH_API_URL }}
+          EXPO_PUBLIC_SOCIAL_API_URL: ${{ secrets.EXPO_PUBLIC_SOCIAL_API_URL }}
+          EXPO_PUBLIC_CHAT_API_URL: ${{ secrets.EXPO_PUBLIC_CHAT_API_URL }}
+
+      - name: ⚙️ Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: 🪣 Create S3 bucket (if not exists)
+        run: |
+          BUCKET_NAME="growzone-web-app"
+          if ! aws s3 ls "s3://${BUCKET_NAME}" 2>&1 | grep -q 'NoSuchBucket'; then
+            echo "Bucket exists"
+          else
+            echo "Creating bucket..."
+            aws s3 mb "s3://${BUCKET_NAME}" --region us-east-1
+
+            # Enable static website hosting
+            aws s3 website "s3://${BUCKET_NAME}" \
+              --index-document index.html \
+              --error-document index.html
+
+            # Set bucket policy for public read
+            cat > /tmp/bucket-policy.json <<EOF
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Sid": "PublicReadGetObject",
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::${BUCKET_NAME}/*"
+              }
+            ]
+          }
+          EOF
+            aws s3api put-bucket-policy \
+              --bucket "${BUCKET_NAME}" \
+              --policy file:///tmp/bucket-policy.json
+          fi
+
+      - name: 🚀 Deploy to S3
+        run: |
+          aws s3 sync dist/ s3://growzone-web-app/ --delete \
+            --cache-control "public, max-age=31536000, immutable" \
+            --exclude "index.html" \
+            --exclude "*.html"
+
+          # Upload HTML files with no-cache
+          aws s3 sync dist/ s3://growzone-web-app/ \
+            --exclude "*" \
+            --include "*.html" \
+            --cache-control "public, max-age=0, must-revalidate"
+
+      - name: 🔄 Create CloudFront distribution (optional)
+        id: cloudfront
+        continue-on-error: true
+        run: |
+          echo "CloudFront setup would go here"
+          echo "For now, access via: http://growzone-web-app.s3-website-us-east-1.amazonaws.com"
+
+      - name: ✅ Deployment complete
+        run: |
+          echo "## 🎉 Frontend Deployed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Access your app:" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **S3 Website URL:** http://growzone-web-app.s3-website-us-east-1.amazonaws.com" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. ✅ Web app deployed to S3" >> $GITHUB_STEP_SUMMARY
+          echo "2. ⏳ (Optional) Set up CloudFront CDN for HTTPS" >> $GITHUB_STEP_SUMMARY
+          echo "3. ⏳ (Optional) Configure custom domain" >> $GITHUB_STEP_SUMMARY
