@@ -55,36 +55,15 @@ jobs:
       - name: 🪣 Create S3 bucket (if not exists)
         run: |
           BUCKET_NAME="growzone-web-app"
-          if ! aws s3 ls "s3://${BUCKET_NAME}" 2>&1 | grep -q 'NoSuchBucket'; then
-            echo "Bucket exists"
-          else
+          if aws s3 ls "s3://${BUCKET_NAME}" 2>&1 | grep -q 'NoSuchBucket'; then
             echo "Creating bucket..."
             aws s3 mb "s3://${BUCKET_NAME}" --region us-east-1
-
-            # Enable static website hosting
-            aws s3 website "s3://${BUCKET_NAME}" \
-              --index-document index.html \
-              --error-document index.html
-
-            # Set bucket policy for public read
-            cat > /tmp/bucket-policy.json <<EOF
-          {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Sid": "PublicReadGetObject",
-                "Effect": "Allow",
-                "Principal": "*",
-                "Action": "s3:GetObject",
-                "Resource": "arn:aws:s3:::${BUCKET_NAME}/*"
-              }
-            ]
-          }
-          EOF
-            aws s3api put-bucket-policy \
-              --bucket "${BUCKET_NAME}" \
-              --policy file:///tmp/bucket-policy.json
+            echo "Bucket created"
+          else
+            echo "Bucket already exists"
           fi
+
+          # No public policy needed - CloudFront will access it
 
       - name: 🚀 Deploy to S3
         run: |
@@ -99,21 +78,123 @@ jobs:
             --include "*.html" \
             --cache-control "public, max-age=0, must-revalidate"
 
-      - name: 🔄 Create CloudFront distribution (optional)
+      - name: 🔄 Create CloudFront distribution
         id: cloudfront
-        continue-on-error: true
         run: |
-          echo "CloudFront setup would go here"
-          echo "For now, access via: http://growzone-web-app.s3-website-us-east-1.amazonaws.com"
+          BUCKET_NAME="growzone-web-app"
+          DIST_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='${BUCKET_NAME}.s3.amazonaws.com'].Id | [0]" --output text)
+
+          if [ "$DIST_ID" == "None" ] || [ -z "$DIST_ID" ]; then
+            echo "Creating CloudFront distribution..."
+
+            # Create Origin Access Control
+            OAC_ID=$(aws cloudfront create-origin-access-control \
+              --origin-access-control-config \
+              "Name=growzone-web-oac,Description=OAC for Growzone Web App,SigningProtocol=sigv4,SigningBehavior=always,OriginAccessControlOriginType=s3" \
+              --query 'OriginAccessControl.Id' --output text 2>/dev/null || \
+              aws cloudfront list-origin-access-controls --query "OriginAccessControlList.Items[?Name=='growzone-web-oac'].Id | [0]" --output text)
+
+            # Create distribution config
+            cat > /tmp/cf-config.json <<EOF
+          {
+            "CallerReference": "growzone-$(date +%s)",
+            "Comment": "Growzone Web App",
+            "DefaultRootObject": "index.html",
+            "Origins": {
+              "Quantity": 1,
+              "Items": [{
+                "Id": "S3-growzone-web",
+                "DomainName": "${BUCKET_NAME}.s3.amazonaws.com",
+                "S3OriginConfig": {
+                  "OriginAccessIdentity": ""
+                },
+                "OriginAccessControlId": "${OAC_ID}"
+              }]
+            },
+            "DefaultCacheBehavior": {
+              "TargetOriginId": "S3-growzone-web",
+              "ViewerProtocolPolicy": "redirect-to-https",
+              "AllowedMethods": {
+                "Quantity": 2,
+                "Items": ["GET", "HEAD"]
+              },
+              "ForwardedValues": {
+                "QueryString": false,
+                "Cookies": {"Forward": "none"}
+              },
+              "MinTTL": 0,
+              "Compress": true,
+              "TrustedSigners": {
+                "Enabled": false,
+                "Quantity": 0
+              }
+            },
+            "CustomErrorResponses": {
+              "Quantity": 1,
+              "Items": [{
+                "ErrorCode": 404,
+                "ResponsePagePath": "/index.html",
+                "ResponseCode": "200",
+                "ErrorCachingMinTTL": 300
+              }]
+            },
+            "Enabled": true
+          }
+          EOF
+
+            DIST_ID=$(aws cloudfront create-distribution \
+              --distribution-config file:///tmp/cf-config.json \
+              --query 'Distribution.Id' --output text)
+
+            # Update S3 bucket policy for CloudFront OAC
+            cat > /tmp/bucket-policy.json <<EOF
+          {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "AllowCloudFrontServicePrincipal",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudfront.amazonaws.com"
+              },
+              "Action": "s3:GetObject",
+              "Resource": "arn:aws:s3:::${BUCKET_NAME}/*",
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceArn": "arn:aws:cloudfront::058264148933:distribution/${DIST_ID}"
+                }
+              }
+            }]
+          }
+          EOF
+            aws s3api put-bucket-policy --bucket "${BUCKET_NAME}" --policy file:///tmp/bucket-policy.json
+
+            echo "Distribution created: $DIST_ID"
+          else
+            echo "Distribution already exists: $DIST_ID"
+            # Invalidate cache
+            aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
+          fi
+
+          # Get CloudFront URL
+          CF_URL=$(aws cloudfront get-distribution --id "$DIST_ID" --query 'Distribution.DomainName' --output text)
+          echo "CLOUDFRONT_URL=https://${CF_URL}" >> $GITHUB_OUTPUT
+          echo "DISTRIBUTION_ID=${DIST_ID}" >> $GITHUB_OUTPUT
 
       - name: ✅ Deployment complete
         run: |
           echo "## 🎉 Frontend Deployed!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Access your app:" >> $GITHUB_STEP_SUMMARY
-          echo "🌐 **S3 Website URL:** http://growzone-web-app.s3-website-us-east-1.amazonaws.com" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **CloudFront URL:** ${{ steps.cloudfront.outputs.CLOUDFRONT_URL }}" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Distribution ID:** ${{ steps.cloudfront.outputs.DISTRIBUTION_ID }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Features:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ HTTPS enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Global CDN" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Gzip compression" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ SPA routing (404 → index.html)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "1. ✅ Web app deployed to S3" >> $GITHUB_STEP_SUMMARY
-          echo "2. ⏳ (Optional) Set up CloudFront CDN for HTTPS" >> $GITHUB_STEP_SUMMARY
-          echo "3. ⏳ (Optional) Configure custom domain" >> $GITHUB_STEP_SUMMARY
+          echo "1. ✅ Web app deployed to S3 + CloudFront" >> $GITHUB_STEP_SUMMARY
+          echo "2. ⏳ (Optional) Configure custom domain (e.g., app.growzone.co)" >> $GITHUB_STEP_SUMMARY
+          echo "3. ⏳ (Optional) Add SSL certificate for custom domain" >> $GITHUB_STEP_SUMMARY
