@@ -1,0 +1,23 @@
+{
+  "name": "growzone-chat-websocket",
+  "version": "1.0.0",
+  "description": "Growzone Chat WebSocket Lambda Functions",
+  "main": "index.js",
+  "scripts": {
+    "deploy:dev": "serverless deploy --stage dev",
+    "deploy:prod": "serverless deploy --stage production",
+    "logs": "serverless logs -f sendMessage --tail"
+  },
+  "keywords": [
+    "serverless",
+    "lambda",
+    "websocket",
+    "chat"
+  ],
+  "author": "Growzone",
+  "license": "MIT",
+  "devDependencies": {
+    "serverless": "^3.38.0",
+    "serverless-python-requirements": "^6.1.0"
+  }
+}
