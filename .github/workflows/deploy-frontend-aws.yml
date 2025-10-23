@@ -31,12 +31,16 @@ jobs:
         run: npm ci
 
       - name: 🏗️ Build web app
-        run: npx expo export -p web --output-dir dist --clear
+        run: |
+          # Disable static rendering to avoid Hermes transform issues
+          npx expo customize metro.config.js || true
+          npx expo export -p web --output-dir dist
         env:
           NODE_ENV: production
           NODE_OPTIONS: "--max_old_space_size=4096"
           EXPO_NO_METRO_LAZY: "1"
-          EXPO_USE_STATIC: "single"
+          EXPO_USE_STATIC: "false"
+          EXPO_NO_TRANSFORM_HERMES: "1"
           EXPO_PUBLIC_AUTH_API_URL: https://dev.auth.growzone.co/api/v1
           EXPO_PUBLIC_SOCIAL_API_URL: https://dev.social.growzone.co/api/v1
           EXPO_PUBLIC_CHAT_API_URL: https://dev.social.growzone.co/api/v1/chat
