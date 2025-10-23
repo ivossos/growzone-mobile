@@ -33,7 +33,7 @@ jobs:
       - name: 🏗️ Build web app
         run: |
           # Disable static rendering to avoid Hermes transform issues
-          npx expo customize metro.config.js || true
+          npx expo customize metro.config.js
           npx expo export -p web --output-dir dist
         env:
           NODE_ENV: production
