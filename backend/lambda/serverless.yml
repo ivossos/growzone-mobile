@@ -88,7 +88,7 @@ resources:
               - AttributeName: userId
                 KeyType: HASH
             Projection:
-              ProjectType: ALL
+              ProjectionType: ALL
 
   Outputs:
     WebSocketURL:
