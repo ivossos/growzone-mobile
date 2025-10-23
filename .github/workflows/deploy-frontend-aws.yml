@@ -31,12 +31,15 @@ jobs:
         run: npm ci
 
       - name: 🏗️ Build web app
-        run: npx expo export:web
+        run: npx expo export -p web --output-dir dist --clear
         env:
           NODE_ENV: production
-          EXPO_PUBLIC_AUTH_API_URL: ${{ secrets.EXPO_PUBLIC_AUTH_API_URL }}
-          EXPO_PUBLIC_SOCIAL_API_URL: ${{ secrets.EXPO_PUBLIC_SOCIAL_API_URL }}
-          EXPO_PUBLIC_CHAT_API_URL: ${{ secrets.EXPO_PUBLIC_CHAT_API_URL }}
+          NODE_OPTIONS: "--max_old_space_size=4096"
+          EXPO_NO_METRO_LAZY: "1"
+          EXPO_USE_STATIC: "single"
+          EXPO_PUBLIC_AUTH_API_URL: https://dev.auth.growzone.co/api/v1
+          EXPO_PUBLIC_SOCIAL_API_URL: https://dev.social.growzone.co/api/v1
+          EXPO_PUBLIC_CHAT_API_URL: https://dev.social.growzone.co/api/v1/chat
 
       - name: ⚙️ Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
