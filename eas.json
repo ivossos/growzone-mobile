@@ -44,13 +44,11 @@
       "android": {
         "buildType": "apk",
         "autoIncrement": "versionCode",
-        "resourceClass": "large",
         "gradleCommand": ":app:assembleRelease"
       },
       "ios": {
         "buildConfiguration": "Release",
-        "autoIncrement": "buildNumber",
-        "resourceClass": "m-medium"
+        "autoIncrement": "buildNumber"
       },
       "cache": {
         "key": "beta-cache",
@@ -68,14 +66,12 @@
       "android": {
         "buildType": "app-bundle",
         "autoIncrement": "versionCode",
-        "resourceClass": "large",
         "gradleCommand": ":app:bundleRelease"
       },
       "ios": {
         "image": "latest",
         "buildConfiguration": "Release",
-        "autoIncrement": "buildNumber",
-        "resourceClass": "m-medium"
+        "autoIncrement": "buildNumber"
       },
       "cache": {
         "key": "production-cache",
