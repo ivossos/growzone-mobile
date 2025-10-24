@@ -107,13 +107,14 @@
     "experiments": { "typedRoutes": true },
     "extra": {
       "router": { "origin": false },
-      "eas": { "projectId": "4d859901-20e9-4392-abbf-6b712137f7a7" },
-      
+
       "CHAT_ENABLED": true,
+      "CHAT_API_URL": "http://localhost:8000/api/v1/chat",
       "EXPO_PUBLIC_API": "http://localhost:3333",
       "EXPO_PUBLIC_RT": "ws://localhost:3333",
-      "AUTH_API_URL": "http://localhost:3333"
-      
+      "AUTH_API_URL": "https://dev.auth.growzone.co/api/v1",
+      "SOCIAL_API_URL": "https://dev.social.growzone.co/api/v1"
+
     }
   }
 }

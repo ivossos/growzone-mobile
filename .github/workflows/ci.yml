@@ -1,0 +1,59 @@
+name: CI - Test & Build
+
+on:
+  push:
+    branches: [develop, staging, main]
+  pull_request:
+    branches: [develop, staging, main]
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Run linter
+        run: npm run lint
+
+      - name: 🧪 Run tests
+        run: npm test
+        continue-on-error: true  # Don't fail if no tests yet
+
+      - name: 📘 Type check
+        run: npx tsc --noEmit
+
+      - name: ✅ Build check
+        run: npx expo export --platform web
+        env:
+          EXPO_PUBLIC_ENV: staging
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔒 Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: 🔍 Check for secrets
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
