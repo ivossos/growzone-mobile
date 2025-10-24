@@ -113,7 +113,7 @@ jobs:
           prerelease: false
 
       - name: 💬 Notify Team
-        if: always()
+        if: always() && secrets.SLACK_WEBHOOK != ''
         uses: slackapi/slack-github-action@v1
         with:
           payload: |
