@@ -15,6 +15,8 @@ jobs:
     name: Deploy WebSocket Lambda Functions
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # Disable until AWS OIDC provider is configured
+    if: github.ref == 'refs/heads/main' && false
     permissions:
       id-token: write
       contents: read
@@ -161,6 +163,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: deploy-lambda-websocket
     timeout-minutes: 20
+    # Disable until AWS OIDC provider is configured
+    if: github.ref == 'refs/heads/main' && false
 
     steps:
       - name: 📥 Checkout code
