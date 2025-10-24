@@ -57,7 +57,7 @@
         "APP_ENV": "production"
       },
       "android": {
-        "buildType": "aab",
+        "buildType": "app-bundle",
         "autoIncrement": "versionCode"
       },
       "ios": {
@@ -76,8 +76,7 @@
       },
       "android": {
         "serviceAccountKeyPath": "./google-play-key.json",
-        "track": "production",
-        "rollout": 0.2
+        "track": "production"
       }
     }
   }
