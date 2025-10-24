@@ -9,7 +9,6 @@
     "scheme": "growzone",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "sdkVersion": "52.0.0",
     "splash": {
       "image": "./src/assets/images/splash.png",
       "resizeMode": "contain",
@@ -31,15 +30,6 @@
           "remote-notification"
         ]
       },
-      "locales": {
-        "pt-BR": {
-          "NSMicrophoneUsageDescription": "O microfone é necessário para gravar áudio nos vídeos que você cria e publica na plataforma.",
-          "NSPhotoLibraryAddUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
-          "NSPhotoLibraryUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
-          "NSCameraUsageDescription": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
-          "NSLocationWhenInUseUsageDescription": "Este app não usa localização, mas algumas bibliotecas podem referenciar essas APIs."
-        }
-      },
       "config": {
         "usesNonExemptEncryption": false
       }
@@ -57,12 +47,7 @@
         "NOTIFICATIONS"
       ],
       "softwareKeyboardLayoutMode": "pan",
-      "package": "com.ivossos.growzone",
-      "requestLargeHeap": true,
-      "compileSdkVersion": 35,
-      "targetSdkVersion": 35,
-      "buildToolsVersion": "35.0.0",
-      "allowBackup": true
+      "package": "com.ivossos.growzone"
     },
     "web": {
       "bundler": "metro",
