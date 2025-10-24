@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 12.5.4",
+    "version": ">= 16.0.0",
     "appVersionSource": "remote"
   },
   "build": {
@@ -38,15 +38,23 @@
       "distribution": "internal",
       "channel": "beta",
       "env": {
-        "APP_ENV": "production"
-      },
-      "ios": {
-        "buildConfiguration": "Release",
-        "autoIncrement": "buildNumber"
+        "APP_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=4096"
       },
       "android": {
         "buildType": "apk",
-        "autoIncrement": "versionCode"
+        "autoIncrement": "versionCode",
+        "resourceClass": "large",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "ios": {
+        "buildConfiguration": "Release",
+        "autoIncrement": "buildNumber",
+        "resourceClass": "m-medium"
+      },
+      "cache": {
+        "key": "beta-cache",
+        "paths": ["node_modules"]
       }
     },
     "production": {
@@ -54,16 +62,24 @@
       "channel": "production",
       "autoIncrement": true,
       "env": {
-        "APP_ENV": "production"
+        "APP_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=4096"
       },
       "android": {
         "buildType": "app-bundle",
-        "autoIncrement": "versionCode"
+        "autoIncrement": "versionCode",
+        "resourceClass": "large",
+        "gradleCommand": ":app:bundleRelease"
       },
       "ios": {
         "image": "latest",
         "buildConfiguration": "Release",
-        "autoIncrement": "buildNumber"
+        "autoIncrement": "buildNumber",
+        "resourceClass": "m-medium"
+      },
+      "cache": {
+        "key": "production-cache",
+        "paths": ["node_modules"]
       }
     }
   },
