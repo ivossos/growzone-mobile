@@ -66,6 +66,11 @@ jobs:
           eas build --platform android --profile production --non-interactive
           echo "Android build completed"
 
+      - name: 🔑 Setup Google Play credentials
+        run: |
+          echo "${{ secrets.GOOGLE_PLAY_KEY_JSON }}" | base64 -d > google-play-key.json
+          echo "Google Play credentials configured"
+
       - name: 🤖 Submit to Google Play
         run: |
           echo "Submitting to Google Play..."
