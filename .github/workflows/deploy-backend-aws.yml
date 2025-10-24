@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/chat-stories-ai
+      # - feature/chat-stories-ai  # Disabled until AWS is configured
     paths:
       - 'backend/**'
       - '.github/workflows/deploy-backend-aws.yml'
