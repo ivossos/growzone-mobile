@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: growzone-chat-db
+    environment:
+      POSTGRES_USER: growzone
+      POSTGRES_PASSWORD: growzone123
+      POSTGRES_DB: growzone_chat_test
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U growzone"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # pgAdmin (Database GUI - optional)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: growzone-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@growzone.co
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
