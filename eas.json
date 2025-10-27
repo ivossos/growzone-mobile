@@ -35,7 +35,7 @@
       }
     },
     "beta": {
-      "distribution": "internal",
+      "distribution": "store",
       "channel": "beta",
       "env": {
         "APP_ENV": "production",
