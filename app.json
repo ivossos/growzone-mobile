@@ -3,7 +3,7 @@
     "owner": "jvoz00001",
     "name": "Growzone",
     "slug": "growzone",
-    "version": "1.0.20",
+    "version": "1.0.21",
     "orientation": "portrait",
     "icon": "./src/assets/images/icon.png",
     "scheme": "growzone",
