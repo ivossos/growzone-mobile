@@ -103,10 +103,11 @@ resources:
       Export:
         Name: ${self:service}-${self:provider.stage}-connections-table
 
-plugins:
-  - serverless-python-requirements
+# plugins:
+#   - serverless-python-requirements
 
-custom:
-  pythonRequirements:
-    dockerizePip: true
-    layer: true
+# custom:
+#   pythonRequirements:
+#     dockerizePip: false
+#     layer: false
+#     slim: true
