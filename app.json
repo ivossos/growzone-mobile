@@ -17,7 +17,7 @@
     "ios": {
       "usesAppleSignIn": true,
       "supportsTablet": true,
-      "bundleIdentifier": "com.ivossos.growzone",
+      "bundleIdentifier": "com.growzone.growzonesocial",
       "infoPlist": {
         "NSCameraUsageDescription": "Precisamos utilizar a câmera do aparelho para que você possa tirar fotos e gravar vídeos dentro do app, como em postagens ou registros de cultivo.",
         "NSPhotoLibraryUsageDescription": "Utilizamos sua galeria para que você possa selecionar imagens e vídeos para postar ou compartilhar no app.",
