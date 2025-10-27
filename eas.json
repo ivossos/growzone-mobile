@@ -20,6 +20,22 @@
         "buildType": "apk"
       }
     },
+    "develpmpment": {
+      "developmentClient": true,
+      "channel": "development",
+      "distribution": "internal",
+      "env": {
+        "APP_ENV": "development"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "distribution": "internal",
+        "autoIncrement": "versionCode",
+        "buildType": "apk"
+      }
+    },
     "staging": {
       "distribution": "internal",
       "channel": "staging",
