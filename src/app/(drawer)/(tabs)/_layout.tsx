@@ -22,7 +22,6 @@ import PostBottomSheet from "@/components/ui/post/post-bottom-sheet";
 import DeletePostBottomSheet from "@/components/ui/post/delete-post-bottom-sheet";
 import { useVideoPlayerContext } from "@/context/video-player-context";
 import { useCreatePostProgress } from "@/hooks/use-create-post-progress";
-import { MessageCircle } from "lucide-react-native";
 
 type TabIconProps = {
   icon: ImageSourcePropType;
@@ -185,22 +184,6 @@ export default function TabLayout() {
                   focused={focused}
                   icon={icons.community}
                 />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="chat"
-            options={{
-              title: "Chat",
-              headerShown: false,
-              tabBarIcon: ({ color, focused }) => (
-                <View className="flex items-center justify-center">
-                  <MessageCircle
-                    size={32}
-                    color={color}
-                    fill={focused ? color : "transparent"}
-                  />
-                </View>
               ),
             }}
           />
